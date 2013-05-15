@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Placemark>
+    <name>The Tile</name>
+      <LineString>
+		  <extrude>1</extrude>
+		  <altitudeMode>relativeToGround</altitudeMode>
+          <coordinates>
+            -46.60400390625000,-23.62439456971691,1000
+            -46.58203125000000,-23.62439456971691,1000
+            -46.58203125000000,-23.60426184707018,1000
+            -46.60400390625000,-23.60426184707018,1000
+            -46.60400390625000,-23.62439456971691,1000
+          </coordinates>
+	</LineString>
+  </Placemark>
+</kml>

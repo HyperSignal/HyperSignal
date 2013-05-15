@@ -1,0 +1,28 @@
+Coordinate Step 0.0005
+Latitude -90 to 90			=>	y
+Longitude -180 to 180		=>	x
+
+unsigned byte = 1 byte
+y size = 360kb
+x size = 720kb
+
+x = (	lon + 180	)	/	step
+y = (	lat + 90	)	/	step
+
+x = ( lon / step ) + ( 180 / step )
+x - ( lon / step ) = ( 180 / step )
+
+lon = x * step - 180
+lat = y * step - 90
+
+
+# Database
+x => Index for lon |
+y => Index for lat |- Unique Together
+
+
+# Size Test
+1,5 * 10^6 reg => 111MB
+
+
+Total: 259200 * 10^6 * 74MB = 19180800 MB
