@@ -154,6 +154,23 @@ class	HyperSignalManager:
 		self.cursor = self.con.cursor()
 		self.cursor.execute("INSERT INTO statistics VALUES (%s,%s,CURRENT_DATE()) ON DUPLICATE KEY UPDATE `count`= `count` + VALUES(`count`)", (stype,count))
 		 
+	def AddUser(self,username,uid,name,email,lastip,city,country):
+		self.cursor = self.con.cursor()
+		self.cursor.execute("INSERT INTO `users` VALUES(NULL, %s, %s, %s, %s, CURDATE(), %s, 0, %s, %s, NOW())", (username,uid,name,email,lastip,city,country))
+
+	def	IncUserKM(self, uid, val=0.1):
+		self.cursor = self.con.cursor()
+		self.cursor.execute("UPDATE `users` SET `sentkm` = `sentkm` + %s WHERE `uid` = %s", (val,uid))
+	
+	def AddAntenna(self,lat,lon,operator):
+		self.cursor = self.con.cursor()
+		self.cursor.execute("INSERT INTO `antennas` VALUES(%s,%s,%s) ON DUPLICATE KEY UPDATE `lat`=`lat`",(lat,lon,operator))
+		self.AddStatistics("tower")
+
+	def AddDevice(self, uid, device, manufacturer, model, brand, android, release, signal):	
+		self.cursor = self.con.cursor()
+		self.cursor.execute("INSERT INTO `devices` VALUES(%s,%s,%s,%s,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE `signal` = (VALUES(`signal`) + `signal`) / 2", (uid, device, manufacturer, model, brand, android, release, signal))
+	
 	def FetchTilesToDo(self,operator):
 		self.cursor = self.con.cursor()
 		self.cursor.execute("SELECT * FROM tiles WHERE operator = %s", (operator))
