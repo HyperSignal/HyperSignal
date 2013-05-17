@@ -1,0 +1,14 @@
+Options +FollowSymlinks
+RewriteEngine on
+
+#RewriteRule ^(.*)\.htm$ $1.php [NC]
+#RewriteRule ^(.*)\.html$ $1.php [NC]
+RewriteRule ^page/([^/]+) index.php?page=$1 [NC]
+RewriteRule ^page index.php [NC]
+
+RewriteRule ^user/([^/]+) index.php?page=$1 [NC]
+RewriteRule ^user index.php [NC]
+
+RewriteRule ^maps/([^/]+) index.php?page=$1 [NC]
+RewriteRule ^maps index.php [NC]
+

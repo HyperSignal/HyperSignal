@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: UTF-8 -*-
 
-import tool, MySQLdb, Image, ImageDraw, math, numpy as np, numpy, scipy, scipy.ndimage
+import tool, MySQLdb, Image, ImageDraw, math, numpy as np, numpy, scipy, scipy.ndimage, config
 from scipy import weave
 
 HYPER_STEP		=	0.0005	#	Step usado no banco de dados - 0.0005 dá uma precisão de ~100 metros
@@ -38,6 +38,11 @@ def GetGoogleTileFromHS(x,y,zoom):
 	'''
 	lat, lon	=	HyperToLatLon(x,y)
 	return tool.GoogleTile(lat, lon, zoom)
+
+def OperatorCorrect(operator):
+	for key, value in config.OPSREPLACES.iteritems():
+		operator	=	operator.replace(key,value)
+	return operator
 
 class	HyperSignalManager:
 	MYHOST			=	"localhost"
@@ -91,6 +96,7 @@ class	HyperSignalManager:
 		self.cursor.execute("INSERT INTO tiles VALUES(%s,%s,%s,%s) ON DUPLICATE KEY UPDATE `x`=`x`", (x,y,z,operator))
 
 	def ProcessSignal(self,lat,lon,value,operator):
+		operator = OperatorCorrect(operator)
 		value	=	int(value)
 		x,	y	=	LatLonToHyper(lat,lon)
 		signals	=	[(x,y,value,operator)]
@@ -156,13 +162,14 @@ class	HyperSignalManager:
 		 
 	def AddUser(self,username,uid,name,email,lastip,city,country):
 		self.cursor = self.con.cursor()
-		self.cursor.execute("INSERT INTO `users` VALUES(NULL, %s, %s, %s, %s, CURDATE(), %s, 0, %s, %s, NOW())", (username,uid,name,email,lastip,city,country))
+		self.cursor.execute("INSERT INTO `users` VALUES(%s, %s, %s, %s, CURDATE(), %s, 0, %s, %s, NOW())", (username,uid,name,email,lastip,city,country))
 
 	def	IncUserKM(self, uid, val=0.1):
 		self.cursor = self.con.cursor()
 		self.cursor.execute("UPDATE `users` SET `sentkm` = `sentkm` + %s WHERE `uid` = %s", (val,uid))
 	
 	def AddAntenna(self,lat,lon,operator):
+		operator = OperatorCorrect(operator)
 		self.cursor = self.con.cursor()
 		self.cursor.execute("INSERT INTO `antennas` VALUES(%s,%s,%s) ON DUPLICATE KEY UPDATE `lat`=`lat`",(lat,lon,operator))
 		self.AddStatistics("tower")
@@ -170,7 +177,28 @@ class	HyperSignalManager:
 	def AddDevice(self, uid, device, manufacturer, model, brand, android, release, signal):	
 		self.cursor = self.con.cursor()
 		self.cursor.execute("INSERT INTO `devices` VALUES(%s,%s,%s,%s,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE `signal` = (VALUES(`signal`) + `signal`) / 2", (uid, device, manufacturer, model, brand, android, release, signal))
-	
+
+	def FetchAntenas(self,minlat,minlon,maxlat,maxlon,operator):
+		self.cursor = self.con.cursor()
+		self.cursor.execute("SELECT * FROM antennas	WHERE `lat` >= %s and `lon` >= %s and `lat` < %s and `lon` < %s and `operator` = %s", (minlat,minlon,maxlat,maxlon,operator))
+		row		=	self.cursor.fetchone()
+		antenas	=	[]
+		#{"id":357,"latitude":-23.659896,"longitude":-46.580414}
+		while row is not None:
+			antenas.append({ "lat" : float(row[0]), "lon" : float(row[1]), "operator" : row[2] })
+			row = self.cursor.fetchone()
+		return antenas
+
+	def FetchOperators(self):
+		self.cursor = self.con.cursor()
+		self.cursor.execute("SELECT `operator` FROM `tiles` GROUP BY `operator`")
+		operators	=	[]
+		row			=	self.cursor.fetchone()
+		while row is not None:
+			operators.append(row[0])
+			row			=	self.cursor.fetchone()
+		return operators
+
 	def FetchTilesToDo(self,operator):
 		self.cursor = self.con.cursor()
 		self.cursor.execute("SELECT * FROM tiles WHERE operator = %s", (operator))

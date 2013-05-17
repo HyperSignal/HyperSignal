@@ -1,0 +1,117 @@
+
+	.menu_box {
+	
+		-moz-box-shadow:    3px 3px 5px 6px #ccc;
+		-webkit-box-shadow: 3px 3px 5px 6px #ccc;
+		box-shadow:         3px 3px 5px 6px #ccc;
+		width: 99,99%;
+		height: 35px;
+		border: 1px solid #cac5a3;
+	}   
+	.logo {
+		width: 500px;
+		height: 130px;
+	}
+	.login {
+		width: 230px;
+		height: 45px;	
+		position: absolute;
+		top:40px;
+		right:40px;
+		padding-top: 5px;
+		padding-bottom: 5px;
+	}
+	.tweetstyle{
+		position: absolute;
+		bottom:20px;
+		left:10px;
+		-moz-box-shadow:    3px 3px 5px 6px #ccc;
+		-webkit-box-shadow: 3px 3px 5px 6px #ccc;
+		box-shadow:         3px 3px 5px 6px #ccc;
+		-moz-border-radius: 4px;
+		border-radius: 4px;
+	}
+	.androidmarket {
+		position: absolute;
+		bottom:20px;
+		right:10px;
+	}
+	.mapdiv {
+		position: relative;
+		height: 60%;
+		margin-left: 20% ;
+		margin-right: 20% ;
+		
+		-moz-box-shadow:    3px 3px 5px 6px #ccc;
+		-webkit-box-shadow: 3px 3px 5px 6px #ccc;
+		box-shadow:         3px 3px 5px 6px #ccc;
+		
+		-moz-border-radius: 8px;
+		border-radius: 8px;
+		-webkit-border-radius:8px;
+		border: 2px solid #cac5a3;
+
+	}
+	.topsec {
+		position: relative;
+		height: 5%;
+		margin-left: 20% ;
+		margin-right: 20% ;
+		-moz-box-shadow:    3px 3px 5px 6px #ccc;
+		-webkit-box-shadow: 3px 3px 5px 6px #ccc;
+		box-shadow:         3px 3px 5px 6px #ccc;
+		border: 2px solid #cac5a3;
+		-moz-border-radius: 8px;
+		border-radius: 8px;
+	}
+	.secmenu {
+		position: absolute;
+		width: 16%;
+		margin-left: 1% ;
+		margin-right: auto ;
+		padding-left: 8px;
+		padding-right: 8px;
+		padding-top: 8px;
+		padding-bottom: 8px;
+		-moz-box-shadow:    3px 3px 5px 6px #ccc;
+		-webkit-box-shadow: 3px 3px 5px 6px #ccc;
+		box-shadow:         3px 3px 5px 6px #ccc;
+	
+		-moz-border-radius: 8px;
+		border: 2px solid #cac5a3;
+		border-radius: 8px;
+	}
+	.toplist {
+		position: absolute;
+		right:1%;
+		padding-top: 5px;
+		width: 16%;
+		height: 100px;
+		top: 186px;
+		
+		-moz-box-shadow:    3px 3px 5px 6px #ccc;
+		-webkit-box-shadow: 3px 3px 5px 6px #ccc;
+		box-shadow:         3px 3px 5px 6px #ccc;
+		border: 2px solid #cac5a3;
+		-moz-border-radius: 8px;
+		border-radius: 8px;
+	}
+	.envio {
+	
+		height: 400px;
+		width: 600px;
+		margin-left: auto;
+		margin-right: auto;
+		text-align: center;
+	}
+	
+	body {
+		margin-left: 0px;
+		margin-top: 0px;
+		margin-right: 0px;
+		margin-bottom: 0px;
+		background-image: url({SITEURL}images/bg.jpg);
+		background-repeat:repeat-x;
+		background-attachment:fixed;
+		background-position:bottom; 
+	}

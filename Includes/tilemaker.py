@@ -88,28 +88,33 @@ if __name__ == '__main__':
 	print "Conectando ao banco de dados"
 	hsman 		= manager.HyperSignalManager()
 	hsman.ConnectDB()
-	print "Lendo lista de tiles"
-	tilelist,tilesToDo	=	hsman.FetchTilesToDo("VIVO")
-	hsman.DisconnectDB()
-	tps			=	[]
-	print "Iniciando gerador"
-	starttime	=	datetime.now()
-	print "Tempo de inicio: "+starttime.ctime()
-	for zoom in range(zoomrange[0],zoomrange[1]):
-		print "Iniciando ZOOM: %d" %(zoom)
-		zp = ZoomProcessor(zoom, tilelist[zoom], donetiles, stopsignal, tps)
-		zp.run()
+	print "Lendo Lista de Operadoras"
+	oplist	=	hsman.FetchOperators()
+	for operator in oplist:
+		donetiles		=	Value('d', 0.0)
+		print "Lendo lista de tiles para %s" %operator
+		hsman.ConnectDB()
+		tilelist,tilesToDo	=	hsman.FetchTilesToDo(operator)
+		hsman.DisconnectDB()
+		tps			=	[]
+		print "Iniciando gerador"
+		starttime	=	datetime.now()
+		print "Tempo de inicio: "+starttime.ctime()
+		for zoom in range(zoomrange[0],zoomrange[1]):
+			print "Iniciando ZOOM: %d" %(zoom)
+			zp = ZoomProcessor(zoom, tilelist[zoom], donetiles, stopsignal, tps)
+			zp.run()
 
-	while True:
-		ok = True
-		PrintProgress()	
-		for p in tps:
-			ok = ok &  (not p.is_alive())
-		if ok:	
-			print "ACABOU(?)"
-			break
-		time.sleep(0.1)	
+		while True:
+			ok = True
+			PrintProgress()	
+			for p in tps:
+				ok = ok &  (not p.is_alive())
+			if ok:	
+				print "ACABOU(?)"
+				break
+			time.sleep(0.1)	
 
-	endtime = datetime.now()
-	print "Tempo de fim: "+endtime.ctime()
-	print "Tempo decorrido: "+(endtime-starttime).__str__()
+		endtime = datetime.now()
+		print "Tempo de fim: "+endtime.ctime()
+		print "Tempo decorrido: "+(endtime-starttime).__str__()
