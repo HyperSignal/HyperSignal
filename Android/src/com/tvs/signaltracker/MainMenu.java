@@ -41,7 +41,7 @@ public class MainMenu extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				// TODO Auto-generated method stub
+				// TODO Parar serviço
 				
 			}
 		});
@@ -49,7 +49,7 @@ public class MainMenu extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				// TODO Auto-generated method stub
+				// TODO Abrir configurações
 				
 			}
 		});
@@ -67,6 +67,10 @@ public class MainMenu extends Activity {
 		CommonHandler.LoadPreferences();
 		CommonHandler.dbman.LogoutDB("MainMenu");
 		CommonHandler.dbman.Close();
+		
+		/*	Inicializar Listas e Callbacks	*/
+		CommonHandler.InitLists();
+		CommonHandler.InitCallbacks();
 	}
 
 	@Override

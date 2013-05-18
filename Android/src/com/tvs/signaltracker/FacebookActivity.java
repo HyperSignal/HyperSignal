@@ -24,11 +24,14 @@ public class FacebookActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.facebook_activity);
+		
+		/*	Inicializa botões e deixa eles invisíveis até receber a reposta do Facebook	*/
 		fb_next	=	(Button)	findViewById(R.id.fb_nextbtn);
 		fblogin = (Button) findViewById(R.id.fb_login);
 		fblogin.setVisibility(View.INVISIBLE);
 		fb_next.setVisibility(View.INVISIBLE);
 		
+		/*	Checa se existe uma sessão inicializada, se sim, checa se as permissões estão corretas e também mostra os botões	*/
 		final Session session = Session.openActiveSessionFromCache(this);
 		if (session.isOpened()) {
 			Request.executeMeRequestAsync(session, new Request.GraphUserCallback() {
@@ -53,6 +56,7 @@ public class FacebookActivity extends Activity {
 			});
 		}
 		
+		/*	Função de Login do Facebook	- Mesmo que o acima*/
 		fblogin.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -88,11 +92,15 @@ public class FacebookActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				// TODO Auto-generated method stub
+				// TODO Ir para próxima tela
 				
 			}
 		});
 	}
+	/**
+	 * Checa se as permissões foram dadas, e pede elas caso não.
+	 * @param {Session} session
+	 */
 	public void CheckFBPerms(Session session)	{
 		if(session != null)	{
 		  	List<String> perms		=	session.getPermissions();
@@ -112,7 +120,7 @@ public class FacebookActivity extends Activity {
 		  		if(pendingw.size() > 0)
 		  			session.requestNewReadPermissions(new NewPermissionsRequest(FacebookActivity.this, pendingw));
 		  		else
-		  			Log.i("FB Perms", "Permissões OK");
+		  			Log.i("SignalTracker::FBPerms", "Permissões OK");
 	  		}
 		}
 	}
