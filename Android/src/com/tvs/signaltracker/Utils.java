@@ -38,6 +38,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import android.os.AsyncTask;
 import android.util.Log;
 
 public class Utils {
@@ -137,7 +138,7 @@ public class Utils {
 		
 		return op;
 	}
-	public static void updateLocation(int cid2, int lac2, int mnc2, int mcc2)
+	public static void TowerFetch(int cid2, int lac2, int mnc2, int mcc2, String APIKEY)
 			throws IOException {
 		InputStream is = null;
 		ByteArrayOutputStream bos = null;
@@ -150,7 +151,7 @@ public class Utils {
 			uri.append("&mnc=").append(mnc2);
 			uri.append("&mcc=").append(mcc2);
 			uri.append("&lac=").append(lac2);
-			uri.append("&key=").append("3496f1ea3dca07b9608e5aeb79bf52f6");
+			uri.append("&key=").append(APIKEY);
 
 			HttpGet request = new HttpGet(uri.toString());
 
@@ -198,7 +199,7 @@ public class Utils {
 				NodeList tmp = dados.getElementsByTagName("cell");
 				double thisTowerLat = Double.parseDouble(tmp.item(0).getAttributes().getNamedItem("lat").getNodeValue());
 				double thisTowerLon = Double.parseDouble(tmp.item(0).getAttributes().getNamedItem("lon").getNodeValue());
-				//GetService.addTower(Utils.ctx,thisTowerLat, thisTowerLon);
+				CommonHandler.AddTower(thisTowerLat, thisTowerLon);
 			}
 		} catch (MalformedURLException e) {
 			Log.e("ERROR", e.getMessage());
@@ -250,5 +251,23 @@ public class Utils {
 
 		return doc;
 
+	}
+	public static class	TowerFetchTask	extends AsyncTask<Object, Object, Object>	{
+		@Override
+		protected Object doInBackground(Object... params) {
+			String APIKEY 	= 	(String) params[0];
+			int[]	data	=	(int[]) params[1];
+			int cid = data[0];
+			int lac = data[1];
+			int mcc = data[2];
+			int mnc = data[3];
+			try{
+				TowerFetch(cid,lac,mnc,mcc,APIKEY);
+			}catch(Exception e)	{
+				Log.e("SignalTracker::TowerFetchTask","Erro ao pegar dados de torre: "+e.getMessage());
+			}
+			return null;
+		}
+		
 	}
 }

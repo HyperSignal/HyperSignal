@@ -60,17 +60,6 @@ public class MainMenu extends Activity {
 				finish();
 			}
 		});
-		/*	Inicializar Banco de Dados	*/
-		CommonHandler.InitDB(this);
-
-		CommonHandler.dbman.LoginDB("MainMenu");
-		CommonHandler.LoadPreferences();
-		CommonHandler.dbman.LogoutDB("MainMenu");
-		CommonHandler.dbman.Close();
-		
-		/*	Inicializar Listas e Callbacks	*/
-		CommonHandler.InitLists();
-		CommonHandler.InitCallbacks();
 	}
 
 	@Override

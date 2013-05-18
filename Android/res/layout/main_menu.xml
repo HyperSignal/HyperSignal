@@ -48,11 +48,12 @@
         android:id="@+id/imageView1"
         android:layout_width="wrap_content"
         android:layout_height="200dp"
+        android:layout_above="@+id/main_startbutton"
         android:layout_alignLeft="@+id/main_startbutton"
         android:layout_below="@+id/fbauthorized"
-        android:scaleType="centerInside"
         android:contentDescription="@string/stlogo"
-        android:src="@drawable/tower_web" />
+        android:scaleType="centerInside"
+        android:src="@drawable/logo_400x400" />
 
     <Button
         android:id="@+id/main_startbutton"

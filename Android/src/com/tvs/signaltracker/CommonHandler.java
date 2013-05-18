@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.location.Location;
 import android.util.Log;
 
 public class CommonHandler {
@@ -17,7 +18,15 @@ public class CommonHandler {
 	/*	Variáveis de funcionamento	*/
 	
 	public static DatabaseManager dbman;
-	public static Boolean	PreferencesLoaded	=	false;
+	public static Boolean	PreferencesLoaded	=	false;			//	Se as preferências foram carregadas
+	public static Boolean	ServiceRunning		=	false;			//	Se o serviço está rodando
+	public static Boolean	GPSFix				=	false;			//	Se o GPS está com uma posição
+	public static Boolean	GPSEnabled			=	false;			//	Se o GPS está ativado
+	
+	public static Location 	GPSLocation;							//	Localização pelo GPS
+	public static Location 	NetLocation;							//	Localização pela Rede
+	public static int		NumSattelites;							//	Número de Satélites Conectados
+	public static short		Signal;									//	Sinal do celular
 	
 	/*	Listas	*/
 	public static List<SignalObject>	Signals;
@@ -33,8 +42,10 @@ public class CommonHandler {
 	public static String FacebookUID			= 	"0";			//	UID do Facebook, caso logado
 	public static String FacebookName			=	"Anônimo";		//	Nome no Facebook, caso logado
 	public static String LastOperator			=	"";				//	Ultima operadora
-	public static short ServiceMode				=	0;				//	0 => Sem Rodar, 1 => Modo Light, 2 => Modo Full
-	public static int	MinimumDistance			=	100;			//	Metros
+	public static String Operator				=	"";				//	Operadora atual
+	public static short ServiceMode				=	0;				//	0 => Sem Rodar, 1 => Modo Light, 2 => Modo Full, 3 => Modo Offline Light, 4 => Modo Offline Full
+	public static int	MinimumDistance			=	50;				//	Distancia Mínima entre pontos em Metros
+	public static int	MinimumTime				=	0;				//	Tempo mínimo entre procuras do GPS em Segundos
 	
 	/*	Métodos	*/
 	public static void InitLists()	{
@@ -43,7 +54,13 @@ public class CommonHandler {
 		if(Towers == null)
 			Towers = new ArrayList<TowerObject>();
 	}
-	
+	public static void LoadLists()	{
+		if(dbman != null)	{
+			Signals = dbman.getSignals();
+			Towers = dbman.getTowers();
+		}else
+			Log.e("SignalTracker::LoadLists","DatabaseManager é nulo! ");
+	}
 	public static void InitCallbacks()	{
 		if(SignalCallbacks == null)
 			SignalCallbacks = new ArrayList<STCallBack>();
@@ -93,6 +110,7 @@ public class CommonHandler {
 			for(int i=0; i<Signals.size();i++)	{
 				if(tmp.distance(Signals.get(i)) < MinimumDistance)	{
 					add = false;
+					Signals.get(i).signal = (short) ((Signals.get(i).signal + signal) / 2);
 					break;
 				}
 			}
@@ -167,6 +185,7 @@ public class CommonHandler {
 			String configured	=	dbman.getPreference("configured");
 			String servicemode	=	dbman.getPreference("servicemode");
 			String mindistance	=	dbman.getPreference("mindistance");
+			String mintime		=	dbman.getPreference("mintime");
 			String wakelock		=	dbman.getPreference("wakelock");
 			
 			if(fbid != null)
@@ -179,6 +198,8 @@ public class CommonHandler {
 				ServiceMode		=	Short.parseShort(servicemode);
 			if(mindistance != null)
 				MinimumDistance	=	Integer.parseInt(mindistance);
+			if(mintime != null)
+				MinimumTime		=	Integer.parseInt(mintime);
 			if(wakelock != null)
 				WakeLock		=	(wakelock=="True"?true:false);
 			

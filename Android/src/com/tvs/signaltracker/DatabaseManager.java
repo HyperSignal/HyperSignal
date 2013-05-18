@@ -108,7 +108,7 @@ public class DatabaseManager {
 		return table;
 	}
 	
-	public List<TowerObject> getTowers(Context context) {
+	public List<TowerObject> getTowers() {
 		List<TowerObject> table = new ArrayList<TowerObject>();
 		Cursor cursor = this.db.query("towers", new String[] { "latitude", "longitude", "state"}, null, null, null, null, null, null);
 		if(cursor.moveToFirst()) {

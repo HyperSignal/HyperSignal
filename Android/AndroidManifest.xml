@@ -18,11 +18,11 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@drawable/ic_launcher_alt"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.tvs.signaltracker.MainMenu"
+            android:name="com.tvs.signaltracker.SplashScreen"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,13 +30,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <meta-data android:value="@string/fb_appid" android:name="com.facebook.sdk.ApplicationId"/>
-        <activity android:name="com.facebook.LoginActivity"></activity>
         <activity
+            android:name="com.tvs.signaltracker.MainMenu"
+            android:label="@string/app_name" 
+            android:theme="@style/AppTheme">
+        </activity>
+         <activity
             android:label="@string/app_name"
             android:name="com.tvs.signaltracker.FacebookActivity" 
             android:theme="@style/AppTheme">
         </activity>
+        
+        <meta-data android:value="@string/fb_appid" android:name="com.facebook.sdk.ApplicationId"/>
+        <activity android:name="com.facebook.LoginActivity"></activity>
+
     </application>
 
 </manifest>
