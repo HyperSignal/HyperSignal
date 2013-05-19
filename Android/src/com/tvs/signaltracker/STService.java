@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -53,20 +54,94 @@ public class STService extends Service{
 	private TimerTask	RunCheckTask;
 	private Handler	RunCheckHandler;
 	
+	private Timer	LightModeTimer;
+	private TimerTask LightModeTask;
+	private Handler LightModeHandler;
+	
 	@Override
 	public IBinder onBind(Intent intent) {return null;}
 	
 	@Override
 	public void onStart(Intent intent, int startid) {
 		Log.i("SignalTracker::STService", "Serviço Iniciado");
+		if(RunCheck != null)	{
+			RunCheck.cancel();
+			RunCheck.purge();
+		}
+		RunCheck = new Timer();
+		if(RunCheckTask != null)
+			RunCheckTask.cancel();
+		RunCheckTask	=	new TimerTask()	{
+
+			@Override
+			public void run() {
+				RunCheckHandler.sendEmptyMessage(0);
+			}
+			
+		};
 		RunCheck.schedule(RunCheckTask, 1000);
 	}
+	@SuppressLint("HandlerLeak")
 	@Override
 	public void onCreate() {
 		RunCheckHandler = new Handler()	{
 			@Override
 			public void handleMessage(Message msg)	{
 				CheckRunning();
+			}
+		};
+		LightModeHandler = new Handler()	{
+			@Override
+			public void handleMessage(Message msg)	{
+				if(msg.what == 0)	{
+					Tel						=	(TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+					MyListener = new MyPhoneStateListener();
+					Tel.listen(MyListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+					CommonHandler.Operator	=	Utils.DoOperator(Tel.getNetworkOperatorName());
+					
+					mlocManager				=	(LocationManager) getSystemService(Context.LOCATION_SERVICE);
+					GPSLocListener			=	new GPSLocationListener();
+					NetLocListener			=	new NETLocationListener();
+					mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, CommonHandler.MinimumTime, CommonHandler.MinimumDistance,	GPSLocListener);
+					mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, CommonHandler.MinimumTime, CommonHandler.MinimumDistance,	NetLocListener);		
+					GPSs					=	new GPSStatusListener();
+					mlocManager.addGpsStatusListener(GPSs);	
+					LocalRunning = true;
+					showServiceNotification();	
+				}else{
+					Log.i("SignalTracker::STService", "Parando trabalhos");
+					mlocManager.removeGpsStatusListener(GPSs);
+					mlocManager.removeUpdates(GPSLocListener);
+					mlocManager.removeUpdates(NetLocListener);
+					Tel.listen(MyListener, PhoneStateListener.LISTEN_NONE);
+					MyListener 		=	null;
+					Tel				=	null;
+					mlocManager		=	null;
+					GPSs			=	null;
+					GPSLocListener	=	null;
+					NetLocListener	=	null;
+					CommonHandler.GPSFix = false;
+					CommonHandler.NumSattelites = 0;
+					try {
+						String ns = Context.NOTIFICATION_SERVICE;
+					    NotificationManager nMgr = (NotificationManager) STService.this.getSystemService(ns);
+					    nMgr.cancel(NOTIFICATION);
+					}catch(Exception e) {}
+					LightModeTimer.cancel();
+					LightModeTimer.purge();
+					LightModeTask.cancel();
+					LightModeTask = null;
+					LightModeTimer = new Timer();
+					LightModeTask = new TimerTask()	{
+
+						@Override
+						public void run() {
+							LightModeHandler.sendEmptyMessage(0);
+						}
+						
+					};
+					LightModeTimer.schedule(LightModeTask, 60 * 1000 *  CommonHandler.LightModeDelayTime);			
+				}
 			}
 		};
 		RunCheck = new Timer();
@@ -76,7 +151,6 @@ public class STService extends Service{
 			public void run() {
 				RunCheckHandler.sendEmptyMessage(0);
 			}
-			
 		};
 	}
 	@Override
@@ -95,13 +169,16 @@ public class STService extends Service{
         alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);  
 	}
 	private void UpdateData()	{
+		CommonHandler.dbman.Open(this);
 		if(CommonHandler.Signal > -1 & CommonHandler.Signal <= 31)	{
 			if(CommonHandler.GPSFix)
 				CommonHandler.AddSignal(CommonHandler.GPSLocation.getLatitude(), CommonHandler.GPSLocation.getLongitude(), CommonHandler.Signal);
 			else
 				CommonHandler.AddSignal(CommonHandler.NetLocation.getLatitude(), CommonHandler.NetLocation.getLongitude(), CommonHandler.Signal);
 		}
-		if(CommonHandler.ServiceRunning)
+		if(CommonHandler.ServiceMode == 1 || CommonHandler.ServiceMode == 3)
+			LightModeHandler.sendEmptyMessage(1);
+		else if(CommonHandler.ServiceRunning)
 			showServiceNotification();
 	}
 	
@@ -129,41 +206,65 @@ public class STService extends Service{
 		RunCheck.schedule(RunCheckTask, 1000);
 	}
 	private void StopWorks()	{
-		Log.i("SignalTracker::STService", "Parando trabalhos");
-		mlocManager.removeGpsStatusListener(GPSs);
-		mlocManager.removeUpdates(GPSLocListener);
-		mlocManager.removeUpdates(NetLocListener);
-		Tel.listen(MyListener, PhoneStateListener.LISTEN_NONE);
-		MyListener 		=	null;
-		Tel				=	null;
-		mlocManager		=	null;
-		GPSs			=	null;
-		GPSLocListener	=	null;
-		NetLocListener	=	null;
-		CommonHandler.GPSFix = false;
-		CommonHandler.NumSattelites = 0;
-		try {
-			String ns = Context.NOTIFICATION_SERVICE;
-		    NotificationManager nMgr = (NotificationManager) this.getSystemService(ns);
-		    nMgr.cancel(NOTIFICATION);
-		}catch(Exception e) {}
+		if(CommonHandler.ServiceMode == 2 || CommonHandler.ServiceMode == 4){
+			Log.i("SignalTracker::STService", "Parando trabalhos");
+			mlocManager.removeGpsStatusListener(GPSs);
+			mlocManager.removeUpdates(GPSLocListener);
+			mlocManager.removeUpdates(NetLocListener);
+			Tel.listen(MyListener, PhoneStateListener.LISTEN_NONE);
+			MyListener 		=	null;
+			Tel				=	null;
+			mlocManager		=	null;
+			GPSs			=	null;
+			GPSLocListener	=	null;
+			NetLocListener	=	null;
+			CommonHandler.GPSFix = false;
+			CommonHandler.NumSattelites = 0;
+			try {
+				String ns = Context.NOTIFICATION_SERVICE;
+			    NotificationManager nMgr = (NotificationManager) this.getSystemService(ns);
+			    nMgr.cancel(NOTIFICATION);
+			}catch(Exception e) {}
+		}else{
+			LightModeTimer.cancel();
+			LightModeTask.cancel();
+			LightModeTimer.purge();
+			LightModeTimer = null;
+			LightModeTask = null;
+		}
+		Toast.makeText(getApplicationContext(), "Serviço Signal Tracker Parado!", Toast.LENGTH_LONG).show();
 		LocalRunning = false;
 	}
 	
 	private void StartWorks()	{
-		Tel						=	(TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-		Tel.listen(MyListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-		CommonHandler.Operator	=	Utils.DoOperator(Tel.getNetworkOperatorName());
-		
-		mlocManager				=	(LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		GPSLocListener			=	new GPSLocationListener();
-		NetLocListener			=	new NETLocationListener();
-		mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, CommonHandler.MinimumTime, CommonHandler.MinimumDistance,	GPSLocListener);
-		mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, CommonHandler.MinimumTime, CommonHandler.MinimumDistance,	NetLocListener);		
-		GPSs					=	new GPSStatusListener();
-		mlocManager.addGpsStatusListener(GPSs);	
+		if(CommonHandler.ServiceMode == 2 || CommonHandler.ServiceMode == 4){
+			Tel						=	(TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+			MyListener = new MyPhoneStateListener();
+			Tel.listen(MyListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+			CommonHandler.Operator	=	Utils.DoOperator(Tel.getNetworkOperatorName());
+			
+			mlocManager				=	(LocationManager) getSystemService(Context.LOCATION_SERVICE);
+			GPSLocListener			=	new GPSLocationListener();
+			NetLocListener			=	new NETLocationListener();
+			mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, CommonHandler.MinimumTime, CommonHandler.MinimumDistance,	GPSLocListener);
+			mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, CommonHandler.MinimumTime, CommonHandler.MinimumDistance,	NetLocListener);		
+			GPSs					=	new GPSStatusListener();
+			mlocManager.addGpsStatusListener(GPSs);	
+			showServiceNotification();
+		}else{
+			LightModeTimer = new Timer();
+			LightModeTask = new TimerTask()	{
+
+				@Override
+				public void run() {
+					LightModeHandler.sendEmptyMessage(0);
+				}
+				
+			};
+			LightModeTimer.schedule(LightModeTask, 1000);
+		}
+		Toast.makeText(getApplicationContext(), "Serviço Signal Tracker Iniciado!", Toast.LENGTH_LONG).show();
 		LocalRunning = true;
-		showServiceNotification();
 	}
     private void showServiceNotification() {
     	int signals = 0, towers = 0;

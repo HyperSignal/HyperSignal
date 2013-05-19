@@ -161,8 +161,9 @@ class	HyperSignalManager:
 		self.cursor.execute("INSERT INTO statistics VALUES (%s,%s,CURRENT_DATE()) ON DUPLICATE KEY UPDATE `count`= `count` + VALUES(`count`)", (stype,count))
 		 
 	def AddUser(self,username,uid,name,email,lastip,city,country):
+		print "ADDUSER - %s-%s-%s-%s-%s-%s-%s" %(uid,username,name,email,lastip,city,country)
 		self.cursor = self.con.cursor()
-		self.cursor.execute("INSERT INTO `users` VALUES(%s, %s, %s, %s, CURDATE(), %s, 0, %s, %s, NOW())", (username,uid,name,email,lastip,city,country))
+		self.cursor.execute("INSERT INTO `users`(`uid`,`username`,`name`,`email`,`date`,`lastip`,`sentkm`,`city`,`country`,`lastaccess`) VALUES(%s, %s, %s, %s, CURDATE(), %s, 0, %s, %s, NOW()) ON DUPLICATE KEY UPDATE `uid`=`uid`, `username`= VALUES(`username`), `name` = VALUES(`name`), `email` = VALUES(`email`), `date` = `date`, `lastip` = VALUES(`lastip`), `sentkm` = `sentkm`, `city` = VALUES(`city`), `country` = VALUES(`country`), `lastaccess` = NOW()", (uid,username,name,email,lastip,city,country))
 
 	def	IncUserKM(self, uid, val=0.1):
 		self.cursor = self.con.cursor()

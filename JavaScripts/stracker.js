@@ -27,10 +27,10 @@
 			antenasOverlay[i].setMap(antenasEnable?map:null);
 		}	
 	}
-	function pointIdExistAnt(id) {
+	function pointIdExistAnt(ant) {
 		if(loadedAntenas.length > 0 ) {
 			for(var i=0;i<loadedAntenas.length;i++) {
-				if(loadedAntenas[i].id == id)
+				if(loadedAntenas[i].lat == ant.lat & loadedAntenas[i].lon == ant.lon & loadedAntenas[i].operator == ant.operator)
 					return true;
 			}
 			return false;
@@ -54,9 +54,9 @@
 	}
 	function loadData(data) {
 		for(var i=0;i<data["antenas"].length;i++) {
-			if(!pointIdExistAnt(data["antenas"][i].id)) {
+			if(!pointIdExistAnt(data["antenas"][i])) {
 				loadedAntenas.push(data["antenas"][i]);
-				var myLatLng = new google.maps.LatLng(data["antenas"][i].latitude, data["antenas"][i].longitude);
+				var myLatLng = new google.maps.LatLng(data["antenas"][i].lat, data["antenas"][i].lon);
 				var antenaMarker = new google.maps.Marker({
 					position: myLatLng,
 					map: (antenasEnable?map:null),

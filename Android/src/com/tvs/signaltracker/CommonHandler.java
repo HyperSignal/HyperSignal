@@ -3,6 +3,8 @@ package com.tvs.signaltracker;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.facebook.model.GraphLocation;
+
 import android.content.Context;
 import android.location.Location;
 import android.util.Log;
@@ -12,9 +14,8 @@ public class CommonHandler {
 	public static final String[] FB_permissions =	{	"publish_stream"	};	//	Permissões padrões do Facebook 
 													 
 	public static final String[] FB_read_perm	=	{	"email",			//	Permissões de Leitura no Face
-														"photo_upload"	};		
-	
-	
+														"photo_upload"	};
+
 	/*	Variáveis de funcionamento	*/
 	
 	public static DatabaseManager dbman;
@@ -41,11 +42,14 @@ public class CommonHandler {
 	public static Boolean WakeLock				=	false;			//	A tela permanecerá ativa até fechar o aplicativo
 	public static String FacebookUID			= 	"0";			//	UID do Facebook, caso logado
 	public static String FacebookName			=	"Anônimo";		//	Nome no Facebook, caso logado
+	public static String FacebookEmail			=	"";				//	Email no Facebook, caso logado
 	public static String LastOperator			=	"";				//	Ultima operadora
 	public static String Operator				=	"";				//	Operadora atual
 	public static short ServiceMode				=	0;				//	0 => Sem Rodar, 1 => Modo Light, 2 => Modo Full, 3 => Modo Offline Light, 4 => Modo Offline Full
 	public static int	MinimumDistance			=	50;				//	Distancia Mínima entre pontos em Metros
 	public static int	MinimumTime				=	0;				//	Tempo mínimo entre procuras do GPS em Segundos
+	public static int 	LightModeDelayTime		=	30;				//	Tempo de espera do modo Light
+	public static GraphLocation FacebookLocation;					//	Localização no Facebook, caso logado
 	
 	/*	Métodos	*/
 	public static void InitLists()	{
@@ -209,28 +213,31 @@ public class CommonHandler {
 		/*	Carregar Preferências	*/
 		if(dbman != null)	{
 			
-			String fbid			=	dbman.getPreference("fbid");
-			String fbname		=	dbman.getPreference("fbname");	
-			String configured	=	dbman.getPreference("configured");
-			String servicemode	=	dbman.getPreference("servicemode");
-			String mindistance	=	dbman.getPreference("mindistance");
-			String mintime		=	dbman.getPreference("mintime");
-			String wakelock		=	dbman.getPreference("wakelock");
+			String fbid				=	dbman.getPreference("fbid");
+			String fbname			=	dbman.getPreference("fbname");	
+			String configured		=	dbman.getPreference("configured");
+			String servicemode		=	dbman.getPreference("servicemode");
+			String mindistance		=	dbman.getPreference("mindistance");
+			String mintime			=	dbman.getPreference("mintime");
+			String wakelock			=	dbman.getPreference("wakelock");
+			String lightmodet		=	dbman.getPreference("lightmodedelay");
 			
 			if(fbid != null)
-				FacebookUID		=	fbid;
+				FacebookUID			=	fbid;
 			if(fbname != null)
-				FacebookName	=	fbname;
+				FacebookName		=	fbname;
 			if(configured != null)
-				Configured		=	(configured.contains("True")?true:false);
+				Configured			=	(configured.contains("True")?true:false);
 			if(servicemode != null)
-				ServiceMode		=	Short.parseShort(servicemode);
+				ServiceMode			=	Short.parseShort(servicemode);
 			if(mindistance != null)
-				MinimumDistance	=	Integer.parseInt(mindistance);
+				MinimumDistance		=	Integer.parseInt(mindistance);
 			if(mintime != null)
-				MinimumTime		=	Integer.parseInt(mintime);
-			if(wakelock != null)
-				WakeLock		=	(wakelock.contains("True")?true:false);
+				MinimumTime			=	Integer.parseInt(mintime);
+			if(wakelock != null)	
+				WakeLock			=	(wakelock.contains("True")?true:false);
+			if(lightmodet != null)
+				LightModeDelayTime	=	Integer.parseInt(lightmodet);
 			
 			PreferencesLoaded = true;
 			Log.i("SignalTracker::LoadPreferences", "Preferências carregadas.");

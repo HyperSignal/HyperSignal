@@ -52,10 +52,10 @@ def	ProcessPage(_SERVER):
 					Adicionar sinal
 				'''
 				try:
-					sigs = hsman.ProcessSignal(float(data["lat"]),float(data["lon"]),int(data["sig"]),data["op"])
+					sigs = hsman.ProcessSignal(float(data["lat"]),float(data["lon"]),int(data["sig"]),data["op"].strip())
 					hsman.AddStatistics("apicall")
 					hsman.CommitToDB()
-					hsman.AddDevice(data["uid"], data["dev"], data["man"], data["model"], data["brand"], data["and"], data["rel"], data["sig"])
+					hsman.AddDevice(data["uid"].strip(), data["dev"].strip(), data["man"].strip(), data["model"].strip(), data["brand"].strip(), data["and"].strip(), data["rel"].strip(), data["sig"])
 					if data.has_key("uid"):
 						hsman.IncUserKM(data["uid"], sigs)
 					hsman.CommitToDB()
@@ -68,7 +68,7 @@ def	ProcessPage(_SERVER):
 					Adicionar Torre
 				'''
 				try:
-					hsman.AddAntenna(float(data["lat"]),float(data["lon"]),data["operator"])
+					hsman.AddAntenna(float(data["lat"]),float(data["lon"]),data["op"].strip())
 					hsman.AddStatistics("apicall")
 					hsman.CommitToDB()
 				except Exception,e:
@@ -80,7 +80,7 @@ def	ProcessPage(_SERVER):
 					Adicionar ponto de sinal via TeskeTrackingSystem
 				'''
 				try:
-					hsman.ProcessSignal(float(data["lat"]),float(data["lon"]),int(data["sig"]),data["op"])
+					hsman.ProcessSignal(float(data["lat"]),float(data["lon"]),int(data["sig"]),data["op"].strip())
 					hsman.AddStatistics("apicall")
 					hsman.AddStatistics("tts")
 					hsman.CommitToDB()
@@ -93,14 +93,24 @@ def	ProcessPage(_SERVER):
 					Adiciona torre via TeskeTrackingSystem
 				'''
 				try:
-					hsman.AddAntenna(float(data["lat"]),float(data["lon"]),data["operator"])
+					hsman.AddAntenna(float(data["lat"]),float(data["lon"]),data["op"].strip())
 					hsman.AddStatistics("apicall")
 					hsman.AddStatistics("tts")
 					hsman.CommitToDB()
 				except Exception,e:
 					print e
 				output	=	tup.ODataEncrypt('{"result":"OK"}')
-		
+			elif data["metodo"] == "adduser":
+				'''
+					Adiciona um usuário
+				'''
+				try:	
+					hsman.AddUser(data["username"],data["uid"],data["name"],data["email"],_SERVER["REMOTE_ADDR"],data["city"],data["country"])
+					hsman.AddStatistics("apicall")
+					hsman.CommitToDB()
+				except Exception, e:
+					print e
+				output	=	tup.ODataEncrypt('{"result":"OK"}')
 			else:
 				'''
 					Chamada da API errada!
@@ -127,7 +137,7 @@ def	ProcessPage(_SERVER):
 			'''
 				Retornar lista de antenas
 			'''
-			antenas = hsman.FetchAntenas(query["lat1"][0],query["lon1"][0],query["lat2"][0],query["lon2"][0],query["operator"][0])
+			antenas = hsman.FetchAntenas(query["lat2"][0],query["lon2"][0],query["lat1"][0],query["lon1"][0],query["operator"][0].strip())
 			output = json.dumps({"antenas":antenas,"results":len(antenas)})
 		
 		elif query["method"] == "operators":

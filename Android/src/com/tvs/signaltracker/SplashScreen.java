@@ -48,7 +48,9 @@ public class SplashScreen extends Activity {
             }
         };
 
+		CommonHandler.InitDB(this);
         new LoadWorker().execute(this);
+		CommonHandler.InitDB(this);
     }
 
     private static class LoadWorker extends AsyncTask<Object, Object, Object>	{
@@ -56,9 +58,7 @@ public class SplashScreen extends Activity {
 		@Override
 		protected Object doInBackground(Object... params) {
 			/*	Inicializar Banco de Dados	*/
-			CommonHandler.InitDB((Context) params[0]);
-
-			CommonHandler.dbman.LoginDB("SplashScreen");
+			CommonHandler.dbman.LoginDB("STService");
 			CommonHandler.LoadPreferences();
 			
 			/*	Inicializar Listas e Callbacks	*/
@@ -66,8 +66,7 @@ public class SplashScreen extends Activity {
 			CommonHandler.InitLists();
 			CommonHandler.InitCallbacks();
 			
-			CommonHandler.dbman.LogoutDB("SplashScreen");
-			CommonHandler.dbman.Close();
+			CommonHandler.dbman.LogoutDB("STService");
 			SplashHandler.sendEmptyMessage(0);
 			return null;
 		}

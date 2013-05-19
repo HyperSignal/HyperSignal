@@ -13,7 +13,7 @@ import android.util.Log;
 
 public class DatabaseManager {
 	private static final String DATABASE_NAME = "signaltracker.db";
-	private static final int DATABASE_VERSION = 1;
+	private static final int DATABASE_VERSION = 3;
 	
 	private Context context;
 	private SQLiteDatabase db;
@@ -113,7 +113,7 @@ public class DatabaseManager {
 		Cursor cursor = this.db.query("towers", new String[] { "latitude", "longitude", "state"}, null, null, null, null, null, null);
 		if(cursor.moveToFirst()) {
 			do {
-				table.add(new TowerObject(cursor.getDouble(0),cursor.getDouble(1),cursor.getShort(3)));
+				table.add(new TowerObject(cursor.getDouble(0),cursor.getDouble(1),cursor.getShort(2)));
 			}while(cursor.moveToNext());
 		}
 		if(cursor != null && !cursor.isClosed()) {

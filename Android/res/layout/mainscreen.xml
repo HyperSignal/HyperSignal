@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:background="@drawable/grandient_bg" >
 
     <TextView
         android:id="@+id/runMode"
@@ -18,8 +19,8 @@
         android:layout_width="wrap_content"
         android:layout_height="20dp"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
         android:layout_below="@+id/runMode"
+        android:layout_toLeftOf="@+id/signalPercent"
         android:max="31" />
 
     <TextView
@@ -47,5 +48,15 @@
     android:layout_height="match_parent"
     class="com.google.android.gms.maps.SupportMapFragment"
     android:layout_below="@+id/connectionInfo" />
+
+  <TextView
+      android:id="@+id/signalPercent"
+      android:layout_width="50dp"
+      android:layout_height="20dp"
+      android:layout_alignParentRight="true"
+      android:layout_alignTop="@+id/signalBar"
+      android:gravity="center"
+      android:text="100%"
+      android:textAppearance="?android:attr/textAppearanceSmall" />
 
 </RelativeLayout>

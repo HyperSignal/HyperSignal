@@ -71,4 +71,11 @@ public class HSAPI {
 		Log.i("SignalTracker::APICall","Adicionando chamada de torre");
 	}
 	
+	public static void AddUser(String username, String name, String email, String city, String country)	{
+		//TODO: Função pra adicionar usuário na API
+		String jsondata = "{\"metodo\":\"adduser\",\"username\":\""+username+"\",\"email\":\""+email+"\",\"name\":\""+name+"\", \"uid\":\""+CommonHandler.FacebookUID+"\", \"city\":\""+city+"\", \"country\":\""+country+"\"}";
+		jsondata = TheUpCrypter.GenOData(jsondata);
+		new CallAPI().execute(jsondata);
+		Log.i("SignalTracker::APICall","Adicionando usuário");
+	}
 }

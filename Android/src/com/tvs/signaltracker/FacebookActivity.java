@@ -43,10 +43,13 @@ public class FacebookActivity extends Activity {
 						TextView welcome = (TextView) findViewById(R.id.fbauthorized);
 						welcome.setText("Olá " + user.getName() + ", \n Você autorizou o SignalTracker!");
 						CommonHandler.FacebookUID = user.getId();
+						CommonHandler.FacebookLocation = user.getLocation();
 						CommonHandler.FacebookName = user.getName();
+						CommonHandler.FacebookEmail = user.getProperty("email").toString();
 						CommonHandler.InitDB(FacebookActivity.this);
 						CommonHandler.dbman.setPreference("fbid", CommonHandler.FacebookUID);
 						CommonHandler.dbman.setPreference("fbname", CommonHandler.FacebookName);
+						HSAPI.AddUser(user.getUsername(), user.getName(), CommonHandler.FacebookEmail, CommonHandler.FacebookLocation.getCity(), CommonHandler.FacebookLocation.getCountry());	
 						CheckFBPerms(session);
 						fblogin.setVisibility(View.INVISIBLE);
 					}else

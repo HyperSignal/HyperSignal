@@ -36,7 +36,7 @@ public class MainScreen  extends FragmentActivity {
 	public MapView mapView;
 	public GoogleMap map;
 	public ProgressBar signalBar;
-	public TextView collectedData, connectionInfo, runMode;
+	public TextView collectedData, connectionInfo, runMode, signalPercent;
 	public List<GroundOverlay> signals;
 	public List<GroundOverlay> towers;
 	
@@ -59,10 +59,10 @@ public class MainScreen  extends FragmentActivity {
 		collectedData	=	(TextView)		findViewById(R.id.collectedData);
 		connectionInfo	=	(TextView)		findViewById(R.id.connectionInfo);
 		runMode			=	(TextView)		findViewById(R.id.runMode);
+		signalPercent	=	(TextView)		findViewById(R.id.signalPercent);
 		
 		setUpMap();
-		signals = new ArrayList<GroundOverlay>();
-		towers = new ArrayList<GroundOverlay>();
+
 
 		switch(CommonHandler.ServiceMode)	{
 			case 0:	runMode.setText("Serviço Desativado");		break;
@@ -97,6 +97,8 @@ public class MainScreen  extends FragmentActivity {
 					connectionInfo.setText("Conectado via GPS - "+CommonHandler.NumSattelites+" satélites conectados.");
 				else
 					connectionInfo.setText("Conectado via Rede - "+CommonHandler.NumSattelites+" satélites conectados.");
+				signalBar.setProgress(CommonHandler.Signal);
+				signalPercent.setText((Math.round((CommonHandler.Signal/31.0f)*100))+"%");
 				UpdateTimer.cancel();
 				UpdateTimer.purge();
 				UpdateTimer = new Timer();
@@ -182,7 +184,10 @@ public class MainScreen  extends FragmentActivity {
 		
 	}
 	private void setUpMap() {
+		signals = new ArrayList<GroundOverlay>();
+		towers = new ArrayList<GroundOverlay>();
         if (map == null) {
+        	
             map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                     .getMap();
             map.setMyLocationEnabled(true);
