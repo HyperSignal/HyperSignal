@@ -38,10 +38,13 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import android.location.Location;
 import android.os.AsyncTask;
 import android.util.Log;
 
 public class Utils {
+	private static final int DELTA_TIME = 1000 * 20;	//	20 segundos
+	
     public static HttpClient getNewHttpClient() {
         try {
             KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -64,6 +67,60 @@ public class Utils {
             return new DefaultHttpClient();
         }
     }
+	public static JSONObject getODataJSONfromURL(String url){
+		if(! (url == "")) {
+    		//initialize
+    		InputStream is = null;
+    		String result = "";
+    		JSONObject jArray = null;
+    		String error = "";
+    		//http post
+    		try{
+    			HttpClient httpclient = getNewHttpClient();
+    			HttpGet httpget = new HttpGet(url);
+    			HttpResponse response = httpclient.execute(httpget);
+    			HttpEntity entity = response.getEntity();
+    			is = entity.getContent();
+
+    			
+
+    		}catch(Exception e){
+    			Log.e("SignalTracker::getJSONfromURL", "Error in http connection "+e.toString());
+    			error = e.toString();
+    		}
+
+    		//convert response to string
+    		try{
+    			if(error == null || error == "") {
+	    			BufferedReader reader = new BufferedReader(new InputStreamReader(is,"UTF-8"),8);
+	    			StringBuilder sb = new StringBuilder();
+	    			String line = null;
+	    			while ((line = reader.readLine()) != null) {
+	    				sb.append(line + "\n");
+	    			}
+	    			is.close();
+	    			result=sb.toString();
+    			}else{
+    				result = "{result:'"+error+"'}";
+    			}
+    		}catch(Exception e){
+    			Log.e("getJSONfromURL", "Error converting result "+e.toString());
+    		}
+    		result = TheUpCrypter.DecodeOData(result);
+    		Log.i("RESULT",":"+result);
+    		//try parse the string to a JSON object
+    		try{
+    	        	jArray = new JSONObject(result);
+    		}catch(JSONException e){
+    			Log.e("SignalTracker::getJSONfromURL", "Error parsing data "+e.toString());
+    			Log.e("SignalTracker::getJSONfromURL", "Site output: "+result);
+    			Log.e("SignalTracker::getJSONfromURL", "URL: "+url);
+    		}
+    		return jArray;
+		}else{
+			return null;
+		}
+	}
 	public static JSONObject getJSONfromURL(String url){
 		if(! (url == "")) {
     		//initialize
@@ -219,6 +276,49 @@ public class Utils {
 			}
 		}
 	}
+	
+	public static boolean isBetterLocation(Location location, Location currentBestLocation) {
+	    if (currentBestLocation == null) {
+	        // A new location is always better than no location
+	        return true;
+	    }
+
+	    // Check whether the new location fix is newer or older
+	    long timeDelta = location.getTime() - currentBestLocation.getTime();
+	    boolean isSignificantlyNewer = timeDelta > DELTA_TIME;
+	    boolean isSignificantlyOlder = timeDelta < -DELTA_TIME;
+	    boolean isNewer = timeDelta > 0;
+
+	    // If it's been more than two minutes since the current location, use the new location
+	    // because the user has likely moved
+	    if (isSignificantlyNewer) {
+	        return true;
+	    // If the new location is more than two minutes older, it must be worse
+	    } else if (isSignificantlyOlder) {
+	        return false;
+	    }
+
+	    // Check whether the new location fix is more or less accurate
+	    int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
+	    boolean isLessAccurate = accuracyDelta > 0;
+	    boolean isMoreAccurate = accuracyDelta < 0;
+	    boolean isSignificantlyLessAccurate = accuracyDelta > 200;
+
+	    // Check if the old and new location are from the same provider
+	    boolean isFromSameProvider = isSameProvider(location.getProvider(),
+	            currentBestLocation.getProvider());
+
+	    // Determine location quality using a combination of timeliness and accuracy
+	    if (isMoreAccurate) {
+	        return true;
+	    } else if (isNewer && !isLessAccurate) {
+	        return true;
+	    } else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) {
+	        return true;
+	    }
+	    return false;
+	}
+
 	public static boolean isSameProvider(String provider1, String provider2) {
 	    if (provider1 == null) {
 	      return provider2 == null;

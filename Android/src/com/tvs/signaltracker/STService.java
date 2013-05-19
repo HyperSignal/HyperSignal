@@ -16,7 +16,9 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
@@ -49,6 +51,7 @@ public class STService extends Service{
 	private boolean LocalRunning = false;
 	private Timer	RunCheck;
 	private TimerTask	RunCheckTask;
+	private Handler	RunCheckHandler;
 	
 	@Override
 	public IBinder onBind(Intent intent) {return null;}
@@ -56,17 +59,22 @@ public class STService extends Service{
 	@Override
 	public void onStart(Intent intent, int startid) {
 		Log.i("SignalTracker::STService", "Serviço Iniciado");
-		RunCheck.schedule(RunCheckTask, 500);
+		RunCheck.schedule(RunCheckTask, 1000);
 	}
 	@Override
 	public void onCreate() {
+		RunCheckHandler = new Handler()	{
+			@Override
+			public void handleMessage(Message msg)	{
+				CheckRunning();
+			}
+		};
 		RunCheck = new Timer();
 		RunCheckTask	=	new TimerTask()	{
 
 			@Override
 			public void run() {
-				CheckRunning();
-				RunCheck.schedule(RunCheckTask, 500);
+				RunCheckHandler.sendEmptyMessage(0);
 			}
 			
 		};
@@ -106,6 +114,19 @@ public class STService extends Service{
 			Log.i("SignalTracker::STService","Iniciando trabalhos do serviço");
 			StartWorks();
 		}
+		RunCheck.cancel();
+		RunCheck.purge();
+		RunCheck = new Timer();
+		RunCheckTask.cancel();
+		RunCheckTask	=	new TimerTask()	{
+
+			@Override
+			public void run() {
+				RunCheckHandler.sendEmptyMessage(0);
+			}
+			
+		};
+		RunCheck.schedule(RunCheckTask, 1000);
 	}
 	private void StopWorks()	{
 		Log.i("SignalTracker::STService", "Parando trabalhos");
@@ -201,12 +222,14 @@ public class STService extends Service{
 	                CommonHandler.GPSFix = true;
 	                break;
 				case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
-					if(CommonHandler.GPSLocation != null)	
-							CommonHandler.GPSFix = (SystemClock.elapsedRealtime() - mLastLocationTime) < 3000;
-					if(CommonHandler.GPSFix)
-						Log.i("SignalTracker::STService","Conexão com GPS recuperada!");
-					else
-						Log.i("SignalTracker::STService","Conexão com GPS perdida!");
+					if(CommonHandler.GPSLocation != null)	{
+							CommonHandler.GPSFix = (SystemClock.elapsedRealtime() - mLastLocationTime) < 10000;
+							//Log.i("SignalTracker::STService","DeltaTime: "+(SystemClock.elapsedRealtime() - mLastLocationTime));
+					}
+					//if(CommonHandler.GPSFix)
+					//	Log.i("SignalTracker::STService","Conexão com GPS recuperada!");
+					//else
+					//	Log.i("SignalTracker::STService","Conexão com GPS perdida!");
 					GpsStatus status = mlocManager.getGpsStatus(null);
 					if(status != null)	{
 						Iterable<GpsSatellite>satellites = status.getSatellites();
@@ -217,11 +240,10 @@ public class STService extends Service{
 							sat.next();
 						}
 						CommonHandler.NumSattelites = count;
-						Log.i("SignalTracker::STService", "Conectado a "+count+" satélites.");
+						//Log.i("SignalTracker::STService", "Conectado a "+count+" satélites.");
 					}
+					break;
 			}
-			if(CommonHandler.ServiceRunning)
-				showServiceNotification();
 		}
 	}
 	public class GPSLocationListener implements LocationListener {

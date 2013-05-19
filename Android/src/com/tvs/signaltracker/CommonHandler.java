@@ -139,6 +139,7 @@ public class CommonHandler {
 				HSAPI.AddSignal(lat,lon,Operator,signal);
 			if(add)	{
 				Signals.add(tmp);
+				dbman.insertSignal(lat, lon, signal);
 				Log.i("SignalTracker::AddSignal","Sinal Adicionado: ("+lat+","+lon+")["+signal+"]");
 				if(SignalCallbacks != null)	{
 					boolean[]	removeItens = new boolean[SignalCallbacks.size()];
@@ -152,7 +153,8 @@ public class CommonHandler {
 						}
 					}
 					for(int i=removeItens.length-1;i>=0;i--)	
-						DelSignalCallback(i);
+						if(removeItens[i] == true)
+							DelSignalCallback(i);
 				}
 			}
 		}else
@@ -173,6 +175,7 @@ public class CommonHandler {
 				HSAPI.AddTower(lat,lon,Operator);
 			if(add)	{
 				Towers.add(tmp);
+				dbman.insertTower(lat, lon);
 				Log.i("SignalTracker::AddTower","Torre Adicionado: ("+lat+","+lon+")");
 				if(TowerCallbacks != null)	{
 					boolean[]	removeItens = new boolean[TowerCallbacks.size()];
@@ -186,7 +189,8 @@ public class CommonHandler {
 						}
 					}
 					for(int i=removeItens.length-1;i>=0;i--)	
-						DelTowerCallback(i);
+						if(removeItens[i] == true)
+							DelTowerCallback(i);
 				}
 			}		
 		}else
@@ -218,7 +222,7 @@ public class CommonHandler {
 			if(fbname != null)
 				FacebookName	=	fbname;
 			if(configured != null)
-				Configured		=	(configured=="True"?true:false);
+				Configured		=	(configured.contains("True")?true:false);
 			if(servicemode != null)
 				ServiceMode		=	Short.parseShort(servicemode);
 			if(mindistance != null)
@@ -226,7 +230,7 @@ public class CommonHandler {
 			if(mintime != null)
 				MinimumTime		=	Integer.parseInt(mintime);
 			if(wakelock != null)
-				WakeLock		=	(wakelock=="True"?true:false);
+				WakeLock		=	(wakelock.contains("True")?true:false);
 			
 			PreferencesLoaded = true;
 			Log.i("SignalTracker::LoadPreferences", "Preferências carregadas.");

@@ -30,7 +30,8 @@ public class MainMenu extends Activity {
 			@Override
 			public void onClick(View v) {
 				if(CommonHandler.Configured){
-					//	TODO:	Ir para tela principal do SignalTracker e iniciar Serviço
+	                Intent intent = new Intent(v.getContext(), MainScreen.class);
+	                startActivity(intent);
 				}else{
 	                Intent intent = new Intent(v.getContext(), FacebookActivity.class);
 	                startActivity(intent);
@@ -60,6 +61,7 @@ public class MainMenu extends Activity {
 				finish();
 			}
 		});
+		Log.i("SignalTracker","Service Mode: "+CommonHandler.ServiceMode);
 	}
 
 	@Override

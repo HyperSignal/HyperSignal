@@ -26,7 +26,7 @@ public class HSAPI {
 		@Override
 		protected Long doInBackground(String... params) {
 			try {
-				JSONObject out = Utils.getJSONfromURL(baseURL+"?odata="+URLEncoder.encode(params[0], "UTF-8"));
+				JSONObject out = Utils.getODataJSONfromURL(baseURL+"?odata="+URLEncoder.encode(params[0], "UTF-8"));
 				if(out != null)	{
 					if(out.getString("result").indexOf("OK") > -1)
 						Log.i("SignalTracker::APICall","OK");

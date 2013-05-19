@@ -2,6 +2,7 @@ package com.tvs.signaltracker;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,7 +32,8 @@ public class FirstConfig extends Activity{
 				CommonHandler.dbman.setPreference("servicemode", "1");
 				CommonHandler.dbman.setPreference("configured", "True");
 				CommonHandler.dbman.LogoutDB("FirstConfig");
-				CommonHandler.ServiceMode = 1;
+				CommonHandler.ServiceMode = 1;		
+				EndTheConfig(v);
 			}
 		});
 		fullmode.setOnClickListener(new View.OnClickListener() {
@@ -42,7 +44,8 @@ public class FirstConfig extends Activity{
 				CommonHandler.dbman.setPreference("servicemode", "2");
 				CommonHandler.dbman.setPreference("configured", "True");
 				CommonHandler.dbman.LogoutDB("FirstConfig");
-				CommonHandler.ServiceMode = 2;
+				CommonHandler.ServiceMode = 2;		
+				EndTheConfig(v);
 			}
 		});
 		lightoffline.setOnClickListener(new View.OnClickListener() {
@@ -53,7 +56,8 @@ public class FirstConfig extends Activity{
 				CommonHandler.dbman.setPreference("servicemode", "3");
 				CommonHandler.dbman.setPreference("configured", "True");
 				CommonHandler.dbman.LogoutDB("FirstConfig");
-				CommonHandler.ServiceMode = 3;
+				CommonHandler.ServiceMode = 3;		
+				EndTheConfig(v);
 			}
 		});
 		fulloffline.setOnClickListener(new View.OnClickListener() {
@@ -64,8 +68,13 @@ public class FirstConfig extends Activity{
 				CommonHandler.dbman.setPreference("servicemode", "4");
 				CommonHandler.dbman.setPreference("configured", "True");
 				CommonHandler.dbman.LogoutDB("FirstConfig");
-				CommonHandler.ServiceMode = 4;				
+				CommonHandler.ServiceMode = 4;		
+				EndTheConfig(v);
 			}
 		});
+	}
+	public void EndTheConfig(View v)	{
+        Intent intent = new Intent(v.getContext(), ConfigDone.class);
+        startActivity(intent);
 	}
 }

@@ -44,7 +44,19 @@ public class MCrypt {
 
 		return encrypted;
 	}
+	public byte[] decrypt(byte[] code) throws Exception {
 
+		byte[] decrypted = null;
+
+		try {
+			cipher.init(Cipher.DECRYPT_MODE, keyspec, ivspec);
+
+			decrypted = cipher.doFinal(code);
+		} catch (Exception e) {
+			throw new Exception("[decrypt] " + e.getMessage());
+		}
+		return decrypted;
+	}
 	public byte[] decrypt(String code) throws Exception {
 		if (code == null || code.length() == 0)
 			throw new Exception("Empty string");

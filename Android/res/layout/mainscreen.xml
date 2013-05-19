@@ -41,12 +41,11 @@
         android:layout_below="@+id/collectedData"
         android:text="Medium Text"
         android:textAppearance="?android:attr/textAppearanceMedium" />
-
-<com.google.android.gms.maps.MapView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+  <fragment
     android:id="@+id/map"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    class="com.google.android.gms.maps.SupportMapFragment"
     android:layout_below="@+id/connectionInfo" />
 
 </RelativeLayout>
