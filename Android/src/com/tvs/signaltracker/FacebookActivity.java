@@ -93,7 +93,8 @@ public class FacebookActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				// TODO Ir para próxima tela
-				
+                Intent intent = new Intent(v.getContext(), FirstConfig.class);
+                startActivity(intent);
 			}
 		});
 	}

@@ -12,8 +12,8 @@
         android:id="@+id/imageView1"
         android:layout_width="wrap_content"
         android:layout_height="300dp"
+        android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="36dp"
         android:contentDescription="@string/stlogo"
         android:src="@drawable/logo_400x400" />
 
@@ -23,17 +23,17 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/imageView1"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="35dp"
-        android:text="@string/loading"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:text="@string/configdone"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textSize="20sp" />
 
-    <ProgressBar
-        android:id="@+id/signalBar"
-        style="?android:attr/progressBarStyleLarge"
+    <Button
+        android:id="@+id/startusing"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/runMode"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="21dp" />
+        android:layout_alignLeft="@+id/runMode"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/runMode"
+        android:text="@string/startusing" />
 
 </RelativeLayout>

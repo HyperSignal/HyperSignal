@@ -52,7 +52,7 @@ public class HSAPI {
 	 * @param {int} sinal
 	 */
 	
-	public static void AddSignal(double latitude, double longitude, String operadora, int sinal) {
+	public static void AddSignal(double latitude, double longitude, String operadora, short sinal) {
 		String jsondata = "{\"metodo\":\"addsinal\",\"uid\":\""+CommonHandler.FacebookUID+"\",\"op\":\""+operadora+"\",\"lat\":"+String.valueOf(latitude)+",\"lon\":"+String.valueOf(longitude)+",\"dev\":\""+Build.DEVICE+"\",\"man\":\""+Build.MANUFACTURER+"\",\"model\":\""+Build.MODEL+"\",\"brand\":\""+Build.BRAND+"\",\"rel\":\""+Build.VERSION.RELEASE+"\",\"and\":\""+Build.ID+"\",\"sig\":"+String.valueOf(sinal)+"}";
 		jsondata = TheUpCrypter.GenOData(jsondata);
 		Log.i("SignalTracker::APICall","Adicionando chamada de sinal");

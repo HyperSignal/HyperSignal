@@ -18,4 +18,16 @@
     <string name="facebooklogo">Logo do Facebook</string>
     <string name="stlogo">Logo do SignalTracker</string>
     <string name="loading">Carregando&#8230;</string>
+    <string name="firstconfigmsg">Esta é sua primeira configuração!\nVocê tem 4 opções para configurar o SignalTracker:</string>
+    <string name="firstconfig_lightmode">Energia é vida! Neste modo o SignalTracker conectará ao GPS apenas de 30 em 30 minutos, poupando sua bateria.</string>
+    <string name="firstconfig_fullmode">Todo poder a frente! Neste modo o SignalTracker ficará conectado constantemente ao GPS e armazenando todos os pontos. Isso poderá consumir bastante bateria!</string>
+    <string name="firstconfig_offlinemode">ST, sem internet pra você! Estes modos operam de maneira semelhante aos Full/Light mode normais, apenas com o detalhe de que o SignalTracker não acessará a internet em nenhum momento, sendo necessário enviar os dados manualmente pelo menu depois.</string>
+    <string name="firstconfig_choosemode">Escolha um dos métodos abaixo:</string>
+    <string name="lightmode">Modo Light</string>
+    <string name="fullmode">Modo Full</string>
+    <string name="lightmodeoff">Modo Light Offline</string>
+    <string name="fullmodeoff">Modo Full Offline</string>
+    <string name="offlinemode">Modo Offline</string>
+    <string name="configdone">Você terminou a configuração!</string>
+    <string name="startusing">Começar a usar</string>
 </resources>

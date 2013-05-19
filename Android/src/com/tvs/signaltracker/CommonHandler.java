@@ -91,6 +91,16 @@ public class CommonHandler {
 			Log.e("SignalTracker::DelSignalCallback", "Erro ao remover ("+id+"): "+e.getMessage());
 		}
 	}
+	public static void DelSignalCallback(STCallBack cb)	{
+		try	{
+			if(SignalCallbacks != null)	{
+				SignalCallbacks.remove(cb);
+				Log.i("SignalTracker::DelSignalCallback","Removendo callback");
+			}
+		}catch(Exception e)	{
+			Log.e("SignalTracker::DelSignalCallback", "Erro ao remover callback: "+e.getMessage());
+		}
+	}
 	public static void DelTowerCallback(int id)	{
 		try{
 			if(TowerCallbacks != null)	{
@@ -99,6 +109,17 @@ public class CommonHandler {
 			}
 		}catch(Exception e)	{
 			Log.e("SignalTracker::DelTowerCallback", "Erro ao remover ("+id+"): "+e.getMessage());
+		}
+			
+	}
+	public static void DelTowerCallback(STCallBack cb)	{
+		try{
+			if(TowerCallbacks != null)	{
+				TowerCallbacks.remove(cb);
+				Log.i("SignalTracker::DelTowerCallback","Removendo callback");
+			}
+		}catch(Exception e)	{
+			Log.e("SignalTracker::DelTowerCallback", "Erro ao remover callback: "+e.getMessage());
 		}
 			
 	}
@@ -114,6 +135,8 @@ public class CommonHandler {
 					break;
 				}
 			}
+			if(ServiceMode < 3)
+				HSAPI.AddSignal(lat,lon,Operator,signal);
 			if(add)	{
 				Signals.add(tmp);
 				Log.i("SignalTracker::AddSignal","Sinal Adicionado: ("+lat+","+lon+")["+signal+"]");
@@ -146,6 +169,8 @@ public class CommonHandler {
 					break;
 				}
 			}
+			if(ServiceMode < 3)
+				HSAPI.AddTower(lat,lon,Operator);
 			if(add)	{
 				Towers.add(tmp);
 				Log.i("SignalTracker::AddTower","Torre Adicionado: ("+lat+","+lon+")");

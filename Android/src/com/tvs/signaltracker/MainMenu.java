@@ -41,8 +41,8 @@ public class MainMenu extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				// TODO Parar serviço
-				
+				CommonHandler.ServiceRunning = false;
+				/*	Será que tem mais algo pra fazer aqui? */
 			}
 		});
 		main_configbutton.setOnClickListener(new View.OnClickListener() {
