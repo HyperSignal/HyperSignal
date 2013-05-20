@@ -52,13 +52,14 @@ def	ProcessPage(_SERVER):
 					Adicionar sinal
 				'''
 				try:
-					sigs = hsman.ProcessSignal(float(data["lat"]),float(data["lon"]),int(data["sig"]),data["op"].strip())
-					hsman.AddStatistics("apicall")
-					hsman.CommitToDB()
-					hsman.AddDevice(data["uid"].strip(), data["dev"].strip(), data["man"].strip(), data["model"].strip(), data["brand"].strip(), data["and"].strip(), data["rel"].strip(), data["sig"])
-					if data.has_key("uid"):
-						hsman.IncUserKM(data["uid"], sigs)
-					hsman.CommitToDB()
+					if  not data["op"].strip() == "":
+						sigs = hsman.ProcessSignal(float(data["lat"]),float(data["lon"]),int(data["sig"]),data["op"].strip())
+						hsman.AddStatistics("apicall")
+						hsman.CommitToDB()
+						hsman.AddDevice(data["uid"].strip(), data["dev"].strip(), data["man"].strip(), data["model"].strip(), data["brand"].strip(), data["and"].strip(), data["rel"].strip(), data["sig"])
+						if data.has_key("uid"):
+							hsman.IncUserKM(data["uid"], 1)
+						hsman.CommitToDB()
 				except Exception,e:
 					print e
 				output	=	tup.ODataEncrypt('{"result":"OK"}')
@@ -68,9 +69,10 @@ def	ProcessPage(_SERVER):
 					Adicionar Torre
 				'''
 				try:
-					hsman.AddAntenna(float(data["lat"]),float(data["lon"]),data["op"].strip())
-					hsman.AddStatistics("apicall")
-					hsman.CommitToDB()
+					if  not data["op"].strip() == "":
+						hsman.AddAntenna(float(data["lat"]),float(data["lon"]),data["op"].strip())
+						hsman.AddStatistics("apicall")
+						hsman.CommitToDB()
 				except Exception,e:
 					print e
 				output	=	tup.ODataEncrypt('{"result":"OK"}')
@@ -80,10 +82,11 @@ def	ProcessPage(_SERVER):
 					Adicionar ponto de sinal via TeskeTrackingSystem
 				'''
 				try:
-					hsman.ProcessSignal(float(data["lat"]),float(data["lon"]),int(data["sig"]),data["op"].strip())
-					hsman.AddStatistics("apicall")
-					hsman.AddStatistics("tts")
-					hsman.CommitToDB()
+					if  not data["op"].strip() == "":
+						hsman.ProcessSignal(float(data["lat"]),float(data["lon"]),int(data["sig"]),data["op"].strip())
+						hsman.AddStatistics("apicall")
+						hsman.AddStatistics("tts")
+						hsman.CommitToDB()
 				except Exception,e:
 					print e
 				output	=	tup.ODataEncrypt('{"result":"OK"}')
