@@ -50,7 +50,6 @@ public class SplashScreen extends Activity {
 
 		CommonHandler.InitDB(this);
         new LoadWorker().execute(this);
-		CommonHandler.InitDB(this);
     }
 
     private static class LoadWorker extends AsyncTask<Object, Object, Object>	{

@@ -54,16 +54,6 @@ public class DatabaseManager {
 		this.insTower.bindDouble(2, longitude);
 		return this.insTower.executeInsert();
 	}
-	public long setSignalState(int id, int state)	{
-		ContentValues values = new ContentValues();
-		values.put("state", state);		
-		return this.db.update("signals", values, "id=?", new String[] { Integer.toString(id) });
-	}
-	public long setTowerState(int id, int state)	{
-		ContentValues values = new ContentValues();
-		values.put("state", state);		
-		return this.db.update("towers", values, "id=?", new String[] { Integer.toString(id) });
-	}
 	public void CleanTowerSignal() {
 		this.db.delete("signals", null, null);
 		this.db.delete("towers", null, null);
@@ -94,12 +84,37 @@ public class DatabaseManager {
 		    	this.users = new ArrayList<DBUsers>();
 		}
 	}
+	public long UpdateSignal(double lat, double lon, short signal, short state)	{
+		if(state == 2)	{
+			return this.db.delete("signals", "latitude=? and longitude=? and sinal=?", new String[] { Double.toString(lat), Double.toString(lon), Integer.toString(signal) });
+		}else{
+			ContentValues values = new ContentValues();
+			values.put("state", state);
+			return this.db.update("signals", values, "latitude=? and longitude=? and sinal=?", new String[] { Double.toString(lat), Double.toString(lon), Integer.toString(signal) });	
+		}
+	}
+	public long UpdateTower(double lat, double lon, short state)	{
+		if(state == 2)	{
+			return this.db.delete("towers", "latitude=? and longitude=? ", new String[] { Double.toString(lat), Double.toString(lon)});
+		}else{
+			ContentValues values = new ContentValues();
+			values.put("state", state);
+			return this.db.update("signals", values, "latitude=? and longitude=?", new String[] { Double.toString(lat), Double.toString(lon) });	
+		}
+	}
+	public void CleanDoneSignals()	{
+		this.db.delete("signals", "state=?", new String[] { "2" });
+	}
+	public void CleanDoneTowers()	{
+		this.db.delete("towers", "state=?", new String[] { "2" });
+	}
 	public List<SignalObject> getSignals() {
 		List<SignalObject> table = new ArrayList<SignalObject>();
 		Cursor cursor = this.db.query("signals", new String[] { "latitude", "longitude", "sinal", "state"}, null, null, null, null, null, null);
 		if(cursor.moveToFirst()) {
 			do {
-				table.add(new SignalObject(cursor.getDouble(0),cursor.getDouble(1),(short) cursor.getShort(2),cursor.getShort(3)));
+				if(cursor.getShort(3)!=2)
+					table.add(new SignalObject(cursor.getDouble(0),cursor.getDouble(1),(short) cursor.getShort(2),(short) 0));
 			}while(cursor.moveToNext());
 		}
 		if(cursor != null && !cursor.isClosed()) {
@@ -113,7 +128,8 @@ public class DatabaseManager {
 		Cursor cursor = this.db.query("towers", new String[] { "latitude", "longitude", "state"}, null, null, null, null, null, null);
 		if(cursor.moveToFirst()) {
 			do {
-				table.add(new TowerObject(cursor.getDouble(0),cursor.getDouble(1),cursor.getShort(2)));
+				if(cursor.getShort(2) != 2)
+					table.add(new TowerObject(cursor.getDouble(0),cursor.getDouble(1),(short) 0));
 			}while(cursor.moveToNext());
 		}
 		if(cursor != null && !cursor.isClosed()) {

@@ -12,6 +12,7 @@ import java.security.KeyStore;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ClientConnectionManager;
@@ -106,10 +107,9 @@ public class Utils {
     		}catch(Exception e){
     			Log.e("getJSONfromURL", "Error converting result "+e.toString());
     		}
-    		result = TheUpCrypter.DecodeOData(result);
-    		Log.i("RESULT",":"+result);
     		//try parse the string to a JSON object
     		try{
+        			result = TheUpCrypter.DecodeOData(result);
     	        	jArray = new JSONObject(result);
     		}catch(JSONException e){
     			Log.e("SignalTracker::getJSONfromURL", "Error parsing data "+e.toString());
@@ -195,8 +195,7 @@ public class Utils {
 		
 		return op;
 	}
-	public static void TowerFetch(int cid2, int lac2, int mnc2, int mcc2, String APIKEY)
-			throws IOException {
+	public static void TowerFetch(int cid2, int lac2, int mnc2, int mcc2, String APIKEY) {
 		InputStream is = null;
 		ByteArrayOutputStream bos = null;
 		byte[] data = null;
@@ -219,24 +218,17 @@ public class Utils {
 			if (status != HttpURLConnection.HTTP_OK) {
 				switch (status) {
 				case HttpURLConnection.HTTP_NO_CONTENT:
-					throw new IOException("The cell could not be "
-							+ "found in the database");
+					Log.e("SignalTracker::TowerFecth","The cell could not be found in the database");
 				case HttpURLConnection.HTTP_BAD_REQUEST:
-					throw new IOException("Check if some parameter "
-							+ "is missing or misspelled");
+					Log.e("SignalTracker::TowerFecth","Check if some parameter is missing or misspelled");
 				case HttpURLConnection.HTTP_UNAUTHORIZED:
-					throw new IOException("Make sure the API key is "
-							+ "present and valid");
+					Log.e("SignalTracker::TowerFecth","Make sure the API key is present and valid");
 				case HttpURLConnection.HTTP_FORBIDDEN:
-					throw new IOException("You have reached the limit"
-							+ "for the number of requests per day. The "
-							+ "maximum number of requests per day is "
-							+ "currently 500.");
+					Log.e("SignalTracker::TowerFecth","You have reached the limit for the number of requests per day. The maximum number of requests per day is currently 500.");
 				case HttpURLConnection.HTTP_NOT_FOUND:
-					throw new IOException("The cell could not be found"
-							+ "in the database");
+					Log.e("SignalTracker::TowerFecth","The cell could not be found in the database");
 				default:
-					throw new IOException("HTTP response code: " + status);
+					Log.e("SignalTracker::TowerFecth","HTTP response code: " + status);
 				}
 			}
 			HttpEntity entity = response.getEntity();
@@ -261,8 +253,11 @@ public class Utils {
 		} catch (MalformedURLException e) {
 			Log.e("ERROR", e.getMessage());
 		} catch (IllegalArgumentException e) {
-			throw new IOException(
-					"URL was incorrect. Did you forget to set the API_KEY?");
+			Log.e("ERROR", e.getMessage());
+		} catch (ClientProtocolException e) {
+			Log.e("ERROR", e.getMessage());
+		} catch (IOException e) {
+			Log.e("ERROR", e.getMessage());;
 		} finally {
 			try {
 				if (bos != null)

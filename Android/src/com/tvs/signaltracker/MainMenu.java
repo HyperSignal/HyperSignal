@@ -51,7 +51,6 @@ public class MainMenu extends Activity {
 			@Override
 			public void onClick(View v) {
 				// TODO Abrir configurações
-				
 			}
 		});
 		main_exitbutton.setOnClickListener(new View.OnClickListener() {

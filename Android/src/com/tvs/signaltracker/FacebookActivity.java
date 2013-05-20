@@ -33,30 +33,37 @@ public class FacebookActivity extends Activity {
 		
 		/*	Checa se existe uma sessão inicializada, se sim, checa se as permissões estão corretas e também mostra os botões	*/
 		final Session session = Session.openActiveSessionFromCache(this);
-		if (session.isOpened()) {
-			Request.executeMeRequestAsync(session, new Request.GraphUserCallback() {
-				@Override
-				public void onCompleted(GraphUser user, Response response) {
-					ProgressBar prg	=	(ProgressBar) findViewById(R.id.fb_loadspin);
-					prg.setVisibility(View.INVISIBLE);
-					if (user != null) {
-						TextView welcome = (TextView) findViewById(R.id.fbauthorized);
-						welcome.setText("Olá " + user.getName() + ", \n Você autorizou o SignalTracker!");
-						CommonHandler.FacebookUID = user.getId();
-						CommonHandler.FacebookLocation = user.getLocation();
-						CommonHandler.FacebookName = user.getName();
-						CommonHandler.FacebookEmail = user.getProperty("email").toString();
-						CommonHandler.InitDB(FacebookActivity.this);
-						CommonHandler.dbman.setPreference("fbid", CommonHandler.FacebookUID);
-						CommonHandler.dbman.setPreference("fbname", CommonHandler.FacebookName);
-						HSAPI.AddUser(user.getUsername(), user.getName(), CommonHandler.FacebookEmail, CommonHandler.FacebookLocation.getCity(), CommonHandler.FacebookLocation.getCountry());	
-						CheckFBPerms(session);
-						fblogin.setVisibility(View.INVISIBLE);
-					}else
-						fblogin.setVisibility(View.VISIBLE);
-					fb_next.setVisibility(View.VISIBLE);
-				}
-			});
+		if(session != null)	{
+			if (session.isOpened()) {
+				Request.executeMeRequestAsync(session, new Request.GraphUserCallback() {
+					@Override
+					public void onCompleted(GraphUser user, Response response) {
+						ProgressBar prg	=	(ProgressBar) findViewById(R.id.fb_loadspin);
+						prg.setVisibility(View.INVISIBLE);
+						if (user != null) {
+							TextView welcome = (TextView) findViewById(R.id.fbauthorized);
+							welcome.setText("Olá " + user.getName() + ", \n Você autorizou o SignalTracker!");
+							CommonHandler.FacebookUID = user.getId();
+							CommonHandler.FacebookLocation = user.getLocation();
+							CommonHandler.FacebookName = user.getName();
+							CommonHandler.FacebookEmail = user.getProperty("email").toString();
+							CommonHandler.InitDB(FacebookActivity.this);
+							CommonHandler.dbman.setPreference("fbid", CommonHandler.FacebookUID);
+							CommonHandler.dbman.setPreference("fbname", CommonHandler.FacebookName);
+							HSAPI.AddUser(user.getUsername(), user.getName(), CommonHandler.FacebookEmail, CommonHandler.FacebookLocation.getCity(), CommonHandler.FacebookLocation.getCountry());	
+							CheckFBPerms(session);
+							fblogin.setVisibility(View.INVISIBLE);
+						}else
+							fblogin.setVisibility(View.VISIBLE);
+						fb_next.setVisibility(View.VISIBLE);
+					}
+				});
+			}
+		}else{
+			ProgressBar prg	=	(ProgressBar) findViewById(R.id.fb_loadspin);
+			prg.setVisibility(View.INVISIBLE);
+			fblogin.setVisibility(View.VISIBLE);
+			fb_next.setVisibility(View.VISIBLE);			
 		}
 		
 		/*	Função de Login do Facebook	- Mesmo que o acima*/

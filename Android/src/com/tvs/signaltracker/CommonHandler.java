@@ -5,17 +5,22 @@ import java.util.List;
 
 import com.facebook.model.GraphLocation;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.location.Location;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 
 public class CommonHandler {
 	/*	Constantes	*/
 	public static final String[] FB_permissions =	{	"publish_stream"	};	//	Permissões padrões do Facebook 
 													 
-	public static final String[] FB_read_perm	=	{	"email",			//	Permissões de Leitura no Face
+	public static final String[] FB_read_perm	=	{	"email",				//	Permissões de Leitura no Face
 														"photo_upload"	};
 
+	public static final int	MaxMapContent		=	50;							//	
+	
 	/*	Variáveis de funcionamento	*/
 	
 	public static DatabaseManager dbman;
@@ -60,6 +65,10 @@ public class CommonHandler {
 	}
 	public static void LoadLists()	{
 		if(dbman != null)	{
+			Log.i("SignalTracker::LoadLists","Limpando sinais já enviados.");
+			dbman.CleanDoneSignals();
+			Log.i("SignalTracker::LoadLists","Limpando torres já enviados.");
+			dbman.CleanDoneTowers();
 			Signals = dbman.getSignals();
 			Towers = dbman.getTowers();
 		}else
@@ -127,7 +136,57 @@ public class CommonHandler {
 		}
 			
 	}
-	
+	@SuppressLint("NewApi")
+	public static void DoResend()	{
+		int count = 0, rawcount = 0;
+		for(int i=0;i<Signals.size();i++)	{
+			SignalObject sig = Signals.get(i);
+			if(sig == null)
+				Log.i("ST","NULL ERROR");
+			if(sig.state == 0)	{
+				if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
+					new HSAPI.SendSignal().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sig);
+				} else {
+					new HSAPI.SendSignal().execute(sig);
+				}
+				count++;
+				rawcount++;
+			}else if (Signals.get(i).state == 1)
+				count++;
+			else if (Signals.get(i).state == 2 & CommonHandler.dbman != null)
+				CommonHandler.dbman.UpdateSignal(Signals.get(i).latitude, Signals.get(i).longitude, Signals.get(i).signal, (short) 2);
+				
+			if(count == 100)
+				break;
+		}
+		if(rawcount > 0)
+			Log.i("SignalTracker::DoResend","Reenviando "+rawcount+" sinais. ("+count+")");
+		
+		count = 0;
+		rawcount = 0;
+		for(int i=0;i<Towers.size();i++)	{
+			TowerObject tower = Towers.get(i);
+			if(tower.state == 0)	{
+				if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
+					new HSAPI.SendTower().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, tower);
+				} else {
+					new HSAPI.SendTower().execute(tower);
+				}
+				count++;
+				rawcount++;
+			}else if (Towers.get(i).state == 1)
+				count++;
+			else if (Towers.get(i).state == 2 & CommonHandler.dbman != null)
+				CommonHandler.dbman.UpdateTower(Towers.get(i).latitude,Towers.get(i).longitude, (short) 2);
+				
+			if(count == 100)
+				break;
+		}
+		if(rawcount > 0)
+			Log.i("SignalTracker::DoResend","Reenviando "+rawcount+" torres. ("+count+")");
+		
+	}
+	@SuppressLint("NewApi")
 	public static void AddSignal(double lat, double lon, short signal)	{
 		if(Signals != null)	{
 			SignalObject tmp	=	new SignalObject(lat,lon,signal);
@@ -139,8 +198,14 @@ public class CommonHandler {
 					break;
 				}
 			}
-			if(ServiceMode < 3)
-				HSAPI.AddSignal(lat,lon,Operator,signal);
+			if(ServiceMode < 3)	{
+				//HSAPI.AddSignal(lat,lon,Operator,signal);
+				if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
+					new HSAPI.SendSignal().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, tmp);
+				} else {
+					new HSAPI.SendSignal().execute(tmp);
+				}
+			}
 			if(add)	{
 				Signals.add(tmp);
 				dbman.insertSignal(lat, lon, signal);
@@ -165,6 +230,7 @@ public class CommonHandler {
 			Log.e("SignalTracker::AddSignal","Lista de Sinais é nula!");
 	}
 	
+	@SuppressLint("NewApi")
 	public static void AddTower(double lat, double lon)	{
 		if(Towers != null)	{
 			TowerObject tmp	=	new TowerObject(lat,lon);
@@ -175,8 +241,14 @@ public class CommonHandler {
 					break;
 				}
 			}
-			if(ServiceMode < 3)
-				HSAPI.AddTower(lat,lon,Operator);
+			if(ServiceMode < 3)	{
+				//HSAPI.AddTower(lat,lon,Operator);
+				if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
+					new HSAPI.SendTower().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, tmp);
+				} else {
+					new HSAPI.SendTower().execute(tmp);
+				}
+			}
 			if(add)	{
 				Towers.add(tmp);
 				dbman.insertTower(lat, lon);
