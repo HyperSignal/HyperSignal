@@ -57,13 +57,14 @@ public class HSAPI {
 			try {
 				tower = params[0];
 				tower.state = 1;
-				String jsondata = "{\"metodo\":\"addtorre\",\"op\":\""+CommonHandler.Towers+"\",\"lat\":"+String.valueOf(tower.latitude)+",\"lon\":"+String.valueOf(tower.longitude)+", \"uid\":\""+CommonHandler.FacebookUID+"\"}";
+				String jsondata = "{\"metodo\":\"addtorre\",\"op\":\""+CommonHandler.Operator+"\",\"lat\":"+String.valueOf(tower.latitude)+",\"lon\":"+String.valueOf(tower.longitude)+", \"uid\":\""+CommonHandler.FacebookUID+"\"}";
 				jsondata = TheUpCrypter.GenOData(jsondata);
 				JSONObject out = Utils.getODataJSONfromURL(baseURL+"?odata="+URLEncoder.encode(jsondata, "UTF-8"));
 				if(out != null)	{
 					if(out.getString("result").indexOf("OK") > -1)	{
 						//Log.i("SignalTracker::SendTower","OK");
 						tower.state = 2;
+						CommonHandler.dbman.deleteTower(tower.id);
 					}else{
 						Log.e("SignalTracker::SendTower","Error: "+out.getString("result"));
 						tower.state = 0;
@@ -72,7 +73,8 @@ public class HSAPI {
 					tower.state = 0;
 					Log.e("SignalTracker::SendTower","No Output");
 				}
-				CommonHandler.dbman.UpdateTower(tower.latitude, tower.longitude, tower.state);
+				if(tower.state != 2)
+					CommonHandler.dbman.UpdateTower(tower.latitude, tower.longitude, tower.state);
 			} catch (Exception e) {
 				Log.e("SignalTracker::SendTower","Error: "+e.getMessage());
 				tower.state = 0;
@@ -102,6 +104,7 @@ public class HSAPI {
 					if(out.getString("result").indexOf("OK") > -1)	{
 						//Log.i("SignalTracker::SendSignal","OK");
 						signal.state = 2;
+						CommonHandler.dbman.deleteSignal(signal.id);
 					}else{
 						Log.e("SignalTracker::SendSignal","Error: "+out.getString("result"));
 						signal.state = 0;
@@ -110,7 +113,8 @@ public class HSAPI {
 					signal.state = 0;
 					Log.e("SignalTracker::SendSignal","No Output");
 				}
-				CommonHandler.dbman.UpdateSignal(signal.latitude, signal.longitude, signal.signal, signal.state);
+				if(signal.state != 2)
+					CommonHandler.dbman.UpdateSignal(signal.latitude, signal.longitude, signal.signal, signal.state);
 			} catch (Exception e) {
 				Log.e("SignalTracker::SendSignal","Error: "+e.getMessage());
 				signal.state = 0;

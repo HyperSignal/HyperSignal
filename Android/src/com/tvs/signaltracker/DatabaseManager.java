@@ -42,6 +42,12 @@ public class DatabaseManager {
 			}
 		}
 	}
+	public void deleteSignal(int id)	{ 
+		this.db.delete("signals", "id=?", new String[] {Integer.toString(id) } );
+	}
+	public void deleteTower(int id)	{ 
+		this.db.delete("towers", "id=?", new String[] {Integer.toString(id) } );
+	}
 	public long insertSignal (Double latitude, Double longitude, int sinal) {
 		this.insSignal.bindDouble(1, latitude);
 		this.insSignal.bindDouble(2, longitude);
@@ -110,11 +116,14 @@ public class DatabaseManager {
 	}
 	public List<SignalObject> getSignals() {
 		List<SignalObject> table = new ArrayList<SignalObject>();
-		Cursor cursor = this.db.query("signals", new String[] { "latitude", "longitude", "sinal", "state"}, null, null, null, null, null, null);
+		Cursor cursor = this.db.query("signals", new String[] { "latitude", "longitude", "sinal", "state", "id"}, null, null, null, null, null, null);
 		if(cursor.moveToFirst()) {
 			do {
-				if(cursor.getShort(3)!=2)
-					table.add(new SignalObject(cursor.getDouble(0),cursor.getDouble(1),(short) cursor.getShort(2),(short) 0));
+				if(cursor.getShort(3)!=2)	{
+					SignalObject tmp = new SignalObject(cursor.getDouble(0),cursor.getDouble(1),(short) cursor.getShort(2),(short) 0);
+					tmp.id = cursor.getInt(4);
+					table.add(tmp);
+				}
 			}while(cursor.moveToNext());
 		}
 		if(cursor != null && !cursor.isClosed()) {
@@ -125,11 +134,15 @@ public class DatabaseManager {
 	
 	public List<TowerObject> getTowers() {
 		List<TowerObject> table = new ArrayList<TowerObject>();
-		Cursor cursor = this.db.query("towers", new String[] { "latitude", "longitude", "state"}, null, null, null, null, null, null);
+		Cursor cursor = this.db.query("towers", new String[] {"latitude", "longitude", "state", "id"}, null, null, null, null, null, null);
 		if(cursor.moveToFirst()) {
 			do {
-				if(cursor.getShort(2) != 2)
-					table.add(new TowerObject(cursor.getDouble(0),cursor.getDouble(1),(short) 0));
+				if(cursor.getShort(2) != 2)	{
+					TowerObject tmp = new TowerObject(cursor.getDouble(0),cursor.getDouble(1),(short) 0);
+					tmp.id = cursor.getInt(3);
+					table.add(tmp);
+				}
+					
 			}while(cursor.moveToNext());
 		}
 		if(cursor != null && !cursor.isClosed()) {

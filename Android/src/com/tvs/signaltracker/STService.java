@@ -161,6 +161,7 @@ public class STService extends Service{
 				RunCheckHandler.sendEmptyMessage(0);
 			}
 		};
+		InitForeground();
 	}
 	@Override
 	public void onDestroy() {
@@ -278,6 +279,7 @@ public class STService extends Service{
 		}
 		Toast.makeText(getApplicationContext(), "Serviço Signal Tracker Parado!", Toast.LENGTH_LONG).show();
 		LocalRunning = false;
+		showServiceNotificationIdle();
 	}
 	
 	private void StartWorks()	{
@@ -356,7 +358,46 @@ public class STService extends Service{
     	    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     	mNotificationManager.notify(NOTIFICATION, mBuilder.build());   	
 
-    }
+    }	
+    private void showServiceNotificationIdle() {
+    	NotificationCompat.Builder mBuilder =
+    	        new NotificationCompat.Builder(this)
+    	        .setSmallIcon(R.drawable.ic_stat_service)
+    	        .setContentTitle(TAG)
+    	        .setContentText("Nenhuma tarefa a fazer.");
+    	Intent resultIntent = new Intent(this, SplashScreen.class);
+    	TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+    	stackBuilder.addParentStack(SplashScreen.class);
+    	stackBuilder.addNextIntent(resultIntent);
+    	PendingIntent resultPendingIntent =
+    	        stackBuilder.getPendingIntent(
+    	            0,
+    	            PendingIntent.FLAG_UPDATE_CURRENT
+    	        );
+    	mBuilder.setContentIntent(resultPendingIntent);
+    	NotificationManager mNotificationManager =
+    	    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    	mNotificationManager.notify(NOTIFICATION, mBuilder.build());   	
+
+    }	
+    private void InitForeground() {
+    	NotificationCompat.Builder mBuilder =
+    	        new NotificationCompat.Builder(this)
+    	        .setSmallIcon(R.drawable.ic_stat_service)
+    	        .setContentTitle(TAG)
+    	        .setContentText("Nenhuma tarefa a fazer.");
+    	Intent resultIntent = new Intent(this, MainScreen.class);
+    	TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+    	stackBuilder.addParentStack(MainScreen.class);
+    	stackBuilder.addNextIntent(resultIntent);
+    	PendingIntent resultPendingIntent =
+    	        stackBuilder.getPendingIntent(
+    	            0,
+    	            PendingIntent.FLAG_UPDATE_CURRENT
+    	        );
+    	mBuilder.setContentIntent(resultPendingIntent);
+		startForeground(NOTIFICATION, mBuilder.build());
+	}
     
     /*	Classes auxiliares	*/
 	private class MyPhoneStateListener extends PhoneStateListener {

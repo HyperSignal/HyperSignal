@@ -4,6 +4,7 @@ public class SignalObject {
 	public double latitude,longitude;
 	public short signal;
 	public short state;
+	public int id;
 	
 	public SignalObject(double latitude, double longitude, short signal)	{
 		this.latitude = latitude;

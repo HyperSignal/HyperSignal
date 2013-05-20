@@ -13,14 +13,10 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -77,18 +73,7 @@ public class MainScreen  extends FragmentActivity {
 		UpdateUIHandler = new Handler()	{
 			@Override
 			public void handleMessage(Message msg)	{
-				/*
-				try	{
-
-					LatLngBounds.Builder boundaryBuilder = new LatLngBounds.Builder();
-					for(int i=0;i<CommonHandler.Signals.size();i++)
-						boundaryBuilder.include(new LatLng(CommonHandler.Signals.get(i).latitude, CommonHandler.Signals.get(i).longitude));
-					
-					LatLngBounds bounds = boundaryBuilder.build();
-					map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 50));
-				}catch(Exception e) {}
-				*/
-				collectedData.setText("Sinais: "+(CommonHandler.Signals.size()/10f)+" km Torres: "+CommonHandler.Towers.size());
+				collectedData.setText("Sinais: "+(CommonHandler.Signals.size()/10f)+" km Torres: "+CommonHandler.Towers.size()+" - ("+CommonHandler.Operator+")");
 				if(Utils.isBetterLocation(CommonHandler.GPSLocation, CommonHandler.NetLocation) && CommonHandler.GPSLocation != null)
 					map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(CommonHandler.GPSLocation.getLatitude(), CommonHandler.GPSLocation.getLongitude()),16));
 				else if (CommonHandler.NetLocation != null)
@@ -182,8 +167,8 @@ public class MainScreen  extends FragmentActivity {
 		UpdateTimer = new Timer();
 		UpdateTimer.schedule(UpdateUI, 1000);
 		CommonHandler.ServiceRunning = true;
-
 	}
+
 	private void setUpMap() {
 		signals = new ArrayList<GroundOverlay>();
 		towers = new ArrayList<GroundOverlay>();
