@@ -26,8 +26,10 @@ public class CommonHandler {
 	public static DatabaseManager dbman;
 	public static Boolean	PreferencesLoaded	=	false;			//	Se as preferências foram carregadas
 	public static Boolean	ServiceRunning		=	false;			//	Se o serviço está rodando
+	public static Boolean	KillService			=	false;			//	Use para matar o serviço
 	public static Boolean	GPSFix				=	false;			//	Se o GPS está com uma posição
 	public static Boolean	GPSEnabled			=	false;			//	Se o GPS está ativado
+	public static Boolean	WifiConnected		=	false;			//	Se o Wifi está conectado
 	
 	public static Location 	GPSLocation;							//	Localização pelo GPS
 	public static Location 	NetLocation;							//	Localização pela Rede
@@ -45,6 +47,7 @@ public class CommonHandler {
 	/*	Preferências	*/
 	public static Boolean Configured 			= 	false;			//	Se o cliente foi configurado
 	public static Boolean WakeLock				=	false;			//	A tela permanecerá ativa até fechar o aplicativo
+	public static Boolean WifiSend				=	false;			//	Somente enviar com WiFi Ligado
 	public static String FacebookUID			= 	"0";			//	UID do Facebook, caso logado
 	public static String FacebookName			=	"Anônimo";		//	Nome no Facebook, caso logado
 	public static String FacebookEmail			=	"";				//	Email no Facebook, caso logado
@@ -55,6 +58,7 @@ public class CommonHandler {
 	public static int	MinimumTime				=	0;				//	Tempo mínimo entre procuras do GPS em Segundos
 	public static int 	LightModeDelayTime		=	30;				//	Tempo de espera do modo Light
 	public static GraphLocation FacebookLocation;					//	Localização no Facebook, caso logado
+
 	
 	/*	Métodos	*/
 	public static void InitLists()	{
@@ -138,53 +142,54 @@ public class CommonHandler {
 	}
 	@SuppressLint("NewApi")
 	public static void DoResend()	{
-		int count = 0, rawcount = 0;
-		for(int i=0;i<Signals.size();i++)	{
-			SignalObject sig = Signals.get(i);
-			if(sig == null)
-				Log.i("ST","NULL ERROR");
-			if(sig.state == 0)	{
-				if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
-					new HSAPI.SendSignal().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sig);
-				} else {
-					new HSAPI.SendSignal().execute(sig);
-				}
-				count++;
-				rawcount++;
-			}else if (Signals.get(i).state == 1)
-				count++;
-			else if (Signals.get(i).state == 2 & CommonHandler.dbman != null)
-				CommonHandler.dbman.UpdateSignal(Signals.get(i).latitude, Signals.get(i).longitude, Signals.get(i).signal, (short) 2);
-				
-			if(count == 100)
-				break;
+		if( (WifiSend & WifiConnected) | !WifiSend)	{
+			int count = 0, rawcount = 0;
+			for(int i=0;i<Signals.size();i++)	{
+				SignalObject sig = Signals.get(i);
+				if(sig == null)
+					Log.i("ST","NULL ERROR");
+				if(sig.state == 0)	{
+					if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
+						new HSAPI.SendSignal().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sig);
+					} else {
+						new HSAPI.SendSignal().execute(sig);
+					}
+					count++;
+					rawcount++;
+				}else if (Signals.get(i).state == 1)
+					count++;
+				else if (Signals.get(i).state == 2 & CommonHandler.dbman != null)
+					CommonHandler.dbman.UpdateSignal(Signals.get(i).latitude, Signals.get(i).longitude, Signals.get(i).signal, (short) 2);
+					
+				if(count == 10)
+					break;
+			}
+			if(rawcount > 0)
+				Log.i("SignalTracker::DoResend","Reenviando "+rawcount+" sinais. ("+count+")");
+			
+			count = 0;
+			rawcount = 0;
+			for(int i=0;i<Towers.size();i++)	{
+				TowerObject tower = Towers.get(i);
+				if(tower.state == 0)	{
+					if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
+						new HSAPI.SendTower().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, tower);
+					} else {
+						new HSAPI.SendTower().execute(tower);
+					}
+					count++;
+					rawcount++;
+				}else if (Towers.get(i).state == 1)
+					count++;
+				else if (Towers.get(i).state == 2 & CommonHandler.dbman != null)
+					CommonHandler.dbman.UpdateTower(Towers.get(i).latitude,Towers.get(i).longitude, (short) 2);
+					
+				if(count == 10)
+					break;
+			}
+			if(rawcount > 0)
+				Log.i("SignalTracker::DoResend","Reenviando "+rawcount+" torres. ("+count+")");
 		}
-		if(rawcount > 0)
-			Log.i("SignalTracker::DoResend","Reenviando "+rawcount+" sinais. ("+count+")");
-		
-		count = 0;
-		rawcount = 0;
-		for(int i=0;i<Towers.size();i++)	{
-			TowerObject tower = Towers.get(i);
-			if(tower.state == 0)	{
-				if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
-					new HSAPI.SendTower().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, tower);
-				} else {
-					new HSAPI.SendTower().execute(tower);
-				}
-				count++;
-				rawcount++;
-			}else if (Towers.get(i).state == 1)
-				count++;
-			else if (Towers.get(i).state == 2 & CommonHandler.dbman != null)
-				CommonHandler.dbman.UpdateTower(Towers.get(i).latitude,Towers.get(i).longitude, (short) 2);
-				
-			if(count == 100)
-				break;
-		}
-		if(rawcount > 0)
-			Log.i("SignalTracker::DoResend","Reenviando "+rawcount+" torres. ("+count+")");
-		
 	}
 	@SuppressLint("NewApi")
 	public static void AddSignal(double lat, double lon, short signal)	{
@@ -192,7 +197,7 @@ public class CommonHandler {
 			SignalObject tmp	=	new SignalObject(lat,lon,signal);
 			boolean add = true;
 			for(int i=0; i<Signals.size();i++)	{
-				if(tmp.distance(Signals.get(i)) < MinimumDistance)	{
+				if(tmp.distance(Signals.get(i)) < MinimumDistance-(MinimumDistance/5f))	{
 					add = false;
 					Signals.get(i).signal = (short) ((Signals.get(i).signal + signal) / 2);
 					break;
@@ -200,10 +205,13 @@ public class CommonHandler {
 			}
 			if(ServiceMode < 3)	{
 				//HSAPI.AddSignal(lat,lon,Operator,signal);
-				if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
-					new HSAPI.SendSignal().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, tmp);
-				} else {
-					new HSAPI.SendSignal().execute(tmp);
+
+				if((WifiSend & WifiConnected) | !WifiSend)	{
+					if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
+						new HSAPI.SendSignal().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, tmp);
+					} else {
+						new HSAPI.SendSignal().execute(tmp);
+					}
 				}
 			}
 			if(add)	{
@@ -236,17 +244,25 @@ public class CommonHandler {
 			TowerObject tmp	=	new TowerObject(lat,lon);
 			boolean add = true;
 			for(int i=0; i<Towers.size();i++)	{
-				if(tmp.distance(Towers.get(i)) < MinimumDistance)	{
+				if(tmp.distance(Towers.get(i)) < MinimumDistance-(MinimumDistance/5f))	{
 					add = false;
 					break;
 				}
 			}
 			if(ServiceMode < 3)	{
 				//HSAPI.AddTower(lat,lon,Operator);
-				if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
-					new HSAPI.SendTower().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, tmp);
-				} else {
-					new HSAPI.SendTower().execute(tmp);
+				if((WifiSend & WifiConnected) | !WifiSend)	{
+					if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
+						new HSAPI.SendTower().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, tmp);
+					} else {
+						new HSAPI.SendTower().execute(tmp);
+					}
+				}else if(!WifiSend){
+					if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
+						new HSAPI.SendTower().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, tmp);
+					} else {
+						new HSAPI.SendTower().execute(tmp);
+					}
 				}
 			}
 			if(add)	{
@@ -287,17 +303,21 @@ public class CommonHandler {
 			
 			String fbid				=	dbman.getPreference("fbid");
 			String fbname			=	dbman.getPreference("fbname");	
+			String fbemail			=	dbman.getPreference("fbemail");	
 			String configured		=	dbman.getPreference("configured");
 			String servicemode		=	dbman.getPreference("servicemode");
 			String mindistance		=	dbman.getPreference("mindistance");
 			String mintime			=	dbman.getPreference("mintime");
 			String wakelock			=	dbman.getPreference("wakelock");
 			String lightmodet		=	dbman.getPreference("lightmodedelay");
+			String wifisend			=	dbman.getPreference("wifisend");
 			
 			if(fbid != null)
 				FacebookUID			=	fbid;
 			if(fbname != null)
 				FacebookName		=	fbname;
+			if(fbemail != null)
+				FacebookEmail		=	fbemail;
 			if(configured != null)
 				Configured			=	(configured.contains("True")?true:false);
 			if(servicemode != null)
@@ -310,6 +330,8 @@ public class CommonHandler {
 				WakeLock			=	(wakelock.contains("True")?true:false);
 			if(lightmodet != null)
 				LightModeDelayTime	=	Integer.parseInt(lightmodet);
+			if(wifisend != null)
+				WifiSend			=	(wifisend.contains("True")?true:false);
 			
 			PreferencesLoaded = true;
 			Log.i("SignalTracker::LoadPreferences", "Preferências carregadas.");

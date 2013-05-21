@@ -1,18 +1,24 @@
 package com.tvs.signaltracker;
 
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.TileOverlay;
+import com.google.android.gms.maps.model.TileOverlayOptions;
+import com.google.android.gms.maps.model.TileProvider;
+import com.google.android.gms.maps.model.UrlTileProvider;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -22,9 +28,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 public class MainScreen  extends FragmentActivity {
 	
@@ -33,33 +41,68 @@ public class MainScreen  extends FragmentActivity {
 	public static STCallBack TowerCallBack;
 	
 	//	Objectos Gráficos
-	public MapView mapView;
 	public GoogleMap map;
 	public ProgressBar signalBar;
 	public TextView collectedData, connectionInfo, runMode, signalPercent;
+	public ToggleButton tileView, controlLock;
 	public List<GroundOverlay> signals;
 	public List<GroundOverlay> towers;
+	public TileOverlay STOverlay;
 	
-	//Tasks
+	//	Tasks
 	public Timer	 UpdateTimer;
 	public TimerTask UpdateUI;
 
-	//Handlers
+	//	Handlers
 	private Handler AddSignal;
 	private Handler AddTower;
 	private Handler UpdateUIHandler;
+	
+	//	Booleans
+	private boolean controlLocked, tileViewing;
 	
 	@SuppressLint("HandlerLeak")
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.mainscreen);
 
+		controlLocked = true;
+		tileViewing = false;
+		
 		signalBar		=	(ProgressBar)	findViewById(R.id.signalBar);
 		collectedData	=	(TextView)		findViewById(R.id.collectedData);
 		connectionInfo	=	(TextView)		findViewById(R.id.connectionInfo);
 		runMode			=	(TextView)		findViewById(R.id.runMode);
 		signalPercent	=	(TextView)		findViewById(R.id.signalPercent);
-
+		tileView		=	(ToggleButton)	findViewById(R.id.tileViewBtn);
+		controlLock		=	(ToggleButton)	findViewById(R.id.controlLockBtn);
+		
+		controlLock.setOnCheckedChangeListener( new OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView,
+					boolean isChecked) {
+				controlLocked = !isChecked;
+				if(map != null)	{
+		            map.getUiSettings().setScrollGesturesEnabled(!controlLocked);
+		            map.getUiSettings().setZoomGesturesEnabled(!controlLocked);
+					if(STOverlay != null)
+						STOverlay.setVisible(tileViewing);
+				}
+				
+			}
+		});
+		
+		tileView.setOnCheckedChangeListener( new OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView,
+					boolean isChecked) {
+				tileViewing = isChecked;
+				if(STOverlay != null)
+					STOverlay.setVisible(tileViewing);
+				
+			}
+		});
+		
 		setUpMap();
 
 		switch(CommonHandler.ServiceMode)	{
@@ -73,12 +116,14 @@ public class MainScreen  extends FragmentActivity {
 		UpdateUIHandler = new Handler()	{
 			@Override
 			public void handleMessage(Message msg)	{
-				collectedData.setText("Sinais: "+(CommonHandler.Signals.size()/10f)+" km Torres: "+CommonHandler.Towers.size()+" - ("+CommonHandler.Operator+")");
-				if(Utils.isBetterLocation(CommonHandler.GPSLocation, CommonHandler.NetLocation) && CommonHandler.GPSLocation != null)
-					map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(CommonHandler.GPSLocation.getLatitude(), CommonHandler.GPSLocation.getLongitude()),16));
-				else if (CommonHandler.NetLocation != null)
-					map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(CommonHandler.NetLocation.getLatitude(), CommonHandler.NetLocation.getLongitude()),16));
-				
+				if(CommonHandler.Signals != null & CommonHandler.Towers != null)
+					collectedData.setText("Sinais: "+(CommonHandler.Signals.size()/10f)+" km Torres: "+CommonHandler.Towers.size()+" - ("+CommonHandler.Operator+")");
+				if(controlLocked)	{
+					if(Utils.isBetterLocation(CommonHandler.GPSLocation, CommonHandler.NetLocation) && CommonHandler.GPSLocation != null)
+						map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(CommonHandler.GPSLocation.getLatitude(), CommonHandler.GPSLocation.getLongitude()),16));
+					else if (CommonHandler.NetLocation != null)
+						map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(CommonHandler.NetLocation.getLatitude(), CommonHandler.NetLocation.getLongitude()),16));
+				}
 				if(Utils.isBetterLocation(CommonHandler.GPSLocation, CommonHandler.NetLocation))
 					connectionInfo.setText("Conectado via GPS - "+CommonHandler.NumSattelites+" satélites conectados.");
 				else
@@ -119,10 +164,7 @@ public class MainScreen  extends FragmentActivity {
 				towers.add(g);
             }
 		};
-		if(CommonHandler.ServiceMode > 2)	{
-			((RelativeLayout) mapView.getParent()).removeView(mapView);
-			map = null;
-		}else{
+		if(CommonHandler.ServiceMode <3 )	{
 			SignalCallBack = new STCallBack()	{
 
 				@Override
@@ -180,13 +222,13 @@ public class MainScreen  extends FragmentActivity {
 	                startActivity(MainMenuIntent);
 	                finish();
 	    		}
-	            map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+	            map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.seemap))
 	                    .getMap();
 	            map.setMyLocationEnabled(false);
-	            map.getUiSettings().setScrollGesturesEnabled(false);
-	            map.getUiSettings().setCompassEnabled(false);
+	            map.getUiSettings().setScrollGesturesEnabled(!controlLocked);
+	            map.getUiSettings().setZoomGesturesEnabled(!controlLocked);
 	            map.getUiSettings().setZoomControlsEnabled(false);
-	            map.getUiSettings().setZoomGesturesEnabled(false);
+	            map.getUiSettings().setCompassEnabled(false);
 	            int minSig = (CommonHandler.Signals.size()-CommonHandler.MaxMapContent)>-1?CommonHandler.Signals.size()-CommonHandler.MaxMapContent:0;
 	            int minTow = (CommonHandler.Towers.size()-CommonHandler.MaxMapContent)>-1?CommonHandler.Towers.size()-CommonHandler.MaxMapContent:0;
 	    		for(int i=CommonHandler.Signals.size()-1;i>minSig;i--)	{
@@ -204,6 +246,22 @@ public class MainScreen  extends FragmentActivity {
 	    	        .position(new LatLng(sig.latitude, sig.longitude), 100f)); 
 	    			towers.add(g);
 	    		}
+	            TileProvider tileProvider = new UrlTileProvider(256, 256) {
+	                @Override
+	                public synchronized URL getTileUrl(int x, int y, int zoom) {
+	                    URL url = null;
+	                    try {
+		                    String s = String.format(Locale.US, HSAPI.TILES_SYNTAX , URLEncoder.encode(CommonHandler.Operator, "UTF-8"), zoom, x, y);
+	                        url = new URL(s);
+	                    } catch (Exception e) {
+	                        throw new AssertionError(e);
+	                    }
+	                    return url;
+	                }
+	            };
+
+	            STOverlay = map.addTileOverlay(new TileOverlayOptions().tileProvider(tileProvider));
+				STOverlay.setVisible(tileViewing);
 	        }
 		}catch(Exception e)	{
 			Log.e("SignalTracker::setUpMap", "Erro: "+e.getMessage());
@@ -216,11 +274,6 @@ public class MainScreen  extends FragmentActivity {
     protected void onResume() {
         super.onResume();
         setUpMap();
-    }
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-        mapView.onLowMemory();
     }
 	@Override
 	protected void onDestroy()	{

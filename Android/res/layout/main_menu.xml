@@ -11,6 +11,7 @@
 
     <Button
         android:id="@+id/main_exitbutton"
+        style="@style/AppBaseTheme"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -20,6 +21,7 @@
 
     <Button
         android:id="@+id/main_configbutton"
+        style="@style/AppBaseTheme"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/main_exitbutton"
@@ -29,6 +31,7 @@
 
     <Button
         android:id="@+id/main_stopbutton"
+        style="@style/AppBaseTheme"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/main_configbutton"
@@ -44,25 +47,36 @@
         android:layout_centerHorizontal="true"
         android:text="@string/welcome" />
 
-    <ImageView
-        android:id="@+id/imageView1"
-        android:layout_width="wrap_content"
-        android:layout_height="200dp"
-        android:layout_above="@+id/main_startbutton"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/fbauthorized"
-        android:contentDescription="@string/stlogo"
-        android:scaleType="centerInside"
-        android:src="@drawable/logo_400x400" />
-
     <Button
         android:id="@+id/main_startbutton"
+        style="@style/AppBaseTheme"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/main_stopbutton"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:text="@string/start" />
+
+    <Button
+        android:id="@+id/main_seemap"
+        style="@style/AppBaseTheme"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/main_startbutton"
+        android:layout_alignLeft="@+id/main_startbutton"
+        android:layout_alignRight="@+id/main_startbutton"
+        android:text="@string/seemap" />
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="wrap_content"
+        android:layout_height="200dp"
+        android:layout_above="@+id/main_seemap"
+        android:layout_alignLeft="@+id/main_startbutton"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/fbauthorized"
+        android:contentDescription="@string/stlogo"
+        android:scaleType="centerInside"
+        android:src="@drawable/logo_400x400" />
 
 </RelativeLayout>

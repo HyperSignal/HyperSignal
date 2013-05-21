@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 
@@ -15,6 +14,7 @@ public class MainMenu extends Activity {
 	Button	main_stopbutton;
 	Button	main_configbutton;
 	Button	main_exitbutton;
+	Button	main_seemap;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +24,7 @@ public class MainMenu extends Activity {
 		main_stopbutton		=	(Button) findViewById(R.id.main_stopbutton);
 		main_configbutton	=	(Button) findViewById(R.id.main_configbutton);
 		main_exitbutton		=	(Button) findViewById(R.id.main_exitbutton);
+		main_seemap			=	(Button) findViewById(R.id.main_seemap);
 		
 		main_startbutton.setOnClickListener(new View.OnClickListener() {
 			
@@ -50,7 +51,13 @@ public class MainMenu extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				// TODO Abrir configurações
+				if(CommonHandler.Configured)	{
+	                Intent intent = new Intent(v.getContext(), Settings.class);
+	                startActivity(intent);		
+				}else{
+	                Intent intent = new Intent(v.getContext(), FacebookActivity.class);
+	                startActivity(intent);					
+				}
 			}
 		});
 		main_exitbutton.setOnClickListener(new View.OnClickListener() {
@@ -60,15 +67,22 @@ public class MainMenu extends Activity {
 				finish();
 			}
 		});
-		Log.i("SignalTracker","Service Mode: "+CommonHandler.ServiceMode);
+		main_seemap.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+                Intent intent = new Intent(v.getContext(), SeeMap.class);
+                startActivity(intent);
+			}
+		});
 	}
-
+	/*
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main_menu, menu);
 		return true;
-	}
+	}*/
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 	  super.onActivityResult(requestCode, resultCode, data);

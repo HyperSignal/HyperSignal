@@ -3,7 +3,6 @@
 
     <string name="app_name">Signal Tracker</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
     <string name="welcome">Bem-vindo ao Signal Tracker!</string>
     <string name="start">Iniciar</string>
     <string name="stop">Parar</string>
@@ -30,4 +29,33 @@
     <string name="offlinemode">Modo Offline</string>
     <string name="configdone">Você terminou a configuração!</string>
     <string name="startusing">Começar a usar</string>
+    <string name="seemapsignal">Cobertura</string>
+    <string name="lockedcontrol">Controle Travado</string>
+    <string name="unlockedcontrol">Controle Destravado</string>
+    <string name="enabled">Ativo</string>
+    <string name="disabled">Inativo</string>
+    <string name="control">Controle</string>
+    <string name="o100percent">100%</string>
+    <string name="seemap">Ver Cobertura</string>
+    <string name="mapnotice">Estes são os dados já processados pelo HyperSignal para a sua operadora.</string>
+    <string name="generalconfig">Configurações Gerais</string>
+    <string name="fbconfig">Configurações do Facebook</string>
+    <string name="servicemode">Modo de Serviço</string>
+    <string-array name="service_modes">
+        <item>Light Mode</item>
+        <item>Full Mode</item>
+        <item>Light Mode Offline</item>
+        <item>Fullmode Offline</item>
+    </string-array>
+        <string name="mindistance">Distância Mínima entre pontos</string>
+        <string name="meters100">100 m</string>
+        <string name="mintime">Tempo mínimo de procura</string>
+        <string name="zeromiliseconds">0 ms</string>
+        <string name="lightmodetime">Intervalo de Envio (LightMode)</string>
+        <string name="minutes30">30 m</string>
+        <string name="wifisend">Enviar sinais apenas quando conectado no WiFi</string>
+        <string name="connectedwith">Conectado como:</string>
+        <string name="notconnected">Não Conectado</string>
+        <string name="savesettings">Salvar</string>
+        <string name="cancel">Cancelar</string>
 </resources>

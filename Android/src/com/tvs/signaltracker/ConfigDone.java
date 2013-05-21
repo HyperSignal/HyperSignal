@@ -17,6 +17,7 @@ public class ConfigDone extends Activity {
 			public void onClick(View v) {
                 Intent intent = new Intent(v.getContext(), MainScreen.class);
                 startActivity(intent);
+                CommonHandler.Configured = true;
 			}
 		});
 	}

@@ -11,7 +11,9 @@ import android.os.Build;
 import android.util.Log;
 
 public class HSAPI {
-	public static String baseURL	=	"http://server-b02.tvssite.ws:81/hsapi/";
+	public static final String baseURL	=	"http://server-b02.tvssite.ws:81/hsapi/";
+    public static final String TILES_SYNTAX = baseURL+"?operadora=%s&tile=%d-%d-%d";
+
 	/**
 	 * Faz a chamada para API em modo assíncrono
 	 * @param {String} params
