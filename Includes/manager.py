@@ -49,7 +49,7 @@ class	HyperSignalManager:
 	con				=	None
 
 	def ConnectDB(self):
-		elf.con = MySQLdb.connect(config.MYHOST,config.MYUSER,config.MYPASS)
+		self.con = MySQLdb.connect(config.MYHOST,config.MYUSER,config.MYPASS)
 		self.con.select_db(config.MYDB)
 
 	def DisconnectDB(self):
