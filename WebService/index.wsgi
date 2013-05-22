@@ -17,6 +17,8 @@ if path not in sys.path:
 	sys.path.append("/var/www/hypersignal/WebServices")
 	sys.path.append("/var/www/hypersignal/Includes")
 
+os.environ['PYTHON_EGG_CACHE'] = '/var/www/hypersignal/.python-egg'
+
 #print "Path: %s" % sys.path
 
 import tool, manager, theupcrypter, config

@@ -45,15 +45,12 @@ def OperatorCorrect(operator):
 	return operator
 
 class	HyperSignalManager:
-	MYHOST			=	"localhost"
-	MYUSER			=	"root"
-	MYPASS			=	"***REMOVED***"
-	MYDB			=	"hypersignal"
+
 	con				=	None
 
 	def ConnectDB(self):
-		self.con = MySQLdb.connect(self.MYHOST,self.MYUSER,self.MYPASS)
-		self.con.select_db(self.MYDB)
+		elf.con = MySQLdb.connect(config.MYHOST,config.MYUSER,config.MYPASS)
+		self.con.select_db(config.MYDB)
 
 	def DisconnectDB(self):
 		self.con.close()
@@ -216,6 +213,10 @@ class	HyperSignalManager:
 			numtiles	=	numtiles + 1
 
 		return tiles,numtiles
+
+	def RemoveTileToDo(self, z, x, y, operator):
+		self.cursor = self.con.cursor()
+		self.cursor.execute("DELETE FROM tiles WHERE x = %s, y = %s, z = %s, operator = %s", (x,y,z,operator))
 
 	def FetchBlock(self,start,end,operator):
 		self.cursor = self.con.cursor()

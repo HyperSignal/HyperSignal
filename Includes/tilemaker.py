@@ -6,7 +6,7 @@ from datetime import datetime
 from scipy import weave
 from multiprocessing import Process, Value, Array
 
-zoomrange		=	(12,17)
+zoomrange		=	(11,17)
 donetiles		=	Value('d', 0.0)
 stopsignal		=	Value('d', 0.0)
 
@@ -41,6 +41,8 @@ class TileMaker:
 			if not os.path.isdir(tile[3]):
 				os.mkdir(tile[3])
 			img.save("%s/%d-%d-%d.png" % (tile[3],tile[0],tile[1],tile[2]), "PNG")
+			self.hsman.RemoveTileToDo(tile[0],tile[1],tile[2], tile[3])
+			self.hsman.CommitToDB()
 			self.tilesdone.value = self.tilesdone.value + 1
 		self.hsman.DisconnectDB()
 
@@ -100,7 +102,7 @@ if __name__ == '__main__':
 		print "Iniciando gerador"
 		starttime	=	datetime.now()
 		print "Tempo de inicio: "+starttime.ctime()
-		for zoom in range(zoomrange[0],zoomrange[1]):
+		for zoom in range(zoomrange[0],zoomrange[1]+1):
 			print "Iniciando ZOOM: %d" %(zoom)
 			zp = ZoomProcessor(zoom, tilelist[zoom], donetiles, stopsignal, tps)
 			zp.run()

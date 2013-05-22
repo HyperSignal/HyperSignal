@@ -1,17 +1,23 @@
 #!/usr/bin/env python
 #-*- coding: UTF-8 -*-
 
-WSDIR		=	"/var/www/hypersignal/"	#	Diretório de trabalho do WebService
-STKEY		=	"***REMOVED***"		#	Chave do Signal Tracker
-STIV		=	"***REMOVED***"		#	IV do Signal Tracker
-TILEPATH	=	"/var/www/hstiles/"		#	Caminho para os tiles
-OPSPATH		=	"/var/www/hsops/"		#	Caminho para as imagens de operadora
-JSPATH		=	"/var/www/hsjs/"		#	Caminho para os javascripts
-CSSPATH		=	"/var/www/hscss/"		#	Caminho para os CSS
-PROGVERSION	=	"1.7"					#	Versão do programa
+WSDIR			=	"/var/www/hypersignal/"	#	Diretório de trabalho do WebService
+STKEY			=	"***REMOVED***"		#	Chave do Signal Tracker
+STIV			=	"***REMOVED***"		#	IV do Signal Tracker
+TILEPATH		=	"/var/www/hstiles/"		#	Caminho para os tiles
+OPSPATH			=	"/var/www/hsops/"		#	Caminho para as imagens de operadora
+JSPATH			=	"/var/www/hsjs/"		#	Caminho para os javascripts
+CSSPATH			=	"/var/www/hscss/"		#	Caminho para os CSS
+PROGVERSION		=	"1.7"					#	Versão do programa
 
-JSREPLACES	=	{ "SITEURL" : "http://localhost/hypersignal/WebSite/", "APIURL" : "http://localhost/hypersignal/WebService/" }	#	Variáveis para se substituir nos arquivos JavaScript e CSS
-OPSREPLACES	=	{
+MYHOST			=	"localhost"				#	Host de conexão do MySQL
+MYUSER			=	"root"					#	Usuário de conexão do MySQL
+MYPASS			=	"***REMOVED***"					#	Senha de conexão do MySQL
+MYDB			=	"hypersignal"			#	Banco de dados de conexão do MySQL
+
+
+JSREPLACES		=	{ "SITEURL" : "http://localhost/hypersignal/WebSite/", "APIURL" : "http://localhost/hypersignal/WebService/" }	#	Variáveis para se substituir nos arquivos JavaScript e CSS
+OPSREPLACES		=	{
 				"Oi"		:	"OI",
 				"TIM 62"	:	"TIM",
 				"fVIVO" 	:	"VIVO",
