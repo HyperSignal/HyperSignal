@@ -15,6 +15,8 @@ MYUSER			=	"root"					#	Usuário de conexão do MySQL
 MYPASS			=	"***REMOVED***"					#	Senha de conexão do MySQL
 MYDB			=	"hypersignal"			#	Banco de dados de conexão do MySQL
 
+HYPER_ZOOM_RANGE=	(12,17)					#	Range de Zoom para o Banco de Dados
+
 
 JSREPLACES		=	{ "SITEURL" : "http://localhost/hypersignal/WebSite/", "APIURL" : "http://localhost/hypersignal/WebService/" }	#	Variáveis para se substituir nos arquivos JavaScript e CSS
 OPSREPLACES		=	{

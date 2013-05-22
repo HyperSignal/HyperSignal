@@ -6,7 +6,7 @@ from datetime import datetime
 from scipy import weave
 from multiprocessing import Process, Value, Array
 
-zoomrange		=	(11,17)
+
 donetiles		=	Value('d', 0.0)
 stopsignal		=	Value('d', 0.0)
 
@@ -102,7 +102,7 @@ if __name__ == '__main__':
 		print "Iniciando gerador"
 		starttime	=	datetime.now()
 		print "Tempo de inicio: "+starttime.ctime()
-		for zoom in range(zoomrange[0],zoomrange[1]+1):
+		for zoom in range(config.HYPER_ZOOM_RANGE[0],config.HYPER_ZOOM_RANGE[1]):
 			print "Iniciando ZOOM: %d" %(zoom)
 			zp = ZoomProcessor(zoom, tilelist[zoom], donetiles, stopsignal, tps)
 			zp.run()

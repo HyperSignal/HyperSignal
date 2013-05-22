@@ -8,7 +8,6 @@ HYPER_STEP		=	0.0005	#	Step usado no banco de dados - 0.0005 dá uma precisão d
 HYPER_BRUSH		=	2		#	Tamanho do Brush de interpolação local 
 HYPER_GAP		=	5		#	Gap para interpolação entre tiles
 HYPER_BLUR		=	3		#	Blur para suavização de bordas
-HYPER_ZOOM_RANGE=	(12,17)	#	Range de Zoom para o Banco de Dados
 
 def LatLonToHyper(lat,lon):
 	'''
@@ -122,7 +121,7 @@ class	HyperSignalManager:
 			self.InsertToDB(signal[0],signal[1],signal[2],signal[3])
 
 		tiles	=	[]
-		for zoom in range(HYPER_ZOOM_RANGE[0],HYPER_ZOOM_RANGE[1]):
+		for zoom in range(config.HYPER_ZOOM_RANGE[0],config.HYPER_ZOOM_RANGE[1]):
 			tile1 = GetGoogleTileFromHS(x,y+HYPER_BRUSH,zoom)
 			tile2 = GetGoogleTileFromHS(x+HYPER_BRUSH,y,zoom)
 			tile3 = GetGoogleTileFromHS(x+HYPER_BRUSH,y+HYPER_BRUSH,zoom)
@@ -203,7 +202,7 @@ class	HyperSignalManager:
 		row		=	self.cursor.fetchone()
 		tiles	=	{}
 
-		for zoom in range(HYPER_ZOOM_RANGE[0],HYPER_ZOOM_RANGE[1]):
+		for zoom in range(config.HYPER_ZOOM_RANGE[0],config.HYPER_ZOOM_RANGE[1]):
 			tiles[zoom] = []
 		numtiles	=	0
 
