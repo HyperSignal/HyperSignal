@@ -215,7 +215,7 @@ class	HyperSignalManager:
 
 	def RemoveTileToDo(self, z, x, y, operator):
 		self.cursor = self.con.cursor()
-		self.cursor.execute("DELETE FROM tiles WHERE x = %s, y = %s, z = %s, operator = %s", (x,y,z,operator))
+		self.cursor.execute("DELETE FROM tiles WHERE x = %s and y = %s and z = %s and operator = %s", (x,y,z,operator))
 
 	def FetchBlock(self,start,end,operator):
 		self.cursor = self.con.cursor()

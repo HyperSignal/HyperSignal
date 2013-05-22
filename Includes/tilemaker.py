@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: UTF-8 -*-
 
-import tool, MySQLdb, Image, ImageDraw, math, numpy as np, threading, signal, sys, time, manager, os
+import tool, MySQLdb, Image, ImageDraw, math, numpy as np, threading, signal, sys, time, manager, os,config
 from datetime import datetime
 from scipy import weave
 from multiprocessing import Process, Value, Array
