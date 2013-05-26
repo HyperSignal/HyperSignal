@@ -25,7 +25,7 @@ public class SeeMap extends FragmentActivity {
 			setContentView(R.layout.seemap);
 			TelephonyManager Tel = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 			CommonHandler.Operator	=	Utils.DoOperator(Tel.getNetworkOperatorName());
-			Log.i("SignalTracker::SeeMap","Operadora: "+CommonHandler.Operator);
+			Log.i("SignalTracker::SeeMap","Operator: "+CommonHandler.Operator);
 			setUpMap();
 	}
 	
@@ -53,7 +53,7 @@ public class SeeMap extends FragmentActivity {
 	             map.addTileOverlay(new TileOverlayOptions().tileProvider(tileProvider));
 	        }
 		}catch(Exception e)	{
-			Log.e("SignalTracker::setUpMap", "Erro: "+e.getMessage());
+			Log.e("SignalTracker::setUpMap", "Error: "+e.getMessage());
 		}
 	}
     @Override

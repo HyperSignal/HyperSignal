@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Signal Tracker</string>
+    <string name="title">Signal Tracker</string>
+    <string name="welcome">Bem-vindo ao Signal Tracker!</string>
+    <string name="start">Iniciar</string>
+    <string name="stop">Parar</string>
+    <string name="config">Configurar</string>
+    <string name="quit">Sair</string>
+    <string name="fb_appid">***REMOVED***</string>
+    <string name="opencell_id">3496f1ea3dca07b9608e5aeb79bf52f6</string>
+    <string name="fblogin">Login no Facebook</string>
+    <string name="fbmsg">Tem facebook? \n\n Autorize o SignalTracker e compartilhe suas contribuições com seus amigos!</string>
+    <string name="notauthorized">Não autorizado</string>
+    <string name="continue_s">Continuar</string>
+    <string name="facebooklogo">Logo do Facebook</string>
+    <string name="stlogo">Logo do SignalTracker</string>
+    <string name="loading">Carregando&#8230;</string>
+    <string name="firstconfigmsg">Esta é sua primeira configuração!\nVocê tem 4 opções para configurar o SignalTracker:</string>
+    <string name="firstconfig_lightmode">Energia é vida! Neste modo o SignalTracker conectará ao GPS apenas de 30 em 30 minutos, poupando sua bateria.</string>
+    <string name="firstconfig_fullmode">Todo poder a frente! Neste modo o SignalTracker ficará conectado constantemente ao GPS e armazenando todos os pontos. Isso poderá consumir bastante bateria!</string>
+    <string name="firstconfig_offlinemode">ST, sem internet pra você! Estes modos operam de maneira semelhante aos Full/Light mode normais, apenas com o detalhe de que o SignalTracker não acessará a internet em nenhum momento, sendo necessário enviar os dados manualmente pelo menu depois.</string>
+    <string name="firstconfig_choosemode">Escolha um dos métodos abaixo:</string>
+    <string name="service_disabled">Serviço Desativado</string>
+    <string name="lightmode">Modo Light</string>
+    <string name="fullmode">Modo Full</string>
+    <string name="lightmodeoff">Modo Light Offline</string>
+    <string name="fullmodeoff">Modo Full Offline</string>
+    <string name="offlinemode">Modo Offline</string>
+    <string name="configdone">Você terminou a configuração!</string>
+    <string name="startusing">Começar a usar</string>
+    <string name="seemapsignal">Cobertura</string>
+    <string name="lockedcontrol">Controle Travado</string>
+    <string name="unlockedcontrol">Controle Destravado</string>
+    <string name="enabled">Ativo</string>
+    <string name="disabled">Inativo</string>
+    <string name="control">Controle</string>
+    <string name="o100percent">100%</string>
+    <string name="seemap">Ver Cobertura</string>
+    <string name="mapnotice">Estes são os dados já processados pelo HyperSignal para a sua operadora.</string>
+    <string name="generalconfig">Configurações Gerais</string>
+    <string name="fbconfig">Configurações do Facebook</string>
+    <string name="servicemode">Modo de Serviço</string>
+    <string-array name="service_modes">
+        <item>Light Mode</item>
+        <item>Full Mode</item>
+        <item>Light Mode Offline</item>
+        <item>Fullmode Offline</item>
+    </string-array>
+    <string name="mindistance">Distância Mínima entre pontos</string>
+    <string name="meters100">100 m</string>
+    <string name="mintime">Tempo mínimo de procura</string>
+    <string name="zeromiliseconds">0 ms</string>
+    <string name="lightmodetime">Intervalo de Envio (LightMode)</string>
+    <string name="minutes30">30 m</string>
+    <string name="wifisend">Enviar sinais apenas quando conectado no WiFi</string>
+    <string name="connectedwith">Conectado como:</string>
+    <string name="notconnected">Não Conectado</string>
+    <string name="savesettings">Salvar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="welcometext">Olá %s \n Você autorizou o SignalTracker!</string>
+    <string name="gpssatmsg">Conectado via GPS - %s satélites conectados.</string>
+    <string name="netsatmsg">Conectado via Rede - %s satélites conectados.</string>
+    <string name="stoppingst">Parando SignalTracker</string>
+    <string name="savingpref">Salvando preferências</string>
+    <string name="prefsavedrestarting">Preferências salvas. Iniciando serviço novamente.</string>
+    <string name="disconnectefacebook">Desconectar do Facebook</string>
+    <string name="willdisconnectonsave">Será desconectado ao salvar.</string>
+    <string name="stservicestopped">Serviço do SignalTracker parado!</string>
+    <string name="stservicestarted">Serviço do SignalTracker iniciado!</string>
+    <string name="barnotice">Pontos(%1$s km) Torres(%2$s) Sats(%3$s)</string>
+    <string name="notasktodo">Nenhuma tarefa para fazer.</string>
+    <string name="gpsdisabled">GPS Desativado, por favor ative-o!</string>
+    <string name="gpsenabled">GPS Ativado!</string>
+    <string name="saveddata">Dados Salvos</string>
+    <string name="signals">Sinais</string>
+    <string name="km1000">100.0 km</string>
+    <string name="towers">Torres</string>
+    <string name="tower100">100 torres</string>
+    <string name="senddata">Enviar Dados</string>
+    <string name="extras">Extras</string>
+    <string name="datasent">Dados enviados!</string>
+    <string name="sending">Enviando</string>
+</resources>

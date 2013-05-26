@@ -15,7 +15,6 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="36dp"
         android:contentDescription="@string/stlogo"
         android:src="@drawable/logo_400x400" />
 
@@ -23,9 +22,11 @@
         android:id="@+id/runMode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/signalBar"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
         android:layout_below="@+id/imageView1"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="35dp"
+        android:gravity="center"
         android:text="@string/loading"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
@@ -34,8 +35,7 @@
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/runMode"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="21dp" />
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

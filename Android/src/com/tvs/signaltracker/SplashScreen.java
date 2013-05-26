@@ -66,7 +66,7 @@ public class SplashScreen extends Activity {
 		protected Object doInBackground(Object... params) {
 			if(!CommonHandler.ServiceRunning)	{
 				/*	Inicializar Banco de Dados	*/
-				CommonHandler.dbman.LoginDB("STService");
+				CommonHandler.dbman.LoginDB("SplashScreen");
 				CommonHandler.LoadPreferences();
 				
 				/*	Inicializar Listas e Callbacks	*/
@@ -74,7 +74,7 @@ public class SplashScreen extends Activity {
 				CommonHandler.InitLists();
 				CommonHandler.InitCallbacks();
 				
-				CommonHandler.dbman.LogoutDB("STService");
+				CommonHandler.dbman.LogoutDB("SplashScreen");
 			}
 			SplashHandler.sendEmptyMessage(0);
 			return null;

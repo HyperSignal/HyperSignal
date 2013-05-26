@@ -136,7 +136,7 @@ public class HSAPI {
 	public static void AddSignal(double latitude, double longitude, String operadora, short sinal) {
 		String jsondata = "{\"metodo\":\"addsinal\",\"uid\":\""+CommonHandler.FacebookUID+"\",\"op\":\""+operadora+"\",\"lat\":"+String.valueOf(latitude)+",\"lon\":"+String.valueOf(longitude)+",\"dev\":\""+Build.DEVICE+"\",\"man\":\""+Build.MANUFACTURER+"\",\"model\":\""+Build.MODEL+"\",\"brand\":\""+Build.BRAND+"\",\"rel\":\""+Build.VERSION.RELEASE+"\",\"and\":\""+Build.ID+"\",\"sig\":"+String.valueOf(sinal)+"}";
 		jsondata = TheUpCrypter.GenOData(jsondata);
-		Log.i("SignalTracker::APICall","Adicionando chamada de sinal");
+		//Log.i("SignalTracker::APICall","Adding signal call");
 		new CallAPI().execute(jsondata);
 	}
 	/**
@@ -149,7 +149,7 @@ public class HSAPI {
 		String jsondata = "{\"metodo\":\"addtorre\",\"op\":\""+operadora+"\",\"lat\":"+String.valueOf(latitude)+",\"lon\":"+String.valueOf(longitude)+", \"uid\":\""+CommonHandler.FacebookUID+"\"}";
 		jsondata = TheUpCrypter.GenOData(jsondata);
 		new CallAPI().execute(jsondata);
-		Log.i("SignalTracker::APICall","Adicionando chamada de torre");
+		//Log.i("SignalTracker::APICall","Adding tower call");
 	}
 	
 	public static void AddUser(String username, String name, String email, String city, String country)	{

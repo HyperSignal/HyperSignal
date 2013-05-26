@@ -19,10 +19,11 @@
     <TextView
         android:id="@+id/tv1"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="35dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:layout_below="@+id/imageView1"
+        android:gravity="center_vertical"
         android:text="@string/generalconfig"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
@@ -39,9 +40,11 @@
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/generalSettingsView"
+        android:layout_height="35dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
         android:layout_below="@+id/generalSettingsView"
+        android:gravity="center_vertical"
         android:text="@string/fbconfig"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
@@ -53,10 +56,10 @@
         android:layout_alignParentRight="true"
         android:layout_below="@+id/textView2"
         android:orientation="vertical" >
-
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/linearLayout1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
@@ -77,6 +80,27 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/cancel" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/linearLayout1"
+        android:gravity="center"
+        android:text="@string/extras"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <LinearLayout
+        android:id="@+id/saveddataSettingsView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/textView1"
+        android:orientation="vertical" >
 
     </LinearLayout>
 

@@ -359,7 +359,7 @@ public class Utils {
 			try{
 				TowerFetch(cid,lac,mnc,mcc,APIKEY);
 			}catch(Exception e)	{
-				Log.e("SignalTracker::TowerFetchTask","Erro ao pegar dados de torre: "+e.getMessage());
+				Log.e("SignalTracker::TowerFetchTask","Failed to fetch tower data: "+e.getMessage());
 			}
 			return null;
 		}

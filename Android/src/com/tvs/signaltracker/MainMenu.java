@@ -5,7 +5,6 @@ import com.facebook.Session;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -87,7 +86,7 @@ public class MainMenu extends Activity {
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 	  super.onActivityResult(requestCode, resultCode, data);
 	  Session.getActiveSession().onActivityResult(this, requestCode, resultCode, data);
-	  Log.i("AcResult","requestCode: "+requestCode+" resultCode: "+resultCode+" data: "+data.describeContents());
+	  //Log.i("AcResult","requestCode: "+requestCode+" resultCode: "+resultCode+" data: "+data.describeContents());
 	}
 
 }

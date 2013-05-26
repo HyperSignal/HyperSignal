@@ -2,6 +2,7 @@ package com.tvs.signaltracker;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -42,7 +43,8 @@ public class FacebookActivity extends Activity {
 						prg.setVisibility(View.INVISIBLE);
 						if (user != null) {
 							TextView welcome = (TextView) findViewById(R.id.fbauthorized);
-							welcome.setText("Olá " + user.getName() + ", \n Você autorizou o SignalTracker!");
+							String welcomeText = String.format(Locale.getDefault(), getResources().getString(R.string.welcometext) , user.getName());
+							welcome.setText(welcomeText);
 							CommonHandler.FacebookUID = user.getId();
 							CommonHandler.FacebookLocation = user.getLocation();
 							CommonHandler.FacebookName = user.getName();
@@ -79,7 +81,8 @@ public class FacebookActivity extends Activity {
 								public void onCompleted(GraphUser user, Response response) {
 									if (user != null) {
 										TextView welcome = (TextView) findViewById(R.id.fbauthorized);
-										welcome.setText("Olá " + user.getName() + ", \n Você autorizou o SignalTracker!");
+										String welcomeText = String.format(Locale.getDefault(), getResources().getString(R.string.welcometext) , user.getName());
+										welcome.setText(welcomeText);
 										CommonHandler.FacebookUID = user.getId();
 										CommonHandler.FacebookName = user.getName();
 										CommonHandler.InitDB(FacebookActivity.this);
@@ -135,7 +138,7 @@ public class FacebookActivity extends Activity {
 		  		if(pendingw.size() > 0)
 		  			session.requestNewReadPermissions(new NewPermissionsRequest(FacebookActivity.this, pendingw));
 		  		else
-		  			Log.i("SignalTracker::FBPerms", "Permissões OK");
+		  			Log.i("SignalTracker::FBPerms", "Permissions OK");
 	  		}
 		}
 	}

@@ -69,14 +69,14 @@ public class CommonHandler {
 	}
 	public static void LoadLists()	{
 		if(dbman != null)	{
-			Log.i("SignalTracker::LoadLists","Limpando sinais já enviados.");
+			Log.i("SignalTracker::LoadLists","Cleaning sent signals.");
 			dbman.CleanDoneSignals();
-			Log.i("SignalTracker::LoadLists","Limpando torres já enviados.");
+			Log.i("SignalTracker::LoadLists","Cleaning sent towers.");
 			dbman.CleanDoneTowers();
 			Signals = dbman.getSignals();
 			Towers = dbman.getTowers();
 		}else
-			Log.e("SignalTracker::LoadLists","DatabaseManager é nulo! ");
+			Log.e("SignalTracker::LoadLists","DatabaseManager is null! ");
 	}
 	public static void InitCallbacks()	{
 		if(SignalCallbacks == null)
@@ -89,43 +89,43 @@ public class CommonHandler {
 		if(SignalCallbacks != null)
 			SignalCallbacks.add(cb);
 		else
-			Log.e("SignalTracker::AddSignalCallback","Lista de Callbacks de sinais é nula!");
+			Log.e("SignalTracker::AddSignalCallback","Callbacks list of signals is null!");
 	}	
 	
 	public static void AddTowerCallback(STCallBack cb)	{
 		if(TowerCallbacks != null)
 			TowerCallbacks.add(cb);
 		else
-			Log.e("SignalTracker::AddTowerCallback","Lista de Callbacks de torres é nula!");
+			Log.e("SignalTracker::AddTowerCallback","Callbacks list of towers is null!");
 	}
 	public static void DelSignalCallback(int id)	{
 		try	{
 			if(SignalCallbacks != null)	{
 				SignalCallbacks.remove(id);
-				Log.i("SignalTracker::DelSignalCallback","Removendo ("+id+")");
+				Log.i("SignalTracker::DelSignalCallback","Removing("+id+")");
 			}
 		}catch(Exception e)	{
-			Log.e("SignalTracker::DelSignalCallback", "Erro ao remover ("+id+"): "+e.getMessage());
+			Log.e("SignalTracker::DelSignalCallback", "Error on remove ("+id+"): "+e.getMessage());
 		}
 	}
 	public static void DelSignalCallback(STCallBack cb)	{
 		try	{
 			if(SignalCallbacks != null)	{
 				SignalCallbacks.remove(cb);
-				Log.i("SignalTracker::DelSignalCallback","Removendo callback");
+				Log.i("SignalTracker::DelSignalCallback","Removing callback");
 			}
 		}catch(Exception e)	{
-			Log.e("SignalTracker::DelSignalCallback", "Erro ao remover callback: "+e.getMessage());
+			Log.e("SignalTracker::DelSignalCallback", "Error on remove callback: "+e.getMessage());
 		}
 	}
 	public static void DelTowerCallback(int id)	{
 		try{
 			if(TowerCallbacks != null)	{
 				TowerCallbacks.remove(id);
-				Log.i("SignalTracker::DelTowerCallback","Removendo ("+id+")");
+				Log.i("SignalTracker::DelTowerCallback","Removing ("+id+")");
 			}
 		}catch(Exception e)	{
-			Log.e("SignalTracker::DelTowerCallback", "Erro ao remover ("+id+"): "+e.getMessage());
+			Log.e("SignalTracker::DelTowerCallback", "Error on remove ("+id+"): "+e.getMessage());
 		}
 			
 	}
@@ -133,7 +133,7 @@ public class CommonHandler {
 		try{
 			if(TowerCallbacks != null)	{
 				TowerCallbacks.remove(cb);
-				Log.i("SignalTracker::DelTowerCallback","Removendo callback");
+				Log.i("SignalTracker::DelTowerCallback","Removing callback");
 			}
 		}catch(Exception e)	{
 			Log.e("SignalTracker::DelTowerCallback", "Erro ao remover callback: "+e.getMessage());
@@ -165,7 +165,7 @@ public class CommonHandler {
 					break;
 			}
 			if(rawcount > 0)
-				Log.i("SignalTracker::DoResend","Reenviando "+rawcount+" sinais. ("+count+")");
+				Log.i("SignalTracker::DoResend","Reseding "+rawcount+" signals. ("+count+")");
 			
 			count = 0;
 			rawcount = 0;
@@ -188,7 +188,7 @@ public class CommonHandler {
 					break;
 			}
 			if(rawcount > 0)
-				Log.i("SignalTracker::DoResend","Reenviando "+rawcount+" torres. ("+count+")");
+				Log.i("SignalTracker::DoResend","Resending "+rawcount+" towers. ("+count+")");
 		}
 	}
 	@SuppressLint("NewApi")
@@ -268,7 +268,7 @@ public class CommonHandler {
 			if(add)	{
 				Towers.add(tmp);
 				dbman.insertTower(lat, lon);
-				Log.i("SignalTracker::AddTower","Torre Adicionado: ("+lat+","+lon+")");
+				//Log.i("SignalTracker::AddTower","Added tower: ("+lat+","+lon+")");
 				if(TowerCallbacks != null)	{
 					boolean[]	removeItens = new boolean[TowerCallbacks.size()];
 					for(int i=0;i<TowerCallbacks.size();i++)	{
@@ -276,7 +276,7 @@ public class CommonHandler {
 							TowerCallbacks.get(i).Call(tmp);
 							removeItens[i] = false;
 						}catch(Exception e)	{
-							Log.i("SignalTracker::AddTower","Erro ao processar callback("+i+"): "+e.getMessage());
+							Log.i("SignalTracker::AddTower","Fail to process callback("+i+"): "+e.getMessage());
 							removeItens[i] = true;
 						}
 					}
@@ -286,7 +286,7 @@ public class CommonHandler {
 				}
 			}		
 		}else
-			Log.e("SignalTracker::AddTower","Lista de torres é nula!");
+			Log.e("SignalTracker::AddTower","List of towers is null!");
 	}
 	
 	public static void InitDB(Context ctx)	{
@@ -334,8 +334,8 @@ public class CommonHandler {
 				WifiSend			=	(wifisend.contains("True")?true:false);
 			
 			PreferencesLoaded = true;
-			Log.i("SignalTracker::LoadPreferences", "Preferências carregadas.");
+			Log.i("SignalTracker::LoadPreferences", "Preferences loaded.");
 		}else
-			Log.e("SignalTracker::LoadPreferences", "Banco de Dados não inicializado!");
+			Log.e("SignalTracker::LoadPreferences", "Database not initialized!");
 	}
 }

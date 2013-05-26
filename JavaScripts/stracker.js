@@ -13,6 +13,8 @@
 	var operatorLayer;
 	var logoLayer;
 	var geocoder;
+
+	var mouseLatLng = [0,0];
 	
 	function TogglePoints(anchor) {
 		pointsEnable = !pointsEnable;
@@ -108,6 +110,11 @@
 		geocoder = new google.maps.Geocoder();
 		infoDiv = document.getElementById("info");
 		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+		google.maps.event.addListener(map, 'click', function(event) {
+			mouseLatLng[0] = event.latLng.lat();
+			mouseLatLng[1] = event.latLng.lng();
+			infoDiv.innerHTML = event.latLng.toString();	
+		});
 		if(navigator.geolocation) {
 				infoDiv.innerHTML = "Localização determinada por HTML5<BR>"; 
 				navigator.geolocation.getCurrentPosition(function(position) {
