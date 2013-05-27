@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 #-*- coding: UTF-8 -*-
 
-WSDIR			=	"/var/www/hypersignal/"	#	Diretório de trabalho do WebService
-STKEY			=	"***REMOVED***"		#	Chave do Signal Tracker
-STIV			=	"***REMOVED***"		#	IV do Signal Tracker
-TILEPATH		=	"/var/www/hstiles/"		#	Caminho para os tiles
-OPSPATH			=	"/var/www/hsops/"		#	Caminho para as imagens de operadora
-JSPATH			=	"/var/www/hsjs/"		#	Caminho para os javascripts
-CSSPATH			=	"/var/www/hscss/"		#	Caminho para os CSS
-PROGVERSION		=	"1.7"					#	Versão do programa
+WSDIR			=	"/var/www/hypersignal/"			#	Diretório de trabalho do WebService
+STKEY			=	"***REMOVED***"				#	Chave do Signal Tracker
+STIV			=	"***REMOVED***"				#	IV do Signal Tracker
+TILEPATH		=	"/var/www/hstiles/"				#	Caminho para os tiles
+OPSPATH			=	"/var/www/hsops/"				#	Caminho para as imagens de operadora
+JSPATH			=	"/var/www/hsjs/"				#	Caminho para os javascripts
+CSSPATH			=	"/var/www/hscss/"				#	Caminho para os CSS
+PROGVERSION		=	"1.7"							#	Versão do programa
 
-MYHOST                  =       "10.0.5.12"
-MYUSER                  =       "root"
-MYPASS                  =       "***REMOVED***"
-MYDB                    =       "hypersignal"
+MYHOST                  =       "localhost"			#	Host para conexão com banco de dados
+MYUSER                  =       "root"				#	Usuário para conexão
+MYPASS                  =       "***REMOVED***"				#	Senha para conexão
+MYDB                    =       "hypersignal"		#	Banco de Dados
 
-HYPER_ZOOM_RANGE=	(10,18)					#	Range de Zoom para o Banco de Dados
+HYPER_ZOOM_RANGE=	(10,18)							#	Range de Zoom para o Banco de Dados
 
 
 JSREPLACES		=	{ "SITEURL" : "http://localhost/hypersignal/WebSite/", "APIURL" : "http://localhost/hypersignal/WebService/" }	#	Variáveis para se substituir nos arquivos JavaScript e CSS
