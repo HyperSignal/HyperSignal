@@ -21,7 +21,6 @@ import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.android.gms.maps.model.TileProvider;
 import com.google.android.gms.maps.model.UrlTileProvider;
 
-import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -32,6 +31,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ProgressBar;
@@ -47,12 +47,12 @@ public class MainScreen  extends FragmentActivity {
 	public static Location lastLocation;
 	
 	//	Objectos Gráficos
-	public GoogleMap map;
+	public static GoogleMap map;
 	public ProgressBar signalBar;
 	public TextView collectedData, connectionInfo, runMode, signalPercent;
 	public ToggleButton tileView, controlLock;
-	public List<GroundOverlay> signals;
-	public List<GroundOverlay> towers;
+	public static List<GroundOverlay> signals;
+	public static List<GroundOverlay> towers;
 	public TileOverlay STOverlay;
 
 	//	Booleans
@@ -62,24 +62,25 @@ public class MainScreen  extends FragmentActivity {
 	private static String gpssatmsg, netsatmsg;
 	
 	//	Handlers
-	@SuppressLint("HandlerLeak")
-	private Handler MainScreenHandler = new Handler()	{
+	private static Handler MainScreenHandler = new Handler()	{
 		@Override
 		public void handleMessage(Message msg)	{
-			switch(msg.what)	{
-				case 0:	//	AddSignal
-					int lvl	=	getDrawableIdentifier(MainScreen.this, "signal_"+msg.getData().getShort("signal"));
-					GroundOverlay sig = map.addGroundOverlay(new GroundOverlayOptions()
-			        .image(BitmapDescriptorFactory.fromResource(lvl)).anchor(0.5f, 0.5f)
-			        .position(new LatLng(msg.getData().getDouble("lat"), msg.getData().getDouble("lon")), 100f)); 
-					signals.add(sig);
-					break;
-				case 1:	//	AddTower
-					GroundOverlay tow = map.addGroundOverlay(new GroundOverlayOptions()
-			        .image(BitmapDescriptorFactory.fromResource(R.drawable.tower_75x75)).anchor(0.5f, 0.5f)
-			        .position(new LatLng(msg.getData().getDouble("lat"), msg.getData().getDouble("lon")), 100f)); 
-					towers.add(tow);
-					break;
+			if(map != null && signals != null && towers != null)	{
+				switch(msg.what)	{
+					case 0:	//	AddSignal
+						int lvl	=	FinalVars.SignalLevels[msg.getData().getShort("signal")];
+						GroundOverlay sig = map.addGroundOverlay(new GroundOverlayOptions()
+				        .image(BitmapDescriptorFactory.fromResource(lvl)).anchor(0.5f, 0.5f)
+				        .position(new LatLng(msg.getData().getDouble("lat"), msg.getData().getDouble("lon")), 100f)); 
+						signals.add(sig);
+						break;
+					case 1:	//	AddTower
+						GroundOverlay tow = map.addGroundOverlay(new GroundOverlayOptions()
+				        .image(BitmapDescriptorFactory.fromResource(R.drawable.tower_75x75)).anchor(0.5f, 0.5f)
+				        .position(new LatLng(msg.getData().getDouble("lat"), msg.getData().getDouble("lon")), 100f)); 
+						towers.add(tow);
+						break;
+				}
 			}
 		}
 		
@@ -95,7 +96,7 @@ public class MainScreen  extends FragmentActivity {
 			if(controlLocked)	{
 				if(lastLocation != null )	{
 					if(CommonHandler.GPSLocation != null)
-						if(lastLocation.getLatitude() != CommonHandler.GPSLocation.getLatitude() || lastLocation.getLongitude() != CommonHandler.GPSLocation.getLongitude() )
+						if((lastLocation.getLatitude() != CommonHandler.GPSLocation.getLatitude() || lastLocation.getLongitude() != CommonHandler.GPSLocation.getLongitude()) )
 							lastLocation = CommonHandler.GPSLocation;
 				}else{
 					if(CommonHandler.GPSLocation != null)	
@@ -108,7 +109,7 @@ public class MainScreen  extends FragmentActivity {
 				connectionInfo.setText(String.format(Locale.getDefault(), netsatmsg, CommonHandler.NumSattelites));
 			signalBar.setProgress(CommonHandler.Signal);
 			signalPercent.setText((Math.round((CommonHandler.Signal/31.0f)*100))+"%");
-			if(lastLocation != null && controlLocked)
+			if(lastLocation != null && controlLocked && CommonHandler.GPSLocation.getLatitude() != 0 && CommonHandler.GPSLocation.getLongitude() != 0)
 				UpdateMapPosition(lastLocation.getLatitude(), lastLocation.getLongitude(), 16);
 			MainScreenHandler.postDelayed(this, 2000);
 		}
@@ -119,7 +120,7 @@ public class MainScreen  extends FragmentActivity {
 	private void UpdateMapPosition(double latitude, double longitude, int zoom)	{
 		if(map != null)	{
 			map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude),zoom));
-			LatLngBounds bounds = this.map.getProjection().getVisibleRegion().latLngBounds;
+			LatLngBounds bounds = map.getProjection().getVisibleRegion().latLngBounds;
 	
 			if(!bounds.contains(new LatLng(latitude, longitude)))        {
 				CameraPosition cameraPosition = new CameraPosition.Builder().target(new LatLng(latitude, longitude)).zoom(zoom).build(); 
@@ -133,12 +134,7 @@ public class MainScreen  extends FragmentActivity {
 		setContentView(R.layout.mainscreen);
 		if(STService.Opened == false)	{
     		Intent myIntent = new Intent(MainScreen.this, STService.class);
-        	PendingIntent pendingIntent = PendingIntent.getService(MainScreen.this, 0, myIntent, 0);
-        	AlarmManager alarmManager = (AlarmManager)MainScreen.this.getSystemService(Context.ALARM_SERVICE);
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(System.currentTimeMillis());
-            calendar.add(Calendar.SECOND, 1);
-            alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+    		startService(myIntent);
 		}
 		
 		gpssatmsg = getResources().getString(R.string.gpssatmsg);
@@ -226,6 +222,7 @@ public class MainScreen  extends FragmentActivity {
 
 		MainScreenHandler.postDelayed(UpdateUI, 1000);
 		CommonHandler.ServiceRunning = true;
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
 
 	private void setUpMap() {
@@ -233,7 +230,6 @@ public class MainScreen  extends FragmentActivity {
 		towers = new ArrayList<GroundOverlay>();
 
 		try {
-	        if (map == null) {
 	    		if(CommonHandler.Signals == null || CommonHandler.Towers == null)	{
 	                Intent MainMenuIntent  = new Intent().setClass(MainScreen.this, SplashScreen.class);
 	                startActivity(MainMenuIntent);
@@ -279,7 +275,6 @@ public class MainScreen  extends FragmentActivity {
 
 	            STOverlay = map.addTileOverlay(new TileOverlayOptions().tileProvider(tileProvider));
 				STOverlay.setVisible(tileViewing);
-	        }
 		}catch(Exception e)	{
 			Log.e("SignalTracker::setUpMap", "Error: "+e.getMessage());
 		}

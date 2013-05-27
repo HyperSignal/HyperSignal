@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,7 +47,19 @@ public class Settings extends Activity {
 	private AsyncTask<List<TowerObject>, Integer, Long> stt;
 	private AsyncTask<List<SignalObject>, Double, Long> sst;
 	private boolean towersent, signalsent;
-	
+	private static Handler SettingsHandler = new Handler();
+	private boolean RUN = false;
+	private Runnable StartService = new Runnable()	{
+
+		@Override
+		public void run() {
+			CommonHandler.KillService = false;
+			Intent myIntent = new Intent(Settings.this, STService.class);
+			startService(myIntent);
+			CommonHandler.ServiceRunning = RUN;	
+		}
+		
+	};
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
@@ -92,7 +105,10 @@ public class Settings extends Activity {
 				@SuppressWarnings("unchecked")
 				@Override
 				public void onClick(View v) {
+					RUN = CommonHandler.ServiceRunning;
 					CommonHandler.KillService = true;
+					Intent myIntent = new Intent(Settings.this, STService.class);
+					stopService(myIntent);
 					senddata.setText(getResources().getString(R.string.sending));
 					senddata.setClickable(false);
 					towersent = false;
@@ -110,7 +126,7 @@ public class Settings extends Activity {
 						} else {
 							stt = new SendTowerTask().execute(CommonHandler.Towers);
 						}
-					CommonHandler.KillService = false;
+
 				}
 			});
 			facebookLogin.setOnClickListener(new View.OnClickListener() {
@@ -324,6 +340,7 @@ public class Settings extends Activity {
 	        	 senddata.setClickable(true);
 	        	 senddata.setText(getResources().getString(R.string.datasent));
 	        	 CommonHandler.LoadLists();
+	        	 SettingsHandler.post(StartService);
 	         }
 	     }
 	}
@@ -376,6 +393,7 @@ public class Settings extends Activity {
 	        	 senddata.setClickable(true);
 	        	 senddata.setText(getResources().getString(R.string.senddata));
 	        	 CommonHandler.LoadLists();
+	        	 SettingsHandler.post(StartService);
 	         }
 	     }
 	}
