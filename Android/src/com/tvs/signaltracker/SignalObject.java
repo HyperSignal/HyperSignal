@@ -4,6 +4,7 @@ public class SignalObject {
 	public double latitude,longitude;
 	public short signal;
 	public short state;
+	public float weight;
 	public int id;
 	
 	public SignalObject(double latitude, double longitude, short signal)	{
@@ -11,12 +12,24 @@ public class SignalObject {
 		this.longitude = longitude;
 		this.signal = signal;
 		this.state = 0;
+		this.weight = 1f;
 	}	
 	public SignalObject(double latitude, double longitude, short signal, short state)	{
 		this.latitude = latitude;
 		this.longitude = longitude;
 		this.signal = signal;
 		this.state = state;
+		this.weight = 1f;
+	}
+	public SignalObject(double latitude, double longitude, short signal, short state, float weight)	{
+		this.latitude = latitude;
+		this.longitude = longitude;
+		this.signal = signal;
+		this.state = state;
+		this.weight = weight;
+	}
+	public String toString()	{
+		return "Signal ("+latitude+","+longitude+")["+signal+"] - Weight: "+weight;
 	}
 	public double distance(SignalObject target) {
 		double dLat = ( Math.PI / 180 ) * (this.latitude-target.latitude);

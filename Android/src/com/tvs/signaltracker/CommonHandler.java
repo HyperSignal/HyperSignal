@@ -19,7 +19,7 @@ public class CommonHandler {
 	public static final String[] FB_read_perm	=	{	"email",				//	Permissões de Leitura no Face
 														"photo_upload"	};
 
-	public static final int	MaxMapContent		=	50;							//	
+	public static final int	MaxMapContent		=	80;							//	
 	
 	/*	Variáveis de funcionamento	*/
 	
@@ -35,6 +35,8 @@ public class CommonHandler {
 	public static Location 	NetLocation;							//	Localização pela Rede
 	public static int		NumSattelites;							//	Número de Satélites Conectados
 	public static short		Signal;									//	Sinal do celular
+	
+	public static float		Weight				=	1f;				//	Peso do sinal (para média)
 	
 	/*	Listas	*/
 	public static List<SignalObject>	Signals;
@@ -58,6 +60,7 @@ public class CommonHandler {
 	public static int	MinimumTime				=	0;				//	Tempo mínimo entre procuras do GPS em Segundos
 	public static int 	LightModeDelayTime		=	30;				//	Tempo de espera do modo Light
 	public static GraphLocation FacebookLocation;					//	Localização no Facebook, caso logado
+	
 
 	
 	/*	Métodos	*/
@@ -192,9 +195,9 @@ public class CommonHandler {
 		}
 	}
 	@SuppressLint("NewApi")
-	public static void AddSignal(double lat, double lon, short signal)	{
+	public static void AddSignal(double lat, double lon, short signal, float weight, boolean doCallback)	{
 		if(Signals != null)	{
-			SignalObject tmp	=	new SignalObject(lat,lon,signal);
+			SignalObject tmp	=	new SignalObject(lat,lon,signal,(short)0,weight);
 			boolean add = true;
 			for(int i=0; i<Signals.size();i++)	{
 				if(tmp.distance(Signals.get(i)) < MinimumDistance-(MinimumDistance/5f))	{
@@ -217,15 +220,15 @@ public class CommonHandler {
 			if(add)	{
 				Signals.add(tmp);
 				dbman.insertSignal(lat, lon, signal);
-				Log.i("SignalTracker::AddSignal","Sinal Adicionado: ("+lat+","+lon+")["+signal+"]");
-				if(SignalCallbacks != null)	{
+				Log.i("SignalTracker::AddSignal",tmp.toString());
+				if(SignalCallbacks != null && doCallback)	{
 					boolean[]	removeItens = new boolean[SignalCallbacks.size()];
 					for(int i=0;i<SignalCallbacks.size();i++)	{
 						try{
 							SignalCallbacks.get(i).Call(tmp);
 							removeItens[i] = false;
 						}catch(Exception e)	{
-							Log.i("SignalTracker::AddSignal","Erro ao processar callback("+i+"): "+e.getMessage());
+							Log.i("SignalTracker::AddSignal","Error processing callback("+i+"): "+e.getMessage());
 							removeItens[i] = true;
 						}
 					}
@@ -235,7 +238,7 @@ public class CommonHandler {
 				}
 			}
 		}else
-			Log.e("SignalTracker::AddSignal","Lista de Sinais é nula!");
+			Log.e("SignalTracker::AddSignal","The Signal List is null!");
 	}
 	
 	@SuppressLint("NewApi")
@@ -268,7 +271,6 @@ public class CommonHandler {
 			if(add)	{
 				Towers.add(tmp);
 				dbman.insertTower(lat, lon);
-				//Log.i("SignalTracker::AddTower","Added tower: ("+lat+","+lon+")");
 				if(TowerCallbacks != null)	{
 					boolean[]	removeItens = new boolean[TowerCallbacks.size()];
 					for(int i=0;i<TowerCallbacks.size();i++)	{

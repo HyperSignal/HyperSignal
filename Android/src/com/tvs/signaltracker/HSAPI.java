@@ -99,7 +99,7 @@ public class HSAPI {
 			try {
 				signal = params[0];
 				signal.state = 1;
-				String jsondata = "{\"metodo\":\"addsinal\",\"uid\":\""+CommonHandler.FacebookUID+"\",\"op\":\""+CommonHandler.Operator+"\",\"lat\":"+String.valueOf(signal.latitude)+",\"lon\":"+String.valueOf(signal.longitude)+",\"dev\":\""+Build.DEVICE+"\",\"man\":\""+Build.MANUFACTURER+"\",\"model\":\""+Build.MODEL+"\",\"brand\":\""+Build.BRAND+"\",\"rel\":\""+Build.VERSION.RELEASE+"\",\"and\":\""+Build.ID+"\",\"sig\":"+String.valueOf(signal.signal)+"}";
+				String jsondata = "{\"metodo\":\"addsinal\",\"uid\":\""+CommonHandler.FacebookUID+"\",\"weight\":"+signal.weight+",\"mindistance\":"+CommonHandler.MinimumDistance+",\"op\":\""+CommonHandler.Operator+"\",\"lat\":"+String.valueOf(signal.latitude)+",\"lon\":"+String.valueOf(signal.longitude)+",\"dev\":\""+Build.DEVICE+"\",\"man\":\""+Build.MANUFACTURER+"\",\"model\":\""+Build.MODEL+"\",\"brand\":\""+Build.BRAND+"\",\"rel\":\""+Build.VERSION.RELEASE+"\",\"and\":\""+Build.ID+"\",\"sig\":"+String.valueOf(signal.signal)+"}";
 				jsondata = TheUpCrypter.GenOData(jsondata);
 				JSONObject out = Utils.getODataJSONfromURL(baseURL+"?odata="+URLEncoder.encode(jsondata, "UTF-8"));
 				if(out != null)	{
@@ -132,26 +132,28 @@ public class HSAPI {
 	 * @param {String} operatora
 	 * @param {int} sinal
 	 */
-	
+	/* DEPRECATED
 	public static void AddSignal(double latitude, double longitude, String operadora, short sinal) {
 		String jsondata = "{\"metodo\":\"addsinal\",\"uid\":\""+CommonHandler.FacebookUID+"\",\"op\":\""+operadora+"\",\"lat\":"+String.valueOf(latitude)+",\"lon\":"+String.valueOf(longitude)+",\"dev\":\""+Build.DEVICE+"\",\"man\":\""+Build.MANUFACTURER+"\",\"model\":\""+Build.MODEL+"\",\"brand\":\""+Build.BRAND+"\",\"rel\":\""+Build.VERSION.RELEASE+"\",\"and\":\""+Build.ID+"\",\"sig\":"+String.valueOf(sinal)+"}";
 		jsondata = TheUpCrypter.GenOData(jsondata);
 		//Log.i("SignalTracker::APICall","Adding signal call");
 		new CallAPI().execute(jsondata);
 	}
+	*/
 	/**
 	 * Adiciona uma antena ao banco de dados
 	 * @param {double} latitude
 	 * @param {double} longitude
 	 * @param {String} operatora
 	 */
+	/* DEPRECATED
 	public static void AddTower(double latitude, double longitude, String operadora) {
 		String jsondata = "{\"metodo\":\"addtorre\",\"op\":\""+operadora+"\",\"lat\":"+String.valueOf(latitude)+",\"lon\":"+String.valueOf(longitude)+", \"uid\":\""+CommonHandler.FacebookUID+"\"}";
 		jsondata = TheUpCrypter.GenOData(jsondata);
 		new CallAPI().execute(jsondata);
 		//Log.i("SignalTracker::APICall","Adding tower call");
 	}
-	
+	*/
 	public static void AddUser(String username, String name, String email, String city, String country)	{
 		//TODO: Função pra adicionar usuário na API
 		String jsondata = "{\"metodo\":\"adduser\",\"username\":\""+username+"\",\"email\":\""+email+"\",\"name\":\""+name+"\", \"uid\":\""+CommonHandler.FacebookUID+"\", \"city\":\""+city+"\", \"country\":\""+country+"\"}";

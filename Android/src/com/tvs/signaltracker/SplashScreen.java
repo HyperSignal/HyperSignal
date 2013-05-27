@@ -1,14 +1,10 @@
 package com.tvs.signaltracker;
 
-import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -33,12 +29,7 @@ public class SplashScreen extends Activity {
     	            public void run() {
     	            	if(!CommonHandler.ServiceRunning)	{
     	            		Intent myIntent = new Intent(SplashScreen.this, STService.class);
-        	            	PendingIntent pendingIntent = PendingIntent.getService(SplashScreen.this, 0, myIntent, 0);
-        	            	AlarmManager alarmManager = (AlarmManager)SplashScreen.this.getSystemService(Context.ALARM_SERVICE);
-        	                Calendar calendar = Calendar.getInstance();
-        	                calendar.setTimeInMillis(System.currentTimeMillis());
-        	                calendar.add(Calendar.SECOND, 2);
-        	                alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+    	            		startService(myIntent);
     	            	}
 
     	                finish();
