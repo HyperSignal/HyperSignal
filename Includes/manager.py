@@ -8,7 +8,7 @@ HYPER_STEP		=	0.0005			#	Step usado no banco de dados - 0.0005 dá uma precisão
 HYPER_BRUSH		=	2				#	Tamanho do Brush de interpolação local 
 HYPER_GAP		=	10				#	Gap para interpolação entre tiles
 HYPER_BLUR		=	3				#	Blur para suavização de bordas
-HYPER_FILTER	=	Image.BILINEAR	#	Filtro usado para interpolação
+#HYPER_FILTER	=	Image.BILINEAR	#	Filtro usado para interpolação
 
 def LatLonToHyper(lat,lon):
 	'''
@@ -79,9 +79,9 @@ class	HyperSignalManager:
 					tileraw[x,y,1] = colorrgb[1]
 					tileraw[x,y,2] = colorrgb[2]
 					tileraw[x,y,3] = 192
-		#tiledata	=	tool.WeaveBilinear(tileraw.astype('uint8'), newTileSize, newTileSize, w, h)
-		tiledata	=	Image.fromarray(np.array(tileraw, dtype=numpy.uint8), "RGBA").resize((newTileSize,newTileSize), HYPER_FILTER)
-		tiledata	=	np.array(tiledata.getdata(), numpy.uint8).reshape(newTileSize, newTileSize, 4)
+		tiledata	=	tool.WeaveBilinear(tileraw.astype('uint8'), newTileSize, newTileSize, w, h)
+		#tiledata	=	Image.fromarray(np.array(tileraw, dtype=numpy.uint8), "RGBA").resize((newTileSize,newTileSize), HYPER_FILTER)
+		#tiledata	=	np.array(tiledata.getdata(), numpy.uint8).reshape(newTileSize, newTileSize, 4)
 		tiledata	=	scipy.ndimage.gaussian_filter(tiledata, (HYPER_BLUR,HYPER_BLUR,0))
 		return Image.fromarray(np.array(tiledata, dtype=np.uint8), "RGBA").transpose(Image.ROTATE_90).crop((dts,dts,tool.tileSize+dts,tool.tileSize+dts))
 
@@ -92,7 +92,7 @@ class	HyperSignalManager:
 
 	def	InsertTileToDB(self,z,x,y,operator):
 		self.cursor = self.con.cursor()
-		self.cursor.execute("INSERT INTO tiles VALUES(%s,%s,%s,%s) ON DUPLICATE KEY UPDATE `updated`=0", (x,y,z,operator))
+		self.cursor.execute("INSERT INTO tiles VALUES(%s,%s,%s,%s,0) ON DUPLICATE KEY UPDATE `updated`=0", (x,y,z,operator))
 
 	def ProcessSignal(self,lat,lon,value,operator):
 		if operator.strip() == "":

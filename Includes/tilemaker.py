@@ -11,14 +11,18 @@ donetiles		=	Value('d', 0.0)
 stopsignal		=	Value('d', 0.0)
 
 tilesToDo		=	0
-threadsperzoom	= 	4
+threadsperzoom	= 	6
 
 def PrintProgress():
 	global doneTiles
 	global tilesToDo
-	progress = int(( float(donetiles.value) / tilesToDo) * 100);
-	sys.stdout.write("\rProgresso %d%% - Tiles feitos %d - Total %d " % (progress,donetiles.value,tilesToDo))
-	sys.stdout.flush()
+	if tilesToDo == 0:
+		sys.stdout.write("\rNada a fazer.")
+		sys.stdout.flush()
+	else:
+		progress = int(( float(donetiles.value) / tilesToDo) * 100);
+		sys.stdout.write("\rProgresso %d%% - Tiles feitos %d - Total %d " % (progress,donetiles.value,tilesToDo))
+		sys.stdout.flush()
 
 
 class TileMaker:
@@ -28,7 +32,6 @@ class TileMaker:
 		self.tilesdone	=	tilesdone
 		self.stopsignal	=	stopsignal
 		self.hsman		=	manager.HyperSignalManager()
-
 	def __CheckSignal(self):
 		if self.stopsignal.value > 0:
 			sys.exit(0)
@@ -70,14 +73,24 @@ class ZoomProcessor:
 
 	def run(self):
 		global threadsperzoom
-		for n in range(threadsperzoom):
-			self.__CheckSignal()
-			start	=	(self.slicesize*n)
-			end		=	(self.slicesize*(n+1))
-			p = Process(target=InitTile, args=( self.tiles[start:end], self.donetiles, self.stopsignal))
-			p.start()
-			self.tps.append(p)
-		self.__PrintOut("Rodando")
+		if len(self.tiles) == 0:
+			self.__PrintOut("Nenhum tile a fazer")
+		else:
+			if self.slicesize == 0:
+				self.__CheckSignal()
+				p = Process(target=InitTile, args=( self.tiles, self.donetiles, self.stopsignal))
+				p.start()
+				self.tps.append(p)	
+				self.__PrintOut("Rodando")
+			else:			
+				for n in range(threadsperzoom):
+					self.__CheckSignal()
+					start		=	(self.slicesize*n)
+					end		=	(self.slicesize*(n+1))
+					p = Process(target=InitTile, args=( self.tiles[start:end], self.donetiles, self.stopsignal))
+					p.start()
+					self.tps.append(p)
+				self.__PrintOut("Rodando")
 
 def signal_handler(signal, frame):
 	print 'Você apertou Ctrl + C! Fechando todas as threads!'
@@ -85,7 +98,7 @@ def signal_handler(signal, frame):
 	sys.exit(0)
 
 if __name__ == '__main__':
-
+	firsttime	=	datetime.now()	
 	signal.signal(signal.SIGINT, signal_handler)
 	print "Conectando ao banco de dados"
 	hsman 		= manager.HyperSignalManager()
@@ -99,24 +112,31 @@ if __name__ == '__main__':
 		tilelist,tilesToDo	=	hsman.FetchTilesToDo(operator)
 		hsman.DisconnectDB()
 		tps			=	[]
-		print "Iniciando gerador"
-		starttime	=	datetime.now()
-		print "Tempo de inicio: "+starttime.ctime()
-		for zoom in range(config.HYPER_ZOOM_RANGE[0],config.HYPER_ZOOM_RANGE[1]):
-			print "Iniciando ZOOM: %d" %(zoom)
-			zp = ZoomProcessor(zoom, tilelist[zoom], donetiles, stopsignal, tps)
-			zp.run()
+		if tilesToDo == 0:
+			print "Nenhum tile para fazer para operadora %s" %operator
+		else:
+			print "Iniciando gerador"
+			starttime	=	datetime.now()
+			print "Tempo de inicio: "+starttime.ctime()
+			for zoom in range(config.HYPER_ZOOM_RANGE[0],config.HYPER_ZOOM_RANGE[1]):
+				if len(tilelist[zoom]) != 0:
+					print "Iniciando ZOOM: %d" %(zoom)
+					zp = ZoomProcessor(zoom, tilelist[zoom], donetiles, stopsignal, tps)
+					zp.run()
+				else:
+					print "Nenhum tile a fazer no ZOOM %d" %(zoom)
+			while True:
+				ok = True
+				PrintProgress()	
+				for p in tps:
+					ok = ok &  (not p.is_alive())
+				if ok:	
+					print "ACABOU(?)"
+					break
+				time.sleep(0.1)	
 
-		while True:
-			ok = True
-			PrintProgress()	
-			for p in tps:
-				ok = ok &  (not p.is_alive())
-			if ok:	
-				print "ACABOU(?)"
-				break
-			time.sleep(0.1)	
-
-		endtime = datetime.now()
-		print "Tempo de fim: "+endtime.ctime()
-		print "Tempo decorrido: "+(endtime-starttime).__str__()
+			endtime = datetime.now()
+			print "Tempo de fim: "+endtime.ctime()
+			print "Tempo decorrido: "+(endtime-starttime).__str__()
+	lasttime	=	datetime.now()
+	print "Tempo decorrido total: "+(lasttime-firsttime).__str__()	
