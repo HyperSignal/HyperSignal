@@ -114,9 +114,9 @@ class	HyperSignalManager:
 
 		for i in range(1,HYPER_BRUSH+1):
 			for j in range(1,HYPER_BRUSH+1):
-				w 	= 	(1 - math.sqrt(i*i+j*j)/math.sqrt(2*HYPER_BRUSH*HYPER_BRUSH)) * weight
-				wi	=	(1 - i/math.sqrt(2*HYPER_BRUSH*HYPER_BRUSH)) * weight
-				wj	=	(1 - j/math.sqrt(2*HYPER_BRUSH*HYPER_BRUSH)) * weight
+				w 	= 	(1 - math.sqrt((i-1)*(i-1)+(j-1)*(j-1))/math.sqrt(2*HYPER_BRUSH*HYPER_BRUSH)) * weight
+				wi	=	(1 - (i-1)/math.sqrt(2*HYPER_BRUSH*HYPER_BRUSH)) * weight
+				wj	=	(1 - (j-1)/math.sqrt(2*HYPER_BRUSH*HYPER_BRUSH)) * weight
 
 				if	HYPER_BRUSH_INT[by][bx+j] == 1:
 					signals.append( (x+j,y,value,operator,wj) )
