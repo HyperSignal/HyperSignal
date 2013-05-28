@@ -4,11 +4,18 @@
 import tool, MySQLdb, Image, ImageDraw, math, numpy as np, numpy, scipy, scipy.ndimage, config
 from scipy import weave
 
-HYPER_STEP		=	0.0005			#	Step usado no banco de dados - 0.0005 dá uma precisão de ~100 metros
-HYPER_BRUSH		=	2				#	Tamanho do Brush de interpolação local 
-HYPER_GAP		=	10				#	Gap para interpolação entre tiles
-HYPER_BLUR		=	3				#	Blur para suavização de bordas
-#HYPER_FILTER	=	Image.BILINEAR	#	Filtro usado para interpolação
+HYPER_STEP		=	0.0005					#	Step usado no banco de dados - 0.0005 dá uma precisão de ~100 metros
+HYPER_BRUSH		=	2						#	Tamanho do Brush de interpolação local 
+HYPER_GAP		=	10						#	Gap para interpolação entre tiles
+HYPER_BLUR		=	3						#	Blur para suavização de bordas
+
+HYPER_BRUSH_INT	=	[	
+						[0,0,1,0,0],		#	|
+						[0,1,1,1,0],		#	|
+						[1,1,1,1,1],		#	|---- Brush de Interpolação
+						[0,1,1,1,0],		#	|
+						[0,0,1,0,0]			#	|
+					]						
 
 def LatLonToHyper(lat,lon):
 	'''
@@ -100,30 +107,42 @@ class	HyperSignalManager:
 		operator = OperatorCorrect(operator)
 		value	=	int(value)
 		x,	y	=	LatLonToHyper(lat,lon)
-		signals	=	[(x,y,value,operator)]
+		signals	=	[(x,y,value,operator,weight)]
+		
+		bx = HYPER_BRUSH-1
+		by = HYPER_BRUSH-1	
 
 		for i in range(1,HYPER_BRUSH+1):
 			for j in range(1,HYPER_BRUSH+1):
+				w 	= 	(1 - math.sqrt(i*i+j*j)/math.sqrt(2*HYPER_BRUSH*HYPER_BRUSH)) * weight
+				wi	=	(1 - i/math.sqrt(2*HYPER_BRUSH*HYPER_BRUSH)) * weight
+				wj	=	(1 - j/math.sqrt(2*HYPER_BRUSH*HYPER_BRUSH)) * weight
 
-				signals.append( (x+j,y,value,operator) )
-				signals.append( (x,y+i,value,operator) )
-				signals.append( (x+j,y+i,value,operator) )
+				if	HYPER_BRUSH_INT[by][bx+j] == 1:
+					signals.append( (x+j,y,value,operator,wj) )
+				if	HYPER_BRUSH_INT[by+i][bx]:
+					signals.append( (x,y+i,value,operator,wi) )
+				if	HYPER_BRUSH_INT[by+i][bx+j] == 1:
+					signals.append( (x+j,y+i,value,operator,w) )
 
 				if x-j > -1:
-					signals.append( (x-j,y,value,operator) )
-					signals.append( (x-j,y+i,value,operator) )
+					if HYPER_BRUSH_INT[by][bx-j] == 1:
+						signals.append( (x-j,y,value,operator,wj) )
+					if HYPER_BRUSH_INT[by+i][bx-j] == 1:
+						signals.append( (x-j,y+i,value,operator,w) )
 
 				if y-i > -1:
-					signals.append( (x,y-i,value,operator) )
+					if HYPER_BRUSH_INT[by-i][bx] == 1:
+						signals.append( (x,y-i,value,operator,wi) )
 
-					if x-j > -1:
-						signals.append( (x-j,y-i,value,operator) )
+					if x-j > -1 and HYPER_BRUSH_INT[by-i][bx-j] == 1:
+						signals.append( (x-j,y-i,value,operator,w) )
 
-				if x-j > -1:
-					signals.append( (x-j,y,value,operator) )
+				if x-j > -1 and HYPER_BRUSH_INT[by][bx-j] == 1:
+					signals.append( (x-j,y,value,operator,wj) )
 		
 		for signal in signals:
-			self.InsertToDB(signal[0],signal[1],signal[2],signal[3],weight)
+			self.InsertToDB(signal[0],signal[1],signal[2],signal[3],signal[4])
 
 		tiles	=	[]
 		for zoom in range(config.HYPER_ZOOM_RANGE[0],config.HYPER_ZOOM_RANGE[1]):
