@@ -80,7 +80,7 @@ class	HyperSignalManager:
 					tileraw[x,y,2] = 128
 					tileraw[x,y,3] = 0
 				else:
-					cdata		=	((block[x, y]/32.0)*120)
+					cdata		=	((block[x, y]/31.0)*120)
 					colorrgb 	=	tool.hsv2rgb(cdata,1,0.902)
 					tileraw[x,y,0] = colorrgb[0]
 					tileraw[x,y,1] = colorrgb[1]
@@ -102,7 +102,7 @@ class	HyperSignalManager:
 		self.cursor.execute("INSERT INTO tiles VALUES(%s,%s,%s,%s,0) ON DUPLICATE KEY UPDATE `updated`=0", (x,y,z,operator))
 
 	def ProcessSignal(self,lat,lon,value,operator,weight=1.0):
-		if operator.strip() == "":
+		if operator.strip() == "" or operator == "None" or operator == None:
 			return 0
 		operator = OperatorCorrect(operator)
 		value	=	int(value)
@@ -204,7 +204,6 @@ class	HyperSignalManager:
 		self.cursor.execute("SELECT * FROM antennas	WHERE `lat` >= %s and `lon` >= %s and `lat` < %s and `lon` < %s and `operator` = %s", (minlat,minlon,maxlat,maxlon,operator))
 		row		=	self.cursor.fetchone()
 		antenas	=	[]
-		#{"id":357,"latitude":-23.659896,"longitude":-46.580414}
 		while row is not None:
 			antenas.append({ "lat" : float(row[0]), "lon" : float(row[1]), "operator" : row[2] })
 			row = self.cursor.fetchone()

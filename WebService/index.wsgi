@@ -57,7 +57,7 @@ def	ProcessPage(_SERVER):
 					if  not data["op"].strip() == "":
 						if data.has_key("weight"):
 							weight = float(data["weight"])
-						else
+						else:
 							weight = 1.0
 						sigs = hsman.ProcessSignal(float(data["lat"]),float(data["lon"]),int(data["sig"]),data["op"].strip(), weight)
 						hsman.AddStatistics("apicall")
