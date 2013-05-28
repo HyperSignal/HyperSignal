@@ -6,7 +6,7 @@ from scipy import weave
 
 HYPER_STEP		=	0.0005					#	Step usado no banco de dados - 0.0005 dá uma precisão de ~100 metros
 HYPER_BRUSH		=	2						#	Tamanho do Brush de interpolação local 
-HYPER_GAP		=	10						#	Gap para interpolação entre tiles
+HYPER_GAP		=	20						#	Gap para interpolação entre tiles
 HYPER_BLUR		=	3						#	Blur para suavização de bordas
 
 HYPER_BRUSH_INT	=	[	
