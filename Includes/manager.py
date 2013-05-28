@@ -85,16 +85,16 @@ class	HyperSignalManager:
 		tiledata	=	scipy.ndimage.gaussian_filter(tiledata, (HYPER_BLUR,HYPER_BLUR,0))
 		return Image.fromarray(np.array(tiledata, dtype=np.uint8), "RGBA").transpose(Image.ROTATE_90).crop((dts,dts,tool.tileSize+dts,tool.tileSize+dts))
 
-	def InsertToDB(self,x,y,value,operator):
+	def InsertToDB(self,x,y,value,operator,weight=1.0):
 		if value < 32:
 			self.cursor = self.con.cursor()
-			self.cursor.execute("INSERT INTO datamatrix VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE `value`=(`value`+VALUES(`value`))/2",(x,y,value,operator))
+			self.cursor.execute("INSERT INTO datamatrix VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE `value`=( ((2-%s)*`value`)+(%s*VALUES(`value`)))/2",(x,y,value,operator,weight,weight))
 
 	def	InsertTileToDB(self,z,x,y,operator):
 		self.cursor = self.con.cursor()
 		self.cursor.execute("INSERT INTO tiles VALUES(%s,%s,%s,%s,0) ON DUPLICATE KEY UPDATE `updated`=0", (x,y,z,operator))
 
-	def ProcessSignal(self,lat,lon,value,operator):
+	def ProcessSignal(self,lat,lon,value,operator,weight=1.0):
 		if operator.strip() == "":
 			return 0
 		operator = OperatorCorrect(operator)
@@ -123,7 +123,7 @@ class	HyperSignalManager:
 					signals.append( (x-j,y,value,operator) )
 		
 		for signal in signals:
-			self.InsertToDB(signal[0],signal[1],signal[2],signal[3])
+			self.InsertToDB(signal[0],signal[1],signal[2],signal[3],weight)
 
 		tiles	=	[]
 		for zoom in range(config.HYPER_ZOOM_RANGE[0],config.HYPER_ZOOM_RANGE[1]):

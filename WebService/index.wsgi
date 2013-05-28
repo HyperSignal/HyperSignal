@@ -55,7 +55,11 @@ def	ProcessPage(_SERVER):
 				'''
 				try:
 					if  not data["op"].strip() == "":
-						sigs = hsman.ProcessSignal(float(data["lat"]),float(data["lon"]),int(data["sig"]),data["op"].strip())
+						if data.has_key("weight"):
+							weight = float(data["weight"])
+						else
+							weight = 1.0
+						sigs = hsman.ProcessSignal(float(data["lat"]),float(data["lon"]),int(data["sig"]),data["op"].strip(), weight)
 						hsman.AddStatistics("apicall")
 						hsman.CommitToDB()
 						hsman.AddDevice(data["uid"].strip(), data["dev"].strip(), data["man"].strip(), data["model"].strip(), data["brand"].strip(), data["and"].strip(), data["rel"].strip(), data["sig"])
