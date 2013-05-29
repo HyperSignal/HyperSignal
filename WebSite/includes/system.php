@@ -8,45 +8,46 @@ include("includes/facebook.php");
 
 //	HyperSignal
 $hsman	=	new HyperSignal($host,$user,$pass,$database,$progver,$replacelist);
-
-//	Facebook
-$facebook = new Facebook(array(
-  'appId'  => $fbappid,
-  'secret' => $fbsecret,
-));
-if($_REQUEST["c"] == "logout")	{
-	session_destroy();
-	$facebook->destroySession();
-    header("Location: $siteurl");
-}
-$user = $facebook->getUser();
-if ($user) {
-  try {
-    // Proceed knowing you have a logged in user who's authenticated.
-    $user_profile = $facebook->api('/me');
-  } catch (FacebookApiException $e) {
-    error_log($e);
-    $user = null;
-  }
-}
-
-if ($user) {
-  $logoutUrl = $facebook->getLogoutUrl($params = array('next' => $siteurl."?c=logout"));
-} else {
-  $loginUrl = $facebook->getLoginUrl($params = array('redirect_uri' => $siteurl, 'req_perms' => 'publish_stream', 'scope' => 'email'));
-}
-
-if($user) {
-	if(!$hsman->checkUser($user_profile["id"])) {
-		$hsman->addUser($user_profile["id"], $user_profile["username"], $user_profile["name"], $user_profile["email"], $_SERVER["REMOTE_ADDR"], $user_profile["location"]["name"]);
-	}else{
-		$hsman->updateUserEnter($user_profile["id"], $_SERVER["REMOTE_ADDR"]);
+if($loadfb)	{
+	//	Facebook
+	$facebook = new Facebook(array(
+	  'appId'  => $fbappid,
+	  'secret' => $fbsecret,
+	));
+	if($_REQUEST["c"] == "logout")	{
+		session_destroy();
+		$facebook->destroySession();
+	    header("Location: $siteurl/fb.php");
 	}
-	$loginSection = 'Bem-vindo '.$user_profile["name"].'! <BR> <a href="'.$logoutUrl.'">Sair</a>';
-}else{
-	$loginSection = '<a href="'.$loginUrl.'"><img border=0 src="'.$siteurl.'images/fblogin.png"/></a>';
-}
+	$user = $facebook->getUser();
+	if ($user) {
+	  try {
+	    // Proceed knowing you have a logged in user who's authenticated.
+	    $user_profile = $facebook->api('/me');
+	  } catch (FacebookApiException $e) {
+	    error_log($e);
+	    $user = null;
+	  }
+	}
 
+	if ($user) {
+	  $logoutUrl = $facebook->getLogoutUrl($params = array('next' => $siteurl."fb.php?c=logout"));
+	} else {
+	  $loginUrl = $facebook->getLoginUrl($params = array('redirect_uri' => $siteurl."fb.php?frame=1", 'req_perms' => 'publish_stream', 'scope' => 'email'));
+	}
+
+	if($user) {
+		if(!$hsman->checkUser($user_profile["id"])) {
+			$hsman->addUser($user_profile["id"], $user_profile["username"], $user_profile["name"], $user_profile["email"], $_SERVER["REMOTE_ADDR"], $user_profile["location"]["name"]);
+		}else{
+			$hsman->updateUserEnter($user_profile["id"], $_SERVER["REMOTE_ADDR"]);
+		}
+		$loginSection = 'Bem-vindo '.$user_profile["name"].'! <BR><center><a href="'.$logoutUrl.'">Sair</a></center>';
+	}else{
+		$loginSection = '<a href="'.$loginUrl.'" target="_parent"><img border=0 src="'.$siteurl.'images/fblogin.png"/></a>';
+	}
+
+}else{
 //	Página
 
 $bodyonload = "";
@@ -110,4 +111,5 @@ $page			=	"<BR>".$page;
 $page			=	$hsman->ReplaceList($page);	
 
 $page			=	str_ireplace("{PROG_VER}",$progver,$page);
+}
 ?>

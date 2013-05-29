@@ -21,11 +21,14 @@ import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.android.gms.maps.model.TileProvider;
 import com.google.android.gms.maps.model.UrlTileProvider;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -54,6 +57,7 @@ public class MainScreen  extends FragmentActivity {
 	public static List<GroundOverlay> signals;
 	public static List<GroundOverlay> towers;
 	public TileOverlay STOverlay;
+	public AsyncTask<String, Integer, Long> LoadToMapTask;
 
 	//	Booleans
 	private boolean controlLocked, tileViewing;
@@ -225,6 +229,7 @@ public class MainScreen  extends FragmentActivity {
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
 
+	@SuppressLint("NewApi")
 	private void setUpMap() {
 		signals = new ArrayList<GroundOverlay>();
 		towers = new ArrayList<GroundOverlay>();
@@ -242,23 +247,50 @@ public class MainScreen  extends FragmentActivity {
 	            map.getUiSettings().setZoomGesturesEnabled(!controlLocked);
 	            map.getUiSettings().setZoomControlsEnabled(false);
 	            map.getUiSettings().setCompassEnabled(false);
+				if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
+					LoadToMapTask = new LoadToMap().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+				} else {
+		            LoadToMapTask = new LoadToMap().execute();
+				}
+	            /*
 	            int minSig = (CommonHandler.Signals.size()-CommonHandler.MaxMapContent)>-1?CommonHandler.Signals.size()-CommonHandler.MaxMapContent:0;
 	            int minTow = (CommonHandler.Towers.size()-CommonHandler.MaxMapContent)>-1?CommonHandler.Towers.size()-CommonHandler.MaxMapContent:0;
 	    		for(int i=CommonHandler.Signals.size()-1;i>minSig;i--)	{
 	    			SignalObject sig = CommonHandler.Signals.get(i);
-	    			int lvl	=	getDrawableIdentifier(MainScreen.this, "signal_"+sig.signal);
-	    			GroundOverlay g = map.addGroundOverlay(new GroundOverlayOptions()
-	    	        .image(BitmapDescriptorFactory.fromResource(lvl)).anchor(0.5f, 0.5f)
-	    	        .position(new LatLng(sig.latitude, sig.longitude), 100f)); 
-	    			signals.add(g);
+	    			Bundle sigdata = new Bundle();
+	    			Message sigmsg = new Message();
+	    			sigdata.putShort("signal", sig.signal);
+	    			sigdata.putDouble("lat", sig.latitude);
+	    			sigdata.putDouble("lon", sig.longitude);
+	    			sigmsg.what = 0;
+	    			sigmsg.setData(sigdata);
+	    			MainScreenHandler.sendMessage(sigmsg);
+	    			
+	    			//int lvl	=	getDrawableIdentifier(MainScreen.this, "signal_"+sig.signal);
+	    			//GroundOverlay g = map.addGroundOverlay(new GroundOverlayOptions()
+	    	        //.image(BitmapDescriptorFactory.fromResource(lvl)).anchor(0.5f, 0.5f)
+	    	        //.position(new LatLng(sig.latitude, sig.longitude), 100f)); 
+	    			//signals.add(g);
+	    			
 	    		}
 	    		for(int i=CommonHandler.Towers.size()-1;i>minTow;i--)	{
 	    			TowerObject sig = CommonHandler.Towers.get(i);
-	    			GroundOverlay g = map.addGroundOverlay(new GroundOverlayOptions()
-	    	        .image(BitmapDescriptorFactory.fromResource(R.drawable.tower_75x75)).anchor(0.5f, 0.5f)
-	    	        .position(new LatLng(sig.latitude, sig.longitude), 100f)); 
-	    			towers.add(g);
+	    			Bundle sigdata = new Bundle();
+	    			Message sigmsg = new Message();
+	    			sigdata.putDouble("lat", sig.latitude);
+	    			sigdata.putDouble("lon", sig.longitude);
+	    			sigmsg.what = 1;
+	    			sigmsg.setData(sigdata);
+	    			MainScreenHandler.sendMessage(sigmsg);
+	    			
+	    			
+	    			//GroundOverlay g = map.addGroundOverlay(new GroundOverlayOptions()
+	    	        //.image(BitmapDescriptorFactory.fromResource(R.drawable.tower_75x75)).anchor(0.5f, 0.5f)
+	    	        //.position(new LatLng(sig.latitude, sig.longitude), 100f)); 
+	    			//towers.add(g);
+	    			
 	    		}
+	    		*/
 	            TileProvider tileProvider = new UrlTileProvider(256, 256) {
 	                @Override
 	                public synchronized URL getTileUrl(int x, int y, int zoom) {
@@ -277,6 +309,41 @@ public class MainScreen  extends FragmentActivity {
 				STOverlay.setVisible(tileViewing);
 		}catch(Exception e)	{
 			Log.e("SignalTracker::setUpMap", "Error: "+e.getMessage());
+		}
+	}
+	public static class LoadToMap extends AsyncTask<String, Integer, Long> {
+		/**
+		 * Faz a chamada para API em modo assíncrono
+		 * @param {String} params
+		 * @return {Long} null
+		 */
+		@Override
+		protected Long doInBackground(String... params) {
+            int minSig = (CommonHandler.	Signals.size()-CommonHandler.MaxMapContent)>-1?CommonHandler.Signals.size()-CommonHandler.MaxMapContent:0;
+            int minTow = (CommonHandler.Towers.size()-CommonHandler.MaxMapContent)>-1?CommonHandler.Towers.size()-CommonHandler.MaxMapContent:0;
+    		for(int i=CommonHandler.Signals.size()-1;i>minSig;i--)	{
+    			SignalObject sig = CommonHandler.Signals.get(i);
+    			Bundle sigdata = new Bundle();
+    			Message sigmsg = new Message();
+    			sigdata.putShort("signal", sig.signal);
+    			sigdata.putDouble("lat", sig.latitude);
+    			sigdata.putDouble("lon", sig.longitude);
+    			sigmsg.what = 0;
+    			sigmsg.setData(sigdata);
+    			MainScreenHandler.sendMessage(sigmsg);
+    		}
+    		for(int i=CommonHandler.Towers.size()-1;i>minTow;i--)	{
+    			TowerObject sig = CommonHandler.Towers.get(i);
+    			Bundle sigdata = new Bundle();
+    			Message sigmsg = new Message();
+    			sigdata.putDouble("lat", sig.latitude);
+    			sigdata.putDouble("lon", sig.longitude);
+    			sigmsg.what = 1;
+    			sigmsg.setData(sigdata);
+    			MainScreenHandler.sendMessage(sigmsg);
+    		}
+			
+			return null;
 		}
 	}
 	public static int getDrawableIdentifier(Context context, String name) {
@@ -312,6 +379,8 @@ public class MainScreen  extends FragmentActivity {
 		MainScreenHandler.removeCallbacks(UpdateUI);
 		MainScreenHandler.removeMessages(0);
 		MainScreenHandler.removeMessages(1);
+		if(LoadToMapTask!=null)
+			LoadToMapTask.cancel(true);
 	}
 	
 }

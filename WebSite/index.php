@@ -1,4 +1,5 @@
 <?
+$loadfb = false;
 include("includes/system.php");
 ?>
 <html>
@@ -32,7 +33,7 @@ include("includes/system.php");
 <div id="logo" class="logo"><center><img src="<? echo $siteurl; ?>images/logo.png"></center></div>
 <div id="login" class="login">
 	<center>
-	<?php echo $loginSection; ?>
+	<iframe class="fbframe" src="<? echo $siteurl;?>fb.php"></iframe>
 	</center>
 </div>
 <div id="menu_box" class="menu_box">

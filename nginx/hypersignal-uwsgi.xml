@@ -1,0 +1,20 @@
+<uwsgi>
+    <plugin>python</plugin>
+    <socket>/run/uwsgi/app/hypersignal/socket</socket>
+    <pythonpath>/var/www/hypersignal/</pythonpath>
+	<pythonpath>/var/www/hypersignal/Includes</pythonpath>
+	<pythonpath>/var/www/hypersignal/WebService</pythonpath>
+    <module>hypersignal</module>
+    <master/>
+    <processes>5</processes>
+    <harakiri>60</harakiri>
+    <reload-mercy>8</reload-mercy>
+    <cpu-affinity>1</cpu-affinity>
+    <stats>/tmp/stats.socket</stats>
+    <max-requests>2000</max-requests>
+    <limit-as>512</limit-as>
+    <reload-on-as>256</reload-on-as>
+    <reload-on-rss>192</reload-on-rss>
+    <no-orphans/>
+    <vacuum/>
+</uwsgi>

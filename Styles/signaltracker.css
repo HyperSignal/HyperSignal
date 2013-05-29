@@ -35,21 +35,17 @@
 		position: absolute;
 		bottom:20px;
 		right:10px;
+		z-index: 1;	
 	}
 	.mapdiv {
-		position: relative;
-		height: 60%;
-		margin-left: 20% ;
-		margin-right: 20% ;
-		
+		position: absolute;
+		height: 75%;
+		width: 100%;
+		top: 168px;
+		z-index: 0;	
 		-moz-box-shadow:    3px 3px 5px 6px #ccc;
 		-webkit-box-shadow: 3px 3px 5px 6px #ccc;
 		box-shadow:         3px 3px 5px 6px #ccc;
-		
-		-moz-border-radius: 8px;
-		border-radius: 8px;
-		-webkit-border-radius:8px;
-		border: 2px solid #cac5a3;
 
 	}
 	.topsec {
@@ -73,13 +69,21 @@
 		padding-right: 8px;
 		padding-top: 8px;
 		padding-bottom: 8px;
-		-moz-box-shadow:    3px 3px 5px 6px #ccc;
-		-webkit-box-shadow: 3px 3px 5px 6px #ccc;
-		box-shadow:         3px 3px 5px 6px #ccc;
+		-moz-box-shadow:    3px 3px 5px 6px rgba(127,127,127,64);
+		-webkit-box-shadow: 3px 3px 5px 6px rgba(127,127,127,64);
+		box-shadow:         3px 3px 5px 6px rgba(127,127,127,64);
 	
 		-moz-border-radius: 8px;
 		border: 2px solid #cac5a3;
 		border-radius: 8px;
+		background-image: url({SITEURL}images/bg.jpg);
+		background-repeat:repeat-x;
+		background-attachment:fixed;
+		z-index: 1;
+	}
+	.fbframe {
+		border: 0px;
+		height: 50px;
 	}
 	.toplist {
 		position: absolute;
@@ -87,14 +91,17 @@
 		padding-top: 5px;
 		width: 16%;
 		height: 100px;
-		top: 186px;
+		top: 300px;
 		
-		-moz-box-shadow:    3px 3px 5px 6px #ccc;
-		-webkit-box-shadow: 3px 3px 5px 6px #ccc;
-		box-shadow:         3px 3px 5px 6px #ccc;
+		-moz-box-shadow:    3px 3px 5px 6px rgba(127,127,127,64);
+		-webkit-box-shadow: 3px 3px 5px 6px rgba(127,127,127,64);
+		box-shadow:         3px 3px 5px 6px rgba(127,127,127,64);
 		border: 2px solid #cac5a3;
 		-moz-border-radius: 8px;
 		border-radius: 8px;
+		background-image: url({SITEURL}images/bg.jpg);
+		background-repeat:repeat-x;
+		background-attachment:fixed;
 	}
 	.envio {
 	

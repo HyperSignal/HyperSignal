@@ -1,0 +1,22 @@
+server {
+        listen          89;
+        server_name     $hostname;
+        access_log /srv/hypersignal/logs/access.log;
+        error_log /srv/hypersignal/logs/error.log;
+
+        location / {
+            #uwsgi_pass      127.0.0.1:9001;
+            uwsgi_pass      unix:///run/uwsgi/app/hypersignal/socket;
+            include         uwsgi_params;
+            uwsgi_param     UWSGI_SCHEME $scheme;
+            uwsgi_param     SERVER_SOFTWARE    nginx/$nginx_version;
+
+        }
+
+        location /static {
+            root   /srv/www/hypersignal/public_html/static/;
+            index  index.html index.htm;
+
+        }
+
+}
