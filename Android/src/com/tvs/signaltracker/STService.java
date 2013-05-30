@@ -1,5 +1,25 @@
 package com.tvs.signaltracker;
 
+/**
+ * @author Lucas Teske
+ *  _   _                       ____  _                   _ 
+ * | | | |_   _ _ __   ___ _ __/ ___|(_) __ _ _ __   __ _| |
+ * | |_| | | | | '_ \ / _ \ '__\___ \| |/ _` | '_ \ / _` | |
+ * |  _  | |_| | |_) |  __/ |   ___) | | (_| | | | | (_| | |
+ * |_| |_|\__, | .__/ \___|_|  |____/|_|\__, |_| |_|\__,_|_|
+ *       |___/|_|                      |___/               
+ *  ____  _                   _ _____               _             
+ * / ___|(_) __ _ _ __   __ _| |_   _| __ __ _  ___| | _____ _ __ 
+ * \___ \| |/ _` | '_ \ / _` | | | || '__/ _` |/ __| |/ / _ \ '__|
+ * _ __) | | (_| | | | | (_| | | | || | | (_| | (__|   <  __/ |   
+ * |____/|_|\__, |_| |_|\__,_|_| |_||_|  \__,_|\___|_|\_\___|_|   
+ *         |___/                                                 
+ * 
+ * Created by: Lucas Teske from Teske Virtual System
+ * Package: com.tvs.signaltracker
+ */
+
+
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.Locale;
@@ -52,6 +72,7 @@ public class STService extends Service{
 	//	Internos do Serviço
 	public static boolean LocalRunning = false;
 	public static boolean Opened	=	false;
+	NotificationCompat.Builder mBuilder;
 	
 	//	Tasks (HandlerType)
 	private Handler ServiceHandler = new Handler();
@@ -100,7 +121,7 @@ public class STService extends Service{
 		mlocManager				=	(LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		NetLocListener			=	new NETLocationListener();
 		mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 10,	NetLocListener);	
-		Tel.listen(MyListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+		Tel.listen(MyListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS| PhoneStateListener.LISTEN_CELL_LOCATION );
 		CommonHandler.Operator	=	Utils.DoOperator(Tel.getNetworkOperatorName());
 	}
 	private void UpdateWiFi()	{
@@ -179,7 +200,6 @@ public class STService extends Service{
 		}
 		Toast.makeText(getApplicationContext(), getResources().getString(R.string.stservicestopped), Toast.LENGTH_LONG).show();
 		LocalRunning = false;
-		showServiceNotificationIdle();
 		stopForeground(true);
 	}
 	
@@ -222,63 +242,40 @@ public class STService extends Service{
     	if(CommonHandler.Towers != null)
     		towers = CommonHandler.Towers.size();
     	String bartext = String.format(Locale.getDefault(), getResources().getString(R.string.barnotice) ,(signals*CommonHandler.MinimumDistance)/1000f, towers, CommonHandler.NumSattelites);
-    	NotificationCompat.Builder mBuilder =
-    	        new NotificationCompat.Builder(this)
+    	if(mBuilder == null)	{
+    		mBuilder = new NotificationCompat.Builder(this)
     	        .setSmallIcon(R.drawable.ic_stat_service)
     	        .setContentTitle(TAG)
     	        .setContentText(bartext);
-    	Intent resultIntent = new Intent(this, MainScreen.class);
-    	TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-    	stackBuilder.addParentStack(MainScreen.class);
-    	stackBuilder.addNextIntent(resultIntent);
-    	PendingIntent resultPendingIntent =
-    	        stackBuilder.getPendingIntent(
-    	            0,
-    	            PendingIntent.FLAG_UPDATE_CURRENT
-    	        );
-    	mBuilder.setContentIntent(resultPendingIntent);
-    	NotificationManager mNotificationManager =
-    	    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    	mNotificationManager.notify(NOTIFICATION, mBuilder.build());   	
-
-    }	
-    private void showServiceNotificationIdle() {
-    	NotificationCompat.Builder mBuilder =
-    	        new NotificationCompat.Builder(this)
-    	        .setSmallIcon(R.drawable.ic_stat_service)
-    	        .setContentTitle(TAG)
-    	        .setContentText(getResources().getString(R.string.notasktodo));
-    	Intent resultIntent = new Intent(this, SplashScreen.class);
-    	TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-    	stackBuilder.addParentStack(SplashScreen.class);
-    	stackBuilder.addNextIntent(resultIntent);
-    	PendingIntent resultPendingIntent =
-    	        stackBuilder.getPendingIntent(
-    	            0,
-    	            PendingIntent.FLAG_UPDATE_CURRENT
-    	        );
-    	mBuilder.setContentIntent(resultPendingIntent);
+	    	Intent resultIntent = new Intent(this, MainScreen.class);
+	    	TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+	    	stackBuilder.addParentStack(MainScreen.class);
+	    	stackBuilder.addNextIntent(resultIntent);
+	    	PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);
+	    	mBuilder.setContentIntent(resultPendingIntent);
+    	}else{
+    		mBuilder.setContentText(bartext);
+    	}
     	NotificationManager mNotificationManager =
     	    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     	mNotificationManager.notify(NOTIFICATION, mBuilder.build());   	
 
     }	
     private void InitForeground() {
-    	NotificationCompat.Builder mBuilder =
-    	        new NotificationCompat.Builder(this)
-    	        .setSmallIcon(R.drawable.ic_stat_service)
-    	        .setContentTitle(TAG)
-    	        .setContentText(getResources().getString(R.string.notasktodo));
-    	Intent resultIntent = new Intent(this, MainScreen.class);
-    	TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-    	stackBuilder.addParentStack(MainScreen.class);
-    	stackBuilder.addNextIntent(resultIntent);
-    	PendingIntent resultPendingIntent =
-    	        stackBuilder.getPendingIntent(
-    	            0,
-    	            PendingIntent.FLAG_UPDATE_CURRENT
-    	        );
-    	mBuilder.setContentIntent(resultPendingIntent);
+    	if(mBuilder != null)	{
+	    	mBuilder =
+	    	        new NotificationCompat.Builder(this)
+	    	        .setSmallIcon(R.drawable.ic_stat_service)
+	    	        .setContentTitle(TAG)
+	    	        .setContentText(getResources().getString(R.string.notasktodo));
+	    	Intent resultIntent = new Intent(this, MainScreen.class);
+	    	TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+	    	stackBuilder.addParentStack(MainScreen.class);
+	    	stackBuilder.addNextIntent(resultIntent);
+	    	PendingIntent resultPendingIntent =  stackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);
+	    	mBuilder.setContentIntent(resultPendingIntent);
+    	}else
+    		mBuilder.setContentText(getResources().getString(R.string.notasktodo));
 		startForeground(NOTIFICATION, mBuilder.build());
 	}
     

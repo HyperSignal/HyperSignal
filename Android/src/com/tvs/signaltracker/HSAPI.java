@@ -1,5 +1,25 @@
 package com.tvs.signaltracker;
 
+/**
+ * @author Lucas Teske
+ *  _   _                       ____  _                   _ 
+ * | | | |_   _ _ __   ___ _ __/ ___|(_) __ _ _ __   __ _| |
+ * | |_| | | | | '_ \ / _ \ '__\___ \| |/ _` | '_ \ / _` | |
+ * |  _  | |_| | |_) |  __/ |   ___) | | (_| | | | | (_| | |
+ * |_| |_|\__, | .__/ \___|_|  |____/|_|\__, |_| |_|\__,_|_|
+ *       |___/|_|                      |___/               
+ *  ____  _                   _ _____               _             
+ * / ___|(_) __ _ _ __   __ _| |_   _| __ __ _  ___| | _____ _ __ 
+ * \___ \| |/ _` | '_ \ / _` | | | || '__/ _` |/ __| |/ / _ \ '__|
+ * _ __) | | (_| | | | | (_| | | | || | | (_| | (__|   <  __/ |   
+ * |____/|_|\__, |_| |_|\__,_|_| |_||_|  \__,_|\___|_|\_\___|_|   
+ *         |___/                                                 
+ * 
+ * Created by: Lucas Teske from Teske Virtual System
+ * Package: com.tvs.signaltracker
+ */
+
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
@@ -11,20 +31,15 @@ import android.os.Build;
 import android.util.Log;
 
 public class HSAPI {
-	public static final String baseURL	=	"http://server-b02.tvssite.ws:81/hsapi/";
-    public static final String TILES_SYNTAX = baseURL+"?operadora=%s&tile=%d-%d-%d";
+	public static final String baseURL	=	"http://server-b02.tvssite.ws:81/hsapi/";		//	The Base URL for the API
+    public static final String TILES_SYNTAX = baseURL+"?operadora=%s&tile=%d-%d-%d";		//	The Syntax for download tiles
 
 	/**
-	 * Faz a chamada para API em modo assíncrono
-	 * @param {String} params
-	 * @return Nothing
+	 * Do an Async API Call
+	 * @param	params	ODATA Parameter
+	 * @see AsyncTask
 	 */
 	public static class CallAPI extends AsyncTask<String, Integer, Long> {
-		/**
-		 * Faz a chamada para API em modo assíncrono
-		 * @param {String} params
-		 * @return {Long} null
-		 */
 		@Override
 		protected Long doInBackground(String... params) {
 			try {
@@ -45,13 +60,13 @@ public class HSAPI {
 			return null;
 		}
 	}
-	
+	/**
+	 * Adds info about a tower in Database
+	 * @param	tower	Tower data to send
+	 * @see TowerObject
+	 * @see AsyncTask
+	 */
 	public static class SendTower extends AsyncTask<TowerObject, Integer, Long> {
-		/**
-		 * Faz o envio de torre
-		 * @param {SignalObject} params
-		 * @return {Long} 0
-		 */
 		TowerObject tower;
 		
 		@Override
@@ -86,12 +101,13 @@ public class HSAPI {
 		}
 	}
 	
+	/**
+	 * Adds info about a signal in Database
+	 * @param	signal	Signal data to be send
+	 * @see	SignalObject
+	 * @see AsyncTask
+	 */
 	public static class SendSignal extends AsyncTask<SignalObject, Integer, Long> {
-		/**
-		 * Faz o envio de sinal
-		 * @param {SignalObject} params
-		 * @return {Long} 0
-		 */
 		SignalObject signal;
 		
 		@Override
@@ -104,7 +120,6 @@ public class HSAPI {
 				JSONObject out = Utils.getODataJSONfromURL(baseURL+"?odata="+URLEncoder.encode(jsondata, "UTF-8"));
 				if(out != null)	{
 					if(out.getString("result").indexOf("OK") > -1)	{
-						//Log.i("SignalTracker::SendSignal","OK");
 						signal.state = 2;
 						CommonHandler.dbman.deleteSignal(signal.id);
 					}else{
@@ -125,40 +140,19 @@ public class HSAPI {
 			return null;
 		}
 	}
+
 	/**
-	 * Adiciona um ponto ao banco de dados
-	 * @param {double} latitude
-	 * @param {double} longitude
-	 * @param {String} operatora
-	 * @param {int} sinal
+	 * Adds user to database
+	 * @param	username	Username in Facebook
+	 * @param	name		Name in Facebook
+	 * @param	email		Email in Facebook
+	 * @param	city		City in Facebook
+	 * @param	country		Country in Facebook
 	 */
-	/* DEPRECATED
-	public static void AddSignal(double latitude, double longitude, String operadora, short sinal) {
-		String jsondata = "{\"metodo\":\"addsinal\",\"uid\":\""+CommonHandler.FacebookUID+"\",\"op\":\""+operadora+"\",\"lat\":"+String.valueOf(latitude)+",\"lon\":"+String.valueOf(longitude)+",\"dev\":\""+Build.DEVICE+"\",\"man\":\""+Build.MANUFACTURER+"\",\"model\":\""+Build.MODEL+"\",\"brand\":\""+Build.BRAND+"\",\"rel\":\""+Build.VERSION.RELEASE+"\",\"and\":\""+Build.ID+"\",\"sig\":"+String.valueOf(sinal)+"}";
-		jsondata = TheUpCrypter.GenOData(jsondata);
-		//Log.i("SignalTracker::APICall","Adding signal call");
-		new CallAPI().execute(jsondata);
-	}
-	*/
-	/**
-	 * Adiciona uma antena ao banco de dados
-	 * @param {double} latitude
-	 * @param {double} longitude
-	 * @param {String} operatora
-	 */
-	/* DEPRECATED
-	public static void AddTower(double latitude, double longitude, String operadora) {
-		String jsondata = "{\"metodo\":\"addtorre\",\"op\":\""+operadora+"\",\"lat\":"+String.valueOf(latitude)+",\"lon\":"+String.valueOf(longitude)+", \"uid\":\""+CommonHandler.FacebookUID+"\"}";
-		jsondata = TheUpCrypter.GenOData(jsondata);
-		new CallAPI().execute(jsondata);
-		//Log.i("SignalTracker::APICall","Adding tower call");
-	}
-	*/
 	public static void AddUser(String username, String name, String email, String city, String country)	{
-		//TODO: Função pra adicionar usuário na API
 		String jsondata = "{\"metodo\":\"adduser\",\"username\":\""+username+"\",\"email\":\""+email+"\",\"name\":\""+name+"\", \"uid\":\""+CommonHandler.FacebookUID+"\", \"city\":\""+city+"\", \"country\":\""+country+"\"}";
 		jsondata = TheUpCrypter.GenOData(jsondata);
 		new CallAPI().execute(jsondata);
-		Log.i("SignalTracker::APICall","Adicionando usuário");
+		Log.i("SignalTracker::APICall","User added");
 	}
 }

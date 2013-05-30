@@ -1,5 +1,25 @@
 package com.tvs.signaltracker;
 
+/**
+ * @author Lucas Teske
+ *  _   _                       ____  _                   _ 
+ * | | | |_   _ _ __   ___ _ __/ ___|(_) __ _ _ __   __ _| |
+ * | |_| | | | | '_ \ / _ \ '__\___ \| |/ _` | '_ \ / _` | |
+ * |  _  | |_| | |_) |  __/ |   ___) | | (_| | | | | (_| | |
+ * |_| |_|\__, | .__/ \___|_|  |____/|_|\__, |_| |_|\__,_|_|
+ *       |___/|_|                      |___/               
+ *  ____  _                   _ _____               _             
+ * / ___|(_) __ _ _ __   __ _| |_   _| __ __ _  ___| | _____ _ __ 
+ * \___ \| |/ _` | '_ \ / _` | | | || '__/ _` |/ __| |/ / _ \ '__|
+ * _ __) | | (_| | | | | (_| | | | || | | (_| | (__|   <  __/ |   
+ * |____/|_|\__, |_| |_|\__,_|_| |_||_|  \__,_|\___|_|\_\___|_|   
+ *         |___/                                                 
+ * 
+ * Created by: Lucas Teske from Teske Virtual System
+ * Package: com.tvs.signaltracker
+ */
+
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,29 +67,39 @@ public class CommonHandler {
 	private static List<STCallBack>		TowerCallbacks;
 	
 	/*	Preferências	*/
-	public static Boolean Configured 			= 	false;			//	Se o cliente foi configurado
-	public static Boolean WakeLock				=	false;			//	A tela permanecerá ativa até fechar o aplicativo
-	public static Boolean WifiSend				=	false;			//	Somente enviar com WiFi Ligado
-	public static String FacebookUID			= 	"0";			//	UID do Facebook, caso logado
-	public static String FacebookName			=	"Anônimo";		//	Nome no Facebook, caso logado
-	public static String FacebookEmail			=	"";				//	Email no Facebook, caso logado
-	public static String LastOperator			=	"";				//	Ultima operadora
-	public static String Operator				=	"";				//	Operadora atual
-	public static short ServiceMode				=	0;				//	0 => Sem Rodar, 1 => Modo Light, 2 => Modo Full, 3 => Modo Offline Light, 4 => Modo Offline Full
-	public static int	MinimumDistance			=	50;				//	Distancia Mínima entre pontos em Metros
-	public static int	MinimumTime				=	0;				//	Tempo mínimo entre procuras do GPS em Segundos
-	public static int 	LightModeDelayTime		=	30;				//	Tempo de espera do modo Light
+	public static Boolean	Configured 				= 	false;			//	Se o cliente foi configurado
+	public static Boolean	WakeLock				=	false;			//	A tela permanecerá ativa até fechar o aplicativo
+	public static Boolean	WifiSend				=	false;			//	Somente enviar com WiFi Ligado
+	public static String	FacebookUID				= 	"0";			//	UID do Facebook, caso logado
+	public static String	FacebookName			=	"Anônimo";		//	Nome no Facebook, caso logado
+	public static String	FacebookEmail			=	"";				//	Email no Facebook, caso logado
+	public static String	LastOperator			=	"";				//	Ultima operadora
+	public static String	Operator				=	"";				//	Operadora atual
+	public static short		ServiceMode				=	0;				//	0 => Sem Rodar, 1 => Modo Light, 2 => Modo Full, 3 => Modo Offline Light, 4 => Modo Offline Full
+	public static int		MinimumDistance			=	50;				//	Distancia Mínima entre pontos em Metros
+	public static int		MinimumTime				=	0;				//	Tempo mínimo entre procuras do GPS em Segundos
+	public static int		LightModeDelayTime		=	30;				//	Tempo de espera do modo Light
+	public static double	SentSignals				=	0;				//	Sinais Enviados
+	public static int		SentTowers				=	0;				//	Torres Enviadas
+	
 	public static GraphLocation FacebookLocation;					//	Localização no Facebook, caso logado
 	
 
 	
 	/*	Métodos	*/
+	/**
+	 * Initializes the Lists of Tower and Signals
+	 */
 	public static void InitLists()	{
 		if(Signals == null)
 			Signals = new ArrayList<SignalObject>();
 		if(Towers == null)
 			Towers = new ArrayList<TowerObject>();
 	}
+	
+	/**
+	 * Loads the database data into Towers and Signal Lists
+	 */
 	public static void LoadLists()	{
 		if(dbman != null)	{
 			Log.i("SignalTracker::LoadLists","Cleaning sent signals.");
@@ -81,6 +111,9 @@ public class CommonHandler {
 		}else
 			Log.e("SignalTracker::LoadLists","DatabaseManager is null! ");
 	}
+	/**
+	 * 	Initializes the Callback Lists
+	 */
 	public static void InitCallbacks()	{
 		if(SignalCallbacks == null)
 			SignalCallbacks = new ArrayList<STCallBack>();
@@ -88,6 +121,11 @@ public class CommonHandler {
 			TowerCallbacks = new ArrayList<STCallBack>();
 	}
 	
+	/**
+	 * Adds a SignalTracker Signal Callback
+	 * @param cb	STCallBack for Signal
+	 * @see STCallBack
+	 */
 	public static void AddSignalCallback(STCallBack cb)	{
 		if(SignalCallbacks != null)
 			SignalCallbacks.add(cb);
@@ -95,12 +133,22 @@ public class CommonHandler {
 			Log.e("SignalTracker::AddSignalCallback","Callbacks list of signals is null!");
 	}	
 	
+	/**
+	 * Adds a SignalTracker Tower Callback
+	 * @param cb	STCallback for Tower
+	 * @see STCallBack
+	 */
 	public static void AddTowerCallback(STCallBack cb)	{
 		if(TowerCallbacks != null)
 			TowerCallbacks.add(cb);
 		else
 			Log.e("SignalTracker::AddTowerCallback","Callbacks list of towers is null!");
 	}
+	
+	/**
+	 * Deletes a Signal Callback with the ID
+	 * @param id	The id of Signal Callback
+	 */
 	public static void DelSignalCallback(int id)	{
 		try	{
 			if(SignalCallbacks != null)	{
@@ -111,6 +159,11 @@ public class CommonHandler {
 			Log.e("SignalTracker::DelSignalCallback", "Error on remove ("+id+"): "+e.getMessage());
 		}
 	}
+	
+	/**
+	 * Deletes a Signal Callback
+	 * @param cb	The Signal Callback
+	 */
 	public static void DelSignalCallback(STCallBack cb)	{
 		try	{
 			if(SignalCallbacks != null)	{
@@ -121,6 +174,11 @@ public class CommonHandler {
 			Log.e("SignalTracker::DelSignalCallback", "Error on remove callback: "+e.getMessage());
 		}
 	}
+	
+	/**
+	 * Deletes a Tower Callback with the ID
+	 * @param id	The id of Tower Callback
+	 */
 	public static void DelTowerCallback(int id)	{
 		try{
 			if(TowerCallbacks != null)	{
@@ -132,6 +190,11 @@ public class CommonHandler {
 		}
 			
 	}
+	
+	/**
+	 * Deletes a Tower Callback
+	 * @param cb	The Tower Callback
+	 */
 	public static void DelTowerCallback(STCallBack cb)	{
 		try{
 			if(TowerCallbacks != null)	{
@@ -144,6 +207,9 @@ public class CommonHandler {
 			
 	}
 	@SuppressLint("NewApi")
+	/**
+	 * Resends the Tower and Signal data from memory
+	 */
 	public static void DoResend()	{
 		if( (WifiSend & WifiConnected) | !WifiSend)	{
 			int count = 0, rawcount = 0;
@@ -180,6 +246,7 @@ public class CommonHandler {
 					} else {
 						new HSAPI.SendTower().execute(tower);
 					}
+					
 					count++;
 					rawcount++;
 				}else if (Towers.get(i).state == 1)
@@ -195,6 +262,16 @@ public class CommonHandler {
 		}
 	}
 	@SuppressLint("NewApi")
+	/**
+	 * Adds a Signal to the database, and start the task to send
+	 * it, if not in OnlyWireless Mode. This can execute the 
+	 * callbacks in signal callback list.
+	 * @param lat	Latitude of Signal
+	 * @param lon	Longitude of Signal
+	 * @param signal	The Strength of Signal
+	 * @param weight	The Weight of Signal
+	 * @param doCallback	If Signal Callbacks will be executed
+	 */
 	public static void AddSignal(double lat, double lon, short signal, float weight, boolean doCallback)	{
 		if(Signals != null)	{
 			SignalObject tmp	=	new SignalObject(lat,lon,signal,(short)0,weight);
@@ -207,8 +284,6 @@ public class CommonHandler {
 				}
 			}
 			if(ServiceMode < 3)	{
-				//HSAPI.AddSignal(lat,lon,Operator,signal);
-
 				if((WifiSend & WifiConnected) | !WifiSend)	{
 					if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
 						new HSAPI.SendSignal().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, tmp);
@@ -218,6 +293,8 @@ public class CommonHandler {
 				}
 			}
 			if(add)	{
+				SentSignals += MinimumDistance;
+				dbman.setPreference("sentsignals", Double.toString(SentSignals));
 				Signals.add(tmp);
 				dbman.insertSignal(lat, lon, signal);
 				Log.i("SignalTracker::AddSignal",tmp.toString());
@@ -242,6 +319,13 @@ public class CommonHandler {
 	}
 	
 	@SuppressLint("NewApi")
+	/**
+	 * Adds a Tower to the database, and start the task to send
+	 * it, if not in OnlyWireless Mode. This will execute the 
+	 * callbacks in tower callback list.
+	 * @param lat	Latitude of Tower
+	 * @param lon	Longitude of Tower
+	 */
 	public static void AddTower(double lat, double lon)	{
 		if(Towers != null)	{
 			TowerObject tmp	=	new TowerObject(lat,lon);
@@ -269,6 +353,8 @@ public class CommonHandler {
 				}
 			}
 			if(add)	{
+				SentTowers += 1;
+				dbman.setPreference("senttowers", Integer.toString(SentTowers));
 				Towers.add(tmp);
 				dbman.insertTower(lat, lon);
 				if(TowerCallbacks != null)	{
@@ -291,6 +377,10 @@ public class CommonHandler {
 			Log.e("SignalTracker::AddTower","List of towers is null!");
 	}
 	
+	/**
+	 * Initializes the database
+	 * @param ctx	The context that will initialize the database
+	 */
 	public static void InitDB(Context ctx)	{
 		if(CommonHandler.dbman != null)	{
 			if(!CommonHandler.dbman.isOpen())
@@ -299,6 +389,10 @@ public class CommonHandler {
 			CommonHandler.dbman = new DatabaseManager(ctx);
 		}
 	}
+	
+	/**
+	 * 	Loads the preferences from database
+	 */
 	public static void LoadPreferences()	{
 		/*	Carregar Preferências	*/
 		if(dbman != null)	{
@@ -313,6 +407,8 @@ public class CommonHandler {
 			String wakelock			=	dbman.getPreference("wakelock");
 			String lightmodet		=	dbman.getPreference("lightmodedelay");
 			String wifisend			=	dbman.getPreference("wifisend");
+			String senttower		=	dbman.getPreference("senttowers");
+			String sentsignal		=	dbman.getPreference("sentsignals");
 			
 			if(fbid != null)
 				FacebookUID			=	fbid;
@@ -334,6 +430,10 @@ public class CommonHandler {
 				LightModeDelayTime	=	Integer.parseInt(lightmodet);
 			if(wifisend != null)
 				WifiSend			=	(wifisend.contains("True")?true:false);
+			if(senttower != null)
+				SentTowers			=	Integer.parseInt(senttower);
+			if(sentsignal != null)
+				SentSignals			=	Double.parseDouble(sentsignal);
 			
 			PreferencesLoaded = true;
 			Log.i("SignalTracker::LoadPreferences", "Preferences loaded.");
