@@ -26,7 +26,8 @@ import tool, manager, theupcrypter, config
 def application(environ, start_response):
 
 	output,status,content = ProcessPage(environ)
-	
+	if "text" in content:
+		output = output.encode("utf-8")
 	response_headers = [('Content-type', content),
 						('Content-Length', str(len(output)))]
 	start_response(status, response_headers)
@@ -193,15 +194,21 @@ def	ProcessPage(_SERVER):
 		'''
 			Retornar o javascript correspondente"
 		'''
-		content = "text/javascript"
-		jsfile	=	"%s/%s.js" %(config.JSPATH,query["jscript"][0])
+		if	query.has_key("lang"):
+			lang	=	query["lang"][0]
+		else:
+			lang	=	"default"
+
+		content		=	"text/javascript"
+		jsfile		=	"%s/%s.js" %(config.JSPATH,query["jscript"][0])
 		if os.path.exists(jsfile):
 			f		=	open(jsfile)
 			output = f.read()
 			f.close()
 			for key, value in config.JSREPLACES.iteritems():
 				output	=	output.replace("{"+key+"}",value)
-			output = "\n\n" + minify(output, mangle=True)
+			output	=	manager.LangReplace(output,lang)
+			output	=	"\n\n" + minify(output, mangle=True)
 		else:
 			status	=	"404 Not Found"
 			output	=	"404 Not Found"

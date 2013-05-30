@@ -1,12 +1,23 @@
-
+	
+	body {
+		margin-left: 0px;
+		margin-top: 0px;
+		margin-right: 0px;
+		margin-bottom: 0px;
+		background-image: url({SITEURL}images/bg.jpg);
+		background-repeat:repeat-x;
+		background-attachment:fixed;
+		background-position:bottom; 
+	}
 	.menu_box {
 	
 		-moz-box-shadow:    3px 3px 5px 6px #ccc;
 		-webkit-box-shadow: 3px 3px 5px 6px #ccc;
 		box-shadow:         3px 3px 5px 6px #ccc;
-		width: 99,99%;
+		width: 99.7%;
 		height: 35px;
 		border: 1px solid #cac5a3;
+		z-index: 1;
 	}   
 	.logo {
 		width: 500px;
@@ -34,8 +45,10 @@
 	.androidmarket {
 		position: absolute;
 		bottom:20px;
-		right:10px;
+		right:100px;
 		z-index: 1;	
+	    display: none;
+	    visibility: hidden;
 	}
 	.mapdiv {
 		position: absolute;
@@ -62,9 +75,9 @@
 	}
 	.secmenu {
 		position: absolute;
-		width: 16%;
-		margin-left: 1% ;
-		margin-right: auto ;
+		width: 250px;
+		right: 30px;
+		bottom: 13%;
 		padding-left: 8px;
 		padding-right: 8px;
 		padding-top: 8px;
@@ -82,12 +95,14 @@
 		z-index: 1;
 	}
 	.fbframe {
+		position: absolute;
 		border: 0px;
 		height: 50px;
+		right: 0px;
 	}
 	.toplist {
 		position: absolute;
-		right:1%;
+		right:5%;
 		padding-top: 5px;
 		width: 16%;
 		height: 100px;
@@ -102,6 +117,8 @@
 		background-image: url({SITEURL}images/bg.jpg);
 		background-repeat:repeat-x;
 		background-attachment:fixed;
+	    display: none;
+	    visibility: hidden;
 	}
 	.envio {
 	
@@ -111,14 +128,4 @@
 		margin-right: auto;
 		text-align: center;
 	}
-	
-	body {
-		margin-left: 0px;
-		margin-top: 0px;
-		margin-right: 0px;
-		margin-bottom: 0px;
-		background-image: url({SITEURL}images/bg.jpg);
-		background-repeat:repeat-x;
-		background-attachment:fixed;
-		background-position:bottom; 
-	}
+

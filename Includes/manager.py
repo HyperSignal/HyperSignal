@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: UTF-8 -*-
 
-import tool, MySQLdb, Image, ImageDraw, math, numpy as np, numpy, scipy, scipy.ndimage, config
+import tool, MySQLdb, Image, ImageDraw, math, numpy as np, numpy, scipy, scipy.ndimage, config, os, json, re
 from scipy import weave
 
 HYPER_STEP		=	0.0005					#	Step usado no banco de dados - 0.0005 dá uma precisão de ~100 metros
@@ -16,6 +16,38 @@ HYPER_BRUSH_INT	=	[
 						[0,1,1,1,0],		#	|
 						[0,0,1,0,0]			#	|
 					]						
+
+'''
+	Funções para o site
+'''
+
+def	LangReplace(text,lang="default"):
+	'''
+		Troca tags [KEY] por VALUE no texto baseado na linguagem pedida.
+	'''
+	langfile	=	"%s/%s/keywords.json" %( config.BASEPATH, lang )
+	if os.path.exists(langfile):
+		f			=	open(langfile)
+		langdata	=	f.read()
+		f.close();
+		langdata	=	json.loads(langdata)
+		for key, value in langdata.iteritems():
+			text	=	text.replace("["+key+"]",value)
+	else:
+		langfile	=	"%s/default/keywords.json" %( config.BASEPATH )
+		f			=	open(langfile)
+		langdata	=	f.read()
+		f.close();
+		langdata	=	json.loads(unicode(langdata, 'utf-8'))
+		for key, value in langdata.iteritems():
+			pattern = re.compile(re.escape("["+str(key)+"]"), re.IGNORECASE)
+			text = pattern.sub(value, text)
+	
+	return text
+
+'''
+	Funções do HyperSignal
+'''
 
 def LatLonToHyper(lat,lon):
 	'''

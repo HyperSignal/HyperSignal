@@ -43,23 +43,40 @@ class HyperSignal	{
 	private $q_updateuserlog	=	"UPDATE `users` SET `lastip` = ?, lastaccess = NOW() WHERE `uid` = ?";
 
 
-	function __construct($host,$user,$pass,$database,$prog,$replacelist=array()) {
+	function __construct($host,$user,$pass,$database,$prog,$basepath,$lang) {
 		/*	Constrói o objeto	*/
 		$this->conn				=	new mysqli($host,$user,$pass,$database);
 		$this->prog				=	$prog;
-		$this->replacelist		=	$replacelist;
+		$this->basepath			=	$basepath;
+		$this->lang				=	$lang;
+
+		$this->langdata			=	$this->LoadLangData();
 	}
 
-	static function loadText($file) {
-		/*	Carrega um arquivo de texto	*/
-		$handler				=	fopen($file,"r");
-		$text					=	fread($handler,filesize($file));
+	function loadTPL($file)	{
+		$filename = $this->basepath."/".$this->lang."/".$file;
+		if(file_exists($filename))	{
+			$handler				=	fopen($filename,"r");
+			$text					=	fread($handler,filesize($filename));
+		}else{
+			$filename = $this->basepath."/default/".$file;
+			$handler				=	fopen($filename,"r");
+			$text					=	fread($handler,filesize($filename));
+		}
 		fclose($handler);
 		return $text;
 	}
-
-	function ReplaceList($string)	{
-		foreach($this->replacelist as $key => $value)	
+	function LoadLangData()	{
+		$langdata = $this->loadTPL("keywords.json");
+		return json_decode($langdata);
+	}
+	function ParseLanguage($text)	{
+		foreach($this->langdata as $key => $value)
+			$text = str_ireplace("[".$key."]",$value,$text);
+		return $text;
+	}
+	function ReplaceList($string,$list)	{
+		foreach($list as $key => $value)	
 			$string	=	str_ireplace("{".$key."}",$value,$string);
 		return $string;		
 	}
@@ -105,12 +122,13 @@ class HyperSignal	{
 		$result 	= 	new Statement_Result($cmd);
 		$results	=	array();
 		if($cmd->num_rows() > 0)	{
+			while($cmd->fetch())	{
 				$x = $result->Get_Array();
 				$x = unserialize(serialize($x));
 				$results[] = $x;			
+			}
 		}
 		$cmd->close();
-
 		return $results;
 	}
 	function getTopList() {
@@ -123,9 +141,11 @@ class HyperSignal	{
 		$result 	= 	new Statement_Result($cmd);
 		$results	=	array();
 		if($cmd->num_rows() > 0)	{
+			while($cmd->fetch())	{
 				$x = $result->Get_Array();
 				$x = unserialize(serialize($x));
-				$results[] = $x;			
+				$results[] = $x;	
+			}		
 		}
 		$cmd->close();
 

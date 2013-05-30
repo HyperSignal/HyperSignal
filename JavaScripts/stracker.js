@@ -18,17 +18,18 @@
 	
 	function TogglePoints(anchor) {
 		pointsEnable = !pointsEnable;
-		anchor.innerText = (pointsEnable?"Desativar Sinais":"Ativar Sinais");
+		anchor.innerText = (pointsEnable?"[DISABLESIGNALS]":"[ENABLESIGNALS]");
 		pointLayer.setVisible(pointsEnable);
-
 	}
+
 	function ToggleAntenas(anchor) {
 		antenasEnable = !antenasEnable;
-		anchor.innerHTML = (antenasEnable?"Desativar Antenas <font color=red>Beta</font>":"Ativar Antenas <font color=red>Beta</font>");
+		anchor.innerHTML = (antenasEnable?"[DISABLEANTENNAS]":"[ENABLEANTENNAS]");
 		for(var i=0;i<antenasOverlay.length;i++) {
 			antenasOverlay[i].setMap(antenasEnable?map:null);
 		}	
 	}
+
 	function pointIdExistAnt(ant) {
 		if(loadedAntenas.length > 0 ) {
 			for(var i=0;i<loadedAntenas.length;i++) {
@@ -39,8 +40,10 @@
 		}else
 			return false;
 	}	
+
 	function changeOperator(operator) {
 		if(selectedOperator != operator) {
+			console.log("[CHANGINGOPERATORTO]: "+operator);
 			pointLayer.removeAllTiles();
 			for(var i=0;i<antenasOverlay.length;i++) {
 				antenasOverlay[i].setMap(null);
@@ -70,12 +73,13 @@
 	}
 	function procurar() {
 				
-		var address = document.getElementById('search_address').value;
+		var address = $("#search_address").val();
+		console.log("[SEARCHINGADDRESS]: "+address);
 		geocoder.geocode( { 'address': address}, function(results, status) {
 		  if (status == google.maps.GeocoderStatus.OK) {
 			map.setCenter(results[0].geometry.location);
 		  } else {
-			alert("Não pudemos achar seu endereço!");
+			alert("[WECANTFINDADDRESS]");
 		  }
 		});	 
 	}
@@ -107,39 +111,18 @@
 	function initialize() {
 		var myPoint;
 		var myOptions = {zoom: 16,mapTypeId: google.maps.MapTypeId.ROADMAP};
+		$("#search_address").keyup(function(event){
+			if(event.keyCode == 13){
+				procurar();
+			}
+		});
 		geocoder = new google.maps.Geocoder();
-		infoDiv = document.getElementById("info");
 		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
 		google.maps.event.addListener(map, 'click', function(event) {
 			mouseLatLng[0] = event.latLng.lat();
 			mouseLatLng[1] = event.latLng.lng();
-			infoDiv.innerHTML = event.latLng.toString();	
+			console.log("[CLICKEDIN] "+event.latLng.toString());	
 		});
-		if(navigator.geolocation) {
-				infoDiv.innerHTML = "Localização determinada por HTML5<BR>"; 
-				navigator.geolocation.getCurrentPosition(function(position) {
-				myPoint = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
-				map.setCenter(myPoint);
-			}, function() {
-					infoDiv.innerHTML = "Localização padrão<BR>"; 
-					center = new google.maps.LatLng(-23.54894330,-46.63881820);
-					zoom = 16;
-					map.setCenter(center);
-				});
-			}else{
-				infoDiv.innerHTML = "Localização padrão<BR>"; 
-				center = new google.maps.LatLng(-23.54894330,-46.63881820);
-				zoom = 16;
-				map.setCenter(center);
-		}
-		if(preaddress != "") {
-		geocoder.geocode( { 'address': preaddress}, function(results, status) {
-		  if (status == google.maps.GeocoderStatus.OK) 
-			map.setCenter(results[0].geometry.location);
-		  else
-			alert("Não pudemos achar seu endereço!");
-		});			
-		}
 		loadOperators();
 		scaleLayer = document.createElement('div');
 		scaleLayer.innerHTML = '<img src="{SITEURL}images/scale.png"/>';
@@ -147,7 +130,7 @@
 		map.controls[google.maps.ControlPosition.TOP_CENTER].push(scaleLayer);
 		
 		operatorLayer = document.createElement('div');
-		operatorLayer.innerHTML = selectedOperator==""?"Selecione a operadora":selectedOperator;
+		operatorLayer.innerHTML = selectedOperator==""?"[SELECTOPERATOR]":selectedOperator;
 		operatorLayer.style.backgroundColor = 'white';
 		operatorLayer.style.opacity = '0.8';
 		operatorLayer.style.width = '200px';
@@ -162,15 +145,44 @@
 		logoLayer.style.height = '80px';
 		logoLayer.style.textAlign = 'center';
 		map.controls[google.maps.ControlPosition.RIGHT_TOP].push(logoLayer);
-		
+		if(navigator.geolocation & preaddress == "") {
+				console.log("[GOINGTOHTMLLOC]"); 
+				navigator.geolocation.getCurrentPosition(function(position) {
+				myPoint = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
+				map.setCenter(myPoint);
+			}, function() {
+				console.log("[GOINGTODEFAULTLOC]"); 
+					center = new google.maps.LatLng(-23.54894330,-46.63881820);
+					zoom = 16;
+					map.setCenter(center);
+				});
+			}else{
+				console.log("[GOINGTODEFAULTLOC]"); 
+				center = new google.maps.LatLng(-23.54894330,-46.63881820);
+				zoom = 16;
+				map.setCenter(center);
+		}
+	
         pointLayer = new mobilles.web.TileOverlay(function(x, y, z) {  return selectedOperator!=""?"{APIURL}?operadora="+selectedOperator+"&tile=" + z + "-" + x + "-" + y:""; },{'map': map, 'visible': true,'minZoom': 10,'maxZoom': 16, 'percentOpacity': 100} );
 		google.maps.event.addListener(map, 'bounds_changed', function() {
 			center = map.getCenter();
 			zoom = map.getZoom();
 			bounds = map.getBounds();
 			loadAntena();
-			//infoDiv.innerHTML = pointToTile(center, map.getZoom());
 		});
+		if(preaddress != "") {
+			geocoder.geocode( { 'address': preaddress}, function(results, status) {
+			  if (status == google.maps.GeocoderStatus.OK) 
+				map.setCenter(results[0].geometry.location);
+			  else
+				alert("[WECANTFINDADDRESS]");
+			});			
+		}
+
+		if(preoperator != "")	{
+			changeOperator('none');
+			changeOperator(preoperator);
+		}
 	}
 	function gotoPos(lat,lon) {
 			myPoint = new google.maps.LatLng(lat,lon);

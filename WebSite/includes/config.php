@@ -10,6 +10,9 @@ $fbsecret	=	'***REMOVED***';
 
 $siteurl	=	"http://localhost/hypersignal/WebSite/";
 $apiurl		=	"http://localhost/hypersignal/WebService/";
+$basepath	=	"/var/www/hsbase/";
+
+$lang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
 
 $replacelist=	array("SITEURL" => $siteurl, "APIURL" => $apiurl);
 

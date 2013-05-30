@@ -7,7 +7,7 @@ include("includes/facebook.php");
 
 
 //	HyperSignal
-$hsman	=	new HyperSignal($host,$user,$pass,$database,$progver,$replacelist);
+$hsman	=	new HyperSignal($host,$user,$pass,$database,$progver,$basepath,$lang);
 if($loadfb)	{
 	//	Facebook
 	$facebook = new Facebook(array(
@@ -48,68 +48,76 @@ if($loadfb)	{
 	}
 
 }else{
-//	Página
+	//	Página
 
-$bodyonload = "";
-$head = "";
-$page = "";
+	$bodyonload = "";
+	$head = "";
+	$page = "";
 
-$pagerequest = $_REQUEST["page"];
-$uri	=	str_ireplace(str_ireplace("http://".$_SERVER["SERVER_NAME"]."","",$siteurl), "", $_SERVER["REQUEST_URI"]);
-$uri = explode("/",$uri);
+	$pagerequest = $_REQUEST["page"];
+	$uri	=	str_ireplace(str_ireplace("http://".$_SERVER["SERVER_NAME"]."","",$siteurl), "", $_SERVER["REQUEST_URI"]);
+	$uri = explode("/",$uri);
+	switch($uri[0]) {
+		case "page":
+			switch(strtolower($pagerequest)) {
+				case "about":
+					$page = $hsman->loadTPL("about.html");
+					break;
+				case "devices":
+					$page = "<div align=\"center\"><h1>[TESTEDDEVICES]</h1> <BR>";
+					$devices = $hsman->getDevices();
 
-switch($uri[0]) {
-	case "page":
-		switch(strtolower($pagerequest)) {
-			case "sobre":
-				$page = HyperSignal::loadText("bases/sobre.html");
-				
-				break;
-			case "aparelhos":
-				$page = "<div align=\"center\"><h1>Aparelhos testados</h1> <BR>";
-				$devices = $hsman->getDevices();
-				foreach($devices as $device) {
-					$page .= "<B>Dispositivo:</B> ".$device["device"]." <B>Fabricante:</B> ".$device["manufacturer"]." <B>Modelo:</B> ".$device["model"]." <B>Marca:</B> ".$device["brand"]." <B>Android:</B> ".$device["android"]."-".$device["release"]."<BR>";
-				}
-				$page .= "</div>";
-				break;
-			default: 
-				$page = HyperSignal::loadText("bases/home.html");
-				break;
-		}
-	break;
-	case "maps":
-		$page = HyperSignal::loadText("bases/mapframe.html");
-		$bodyonload = "initialize();";
-		$head = "	<link href=\"https://code.google.com/apis/maps/documentation/javascript/examples/default.css\" rel=\"stylesheet\" type=\"text/css\" />
-					<script type=\"text/javascript\" src=\"https://maps.googleapis.com/maps/api/js?sensor=false\"></script>
-					<script type=\"text/javascript\" src=\"$apiurl/?jscript=json\"></script>
-					<script type=\"text/javascript\" src=\"$apiurl/?jscript=tileoverlay\"></script>
-					<script type=\"text/javascript\" src=\"$apiurl/?jscript=stracker\"></script>";
-		$page = str_ireplace("{TOPSEC}","",$page);
-		if(!empty($uri[3])) {
-			$preaddress = "<script type=\"text/javascript\"> var preaddress = \"".addslashes(urldecode($uri[3]))."\"; var preoperator = \"".strtoupper(addslashes(urldecode($uri[4])))."\"; </script>\n";
-		}else{
-			$preaddress = "<script type=\"text/javascript\"> var preaddress = \"\"; var preoperator = \"\"; </script>\n";
-		}
+					foreach($devices as $device) {
+						$page .= "<B>[DEVICE]:</B> ".$device["device"]." <B>[MANUFACTURER]:</B> ".$device["manufacturer"]." <B>[MODEL]:</B> ".$device["model"]." <B>[BRAND]:</B> ".$device["brand"]." <B>[ANDROID]:</B> ".$device["android"]."-".$device["release"]."<BR>";
+					}
+					$page .= "</div>";
+					break;
+				default: 
+					$page = $hsman->loadTPL("home.html");
+					break;
+			}
 		break;
-	default: 
-		$page = HyperSignal::loadText("bases/home.html");
-		break;
-}
+		case "maps":
+			$page = $hsman->loadTPL("mapframe.html");
+			$bodyonload = "initialize();";
+			$head = "<link href=\"https://code.google.com/apis/maps/documentation/javascript/examples/default.css\" rel=\"stylesheet\" type=\"text/css\" />
+		<script type=\"text/javascript\" src=\"https://maps.googleapis.com/maps/api/js?sensor=false\"></script>
+		<script type=\"text/javascript\" src=\"$apiurl/?jscript=json\"></script>
+		<script type=\"text/javascript\" src=\"$apiurl/?jscript=tileoverlay\"></script>
+		<script type=\"text/javascript\" src=\"$apiurl/?jscript=stracker&lang={LANG}\"></script>";
+			$page = str_ireplace("{TOPSEC}","",$page);
+			if(!empty($uri[1])) {
+				$preaddress = "<script type=\"text/javascript\"> var preaddress = \"".addslashes(urldecode($uri[1]))."\"; var preoperator = \"".strtoupper(addslashes(urldecode($uri[2])))."\"; </script>\n";
+			}else{
+				$preaddress = "<script type=\"text/javascript\"> var preaddress = \"\"; var preoperator = \"\"; </script>\n";
+			}
+			break;
+		default: 
+			$page = $hsman->loadTPL("home.html");
+			break;
+	}
 
-$topusers		= 	$hsman->getTopList();
-$topcounter		= 	1;
-$page			.=	"<div id=\"toplist\" class=\"toplist\"><center><font style=\"font-size:15px\">Maiores Contribuidores</font><BR><font style=\"font-size:10px;\">";
-foreach($topusers as $topuser) {
-	$page .= $topcounter."º - ".$topuser["name"]." - ".$topuser["sentkm"]." km<BR>";
-	$topcounter++;
-} 
-$page			.=	"</font></center></div>";
+	$replacelist["bodyonload"]	=	$bodyonload;
+	$replacelist["preaddress"]	=	$preaddress;
+	$replacelist["head"]		=	$head;
+	$replacelist["lang"]		=	$lang;
 
-$page			=	"<BR>".$page;
-$page			=	$hsman->ReplaceList($page);	
+	$topusers		= 	$hsman->getTopList();
+	$topcounter		= 	1;
+	$page			.=	"		<div id=\"toplist\" class=\"toplist\"><center><font style=\"font-size:15px\">[BESTCONTRIBUTERS]</font><BR><font style=\"font-size:10px;\">";
+	foreach($topusers as $topuser) {
+		$page .= $topcounter."º - ".$topuser["name"]." - ".$topuser["sentkm"]." km<BR>";
+		$topcounter++;
+	} 
+	$page			.=	"</font></center></div>";
 
-$page			=	str_ireplace("{PROG_VER}",$progver,$page);
+	$page			=	"<BR>".$page;
+	$fullpage		=	$hsman->loadTPL("mainpage.html");
+	$fullpage		=	str_ireplace("{PAGECONTENT}",$page,$fullpage);	
+	$fullpage		=	$hsman->ParseLanguage($fullpage);
+	$fullpage		=	$hsman->ReplaceList($fullpage,$replacelist);	
+
+	$fullpage		=	str_ireplace("{PROG_VER}",$progver,$fullpage);
+	
 }
 ?>
