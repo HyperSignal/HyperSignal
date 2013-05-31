@@ -24,7 +24,6 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.Locale;
 
-import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -109,6 +108,7 @@ public class STService extends Service{
 				mlocManager.addGpsStatusListener(GPSs);	
 				LocalRunning = true;
 				showServiceNotification();	
+				Log.i("SignalTracker::LightMode","Searching location");
 			}catch(Exception e)	{
 				Log.e("SignalTracker::LightMode","Error: "+e.getMessage());
 			}
@@ -132,27 +132,29 @@ public class STService extends Service{
 		CommonHandler.WifiConnected = (supState == SupplicantState.COMPLETED);
 		
 	}
-	private void UpdateData()	{
+	private void UpdateData(boolean fromGPS)	{
 		UpdateWiFi();
 		if(CommonHandler.Signal > -1 & CommonHandler.Signal <= 31 & !CommonHandler.Operator.trim().isEmpty())	{
 			if(Utils.isBetterLocation(CommonHandler.GPSLocation, CommonHandler.NetLocation))
 				CommonHandler.AddSignal(CommonHandler.GPSLocation.getLatitude(), CommonHandler.GPSLocation.getLongitude(), CommonHandler.Signal, CommonHandler.Weight, true);
 			else
 				CommonHandler.AddSignal(CommonHandler.NetLocation.getLatitude(), CommonHandler.NetLocation.getLongitude(), CommonHandler.Signal, 0.2f, false);
+			if((CommonHandler.ServiceMode == 1 || CommonHandler.ServiceMode == 3) & fromGPS)	{
+				//	LightModes - dados atualizados. Então parar o serviço e agendar ele pra LightModeTime * 60 
+				Log.i("SignalTracker::LightMode","Location Acquired, scheduling next search for "+(CommonHandler.LightModeDelayTime*60)+" seconds ahead.");
+				CommonHandler.KillService = true;
+				StopWorks();
+	    		Intent myIntent = new Intent(STService.this, STService.class);
+	        	PendingIntent pendingIntent = PendingIntent.getService(STService.this, 0, myIntent, 0);
+	        	AlarmManager alarmManager = (AlarmManager)STService.this.getSystemService(Context.ALARM_SERVICE);
+	            Calendar calendar = Calendar.getInstance();
+	            calendar.setTimeInMillis(System.currentTimeMillis());
+	            calendar.add(Calendar.SECOND, CommonHandler.LightModeDelayTime * 60);
+	            alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+				this.stopSelf();
+			}else if(CommonHandler.ServiceRunning)
+				showServiceNotification();
 		}
-		if(CommonHandler.ServiceMode == 1 || CommonHandler.ServiceMode == 3)	{
-			//	LightModes - dados atualizados. Então parar o serviço e agendar ele pra LightModeTime * 60 
-			StopWorks();
-    		Intent myIntent = new Intent(STService.this, STService.class);
-        	PendingIntent pendingIntent = PendingIntent.getService(STService.this, 0, myIntent, 0);
-        	AlarmManager alarmManager = (AlarmManager)STService.this.getSystemService(Context.ALARM_SERVICE);
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(System.currentTimeMillis());
-            calendar.add(Calendar.SECOND, CommonHandler.LightModeDelayTime * 60);
-            alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
-			this.stopSelf();
-		}else if(CommonHandler.ServiceRunning)
-			showServiceNotification();
 	}
 	
 	private void CheckRunning()	{
@@ -173,34 +175,30 @@ public class STService extends Service{
 	private void StopWorks()	{
 		if(CommonHandler.ServiceMode < 3)
 			ServiceHandler.removeCallbacks(ReSendRun);
-		
-		if(CommonHandler.ServiceMode == 2 || CommonHandler.ServiceMode == 4){
-			Log.i("SignalTracker::STService", "Stopping works");
-			try {
-				if(mlocManager != null)	{
-					mlocManager.removeGpsStatusListener(GPSs);
-					mlocManager.removeUpdates(GPSLocListener);
-					mlocManager.removeUpdates(NetLocListener);
-				}
-				if(Tel != null)
-					Tel.listen(MyListener, PhoneStateListener.LISTEN_NONE);
-			}catch(Exception e)	{}
-
-			try {
-				String ns = Context.NOTIFICATION_SERVICE;
-			    NotificationManager nMgr = (NotificationManager) this.getSystemService(ns);
-			    nMgr.cancel(NOTIFICATION);
-			}catch(Exception e) {}
+		Log.i("SignalTracker::STService", "Stopping works");
+		try {
+			if(mlocManager != null)	{
+				mlocManager.removeGpsStatusListener(GPSs);
+				mlocManager.removeUpdates(GPSLocListener);
+				mlocManager.removeUpdates(NetLocListener);
+			}
+			if(Tel != null)
+				Tel.listen(MyListener, PhoneStateListener.LISTEN_NONE);
+		}catch(Exception e)	{}
+		try {
+			String ns = Context.NOTIFICATION_SERVICE;
+		    NotificationManager nMgr = (NotificationManager) this.getSystemService(ns);
+		    nMgr.cancel(NOTIFICATION);
+		}catch(Exception e) {}
 			
-			GPSs			=	null;
-			GPSLocListener	=	null;
-			NetLocListener	=	null;
-			CommonHandler.GPSFix = false;
-			CommonHandler.NumSattelites = 0;
-		}
+		GPSs			=	null;
+		GPSLocListener	=	null;
+		NetLocListener	=	null;
+		CommonHandler.GPSFix = false;
+		CommonHandler.NumSattelites = 0;
 		Toast.makeText(getApplicationContext(), getResources().getString(R.string.stservicestopped), Toast.LENGTH_LONG).show();
 		LocalRunning = false;
-		stopForeground(true);
+		stopForeground(true); 
 	}
 	
 	private void StartWorks()	{
@@ -222,7 +220,6 @@ public class STService extends Service{
 			if(CommonHandler.ServiceMode < 3)	
 					ServiceHandler.postDelayed(ReSendRun, 1000);
 
-			
 			if(CommonHandler.ServiceMode == 2 || CommonHandler.ServiceMode == 4)	{
 				InitBase();
 				GPSLocListener			=	new GPSLocationListener();
@@ -230,8 +227,11 @@ public class STService extends Service{
 				GPSs					=	new GPSStatusListener();
 				mlocManager.addGpsStatusListener(GPSs);	
 				showServiceNotification();
+			}else{
+				ServiceHandler.post(LightMode);
 			}
-			Toast.makeText(getApplicationContext(), getResources().getString(R.string.stservicestarted), Toast.LENGTH_LONG).show();
+			if( CommonHandler.ServiceMode != 1 && CommonHandler.ServiceMode != 3)
+				Toast.makeText(getApplicationContext(), getResources().getString(R.string.stservicestarted), Toast.LENGTH_LONG).show();
 			LocalRunning = true;
 		}
 	}
@@ -243,9 +243,14 @@ public class STService extends Service{
     		towers = CommonHandler.Towers.size();
     	String bartext = String.format(Locale.getDefault(), getResources().getString(R.string.barnotice) ,(signals*CommonHandler.MinimumDistance)/1000f, towers, CommonHandler.NumSattelites);
     	if(mBuilder == null)	{
+    		String msg	= "";
+    		if( CommonHandler.ServiceMode == 1 || CommonHandler.ServiceMode == 3)
+    			msg = getResources().getString(R.string.lightmode);
+    		else
+    			msg = TAG;
     		mBuilder = new NotificationCompat.Builder(this)
     	        .setSmallIcon(R.drawable.ic_stat_service)
-    	        .setContentTitle(TAG)
+    	        .setContentTitle(msg)
     	        .setContentText(bartext);
 	    	Intent resultIntent = new Intent(this, MainScreen.class);
 	    	TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
@@ -262,11 +267,16 @@ public class STService extends Service{
 
     }	
     private void InitForeground() {
-    	if(mBuilder != null)	{
+    	if(mBuilder == null)	{
+    		String msg	= "";
+    		if( CommonHandler.ServiceMode == 1 || CommonHandler.ServiceMode == 3)
+    			msg = getResources().getString(R.string.lightmode);
+    		else
+    			msg = TAG;
 	    	mBuilder =
 	    	        new NotificationCompat.Builder(this)
 	    	        .setSmallIcon(R.drawable.ic_stat_service)
-	    	        .setContentTitle(TAG)
+	    	        .setContentTitle(msg)
 	    	        .setContentText(getResources().getString(R.string.notasktodo));
 	    	Intent resultIntent = new Intent(this, MainScreen.class);
 	    	TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
@@ -296,7 +306,7 @@ public class STService extends Service{
 				new Utils.TowerFetchTask().execute(STService.this.getResources().getString(R.string.opencell_id), data);
 			}
 			if(CommonHandler.ServiceMode != 2 && CommonHandler.ServiceMode != 4)
-				UpdateData();
+				UpdateData(false);
 		}
 	}
 
@@ -336,7 +346,7 @@ public class STService extends Service{
 		public void onLocationChanged(Location loc) {
 			CommonHandler.GPSLocation = loc;
 			mLastLocationTime = SystemClock.elapsedRealtime();
-			UpdateData();
+			UpdateData(true);
 		}
 		@Override
 		public void onProviderDisabled(String provider) {
@@ -383,7 +393,7 @@ public class STService extends Service{
 		Log.i("SignalTracker::STService", "Service Started");
 		ServiceHandler.postDelayed(ReCheck, 1000);
 	}
-	@SuppressLint("HandlerLeak")
+	
 	@Override
 	public void onCreate() {
 		try	{

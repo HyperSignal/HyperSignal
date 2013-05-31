@@ -59,6 +59,7 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 public class MainScreen  extends FragmentActivity {	
@@ -97,12 +98,20 @@ public class MainScreen  extends FragmentActivity {
 				        .image(BitmapDescriptorFactory.fromResource(lvl)).anchor(0.5f, 0.5f)
 				        .position(new LatLng(msg.getData().getDouble("lat"), msg.getData().getDouble("lon")), 100f)); 
 						signals.add(sig);
+						if(signals.size() > CommonHandler.MaxMapContent)	{
+							signals.get(0).remove();
+							signals.remove(0);
+						}
 						break;
 					case 1:	//	AddTower
 						GroundOverlay tow = map.addGroundOverlay(new GroundOverlayOptions()
 				        .image(BitmapDescriptorFactory.fromResource(R.drawable.tower_75x75)).anchor(0.5f, 0.5f)
 				        .position(new LatLng(msg.getData().getDouble("lat"), msg.getData().getDouble("lon")), 100f)); 
 						towers.add(tow);
+						if(towers.size() > CommonHandler.MaxMapContent)	{
+							towers.get(0).remove();
+							towers.remove(0);
+						}
 						break;
 				}
 			}
@@ -160,7 +169,10 @@ public class MainScreen  extends FragmentActivity {
     		Intent myIntent = new Intent(MainScreen.this, STService.class);
     		startService(myIntent);
 		}
-		
+		if(CommonHandler.ServiceMode == 1 | CommonHandler.ServiceMode == 3)	{
+			Toast.makeText(this, getResources().getString(R.string.lightmodemsg), Toast.LENGTH_SHORT).show();
+			finish();
+		}
 		gpssatmsg = getResources().getString(R.string.gpssatmsg);
 		netsatmsg = getResources().getString(R.string.netsatmsg);
 
@@ -260,8 +272,7 @@ public class MainScreen  extends FragmentActivity {
 	                startActivity(MainMenuIntent);
 	                finish();
 	    		}
-	            map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.seemap))
-	                    .getMap();
+	            map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.seemap)).getMap();
 	            map.setMyLocationEnabled(false);
 	            map.getUiSettings().setScrollGesturesEnabled(!controlLocked);
 	            map.getUiSettings().setZoomGesturesEnabled(!controlLocked);
@@ -272,45 +283,6 @@ public class MainScreen  extends FragmentActivity {
 				} else {
 		            LoadToMapTask = new LoadToMap().execute();
 				}
-	            /*
-	            int minSig = (CommonHandler.Signals.size()-CommonHandler.MaxMapContent)>-1?CommonHandler.Signals.size()-CommonHandler.MaxMapContent:0;
-	            int minTow = (CommonHandler.Towers.size()-CommonHandler.MaxMapContent)>-1?CommonHandler.Towers.size()-CommonHandler.MaxMapContent:0;
-	    		for(int i=CommonHandler.Signals.size()-1;i>minSig;i--)	{
-	    			SignalObject sig = CommonHandler.Signals.get(i);
-	    			Bundle sigdata = new Bundle();
-	    			Message sigmsg = new Message();
-	    			sigdata.putShort("signal", sig.signal);
-	    			sigdata.putDouble("lat", sig.latitude);
-	    			sigdata.putDouble("lon", sig.longitude);
-	    			sigmsg.what = 0;
-	    			sigmsg.setData(sigdata);
-	    			MainScreenHandler.sendMessage(sigmsg);
-	    			
-	    			//int lvl	=	getDrawableIdentifier(MainScreen.this, "signal_"+sig.signal);
-	    			//GroundOverlay g = map.addGroundOverlay(new GroundOverlayOptions()
-	    	        //.image(BitmapDescriptorFactory.fromResource(lvl)).anchor(0.5f, 0.5f)
-	    	        //.position(new LatLng(sig.latitude, sig.longitude), 100f)); 
-	    			//signals.add(g);
-	    			
-	    		}
-	    		for(int i=CommonHandler.Towers.size()-1;i>minTow;i--)	{
-	    			TowerObject sig = CommonHandler.Towers.get(i);
-	    			Bundle sigdata = new Bundle();
-	    			Message sigmsg = new Message();
-	    			sigdata.putDouble("lat", sig.latitude);
-	    			sigdata.putDouble("lon", sig.longitude);
-	    			sigmsg.what = 1;
-	    			sigmsg.setData(sigdata);
-	    			MainScreenHandler.sendMessage(sigmsg);
-	    			
-	    			
-	    			//GroundOverlay g = map.addGroundOverlay(new GroundOverlayOptions()
-	    	        //.image(BitmapDescriptorFactory.fromResource(R.drawable.tower_75x75)).anchor(0.5f, 0.5f)
-	    	        //.position(new LatLng(sig.latitude, sig.longitude), 100f)); 
-	    			//towers.add(g);
-	    			
-	    		}
-	    		*/
 	            TileProvider tileProvider = new UrlTileProvider(256, 256) {
 	                @Override
 	                public synchronized URL getTileUrl(int x, int y, int zoom) {

@@ -192,8 +192,9 @@ public class Settings extends Activity {
 					CommonHandler.MinimumDistance = v_minDistance;
 					CommonHandler.MinimumTime = v_minTime;
 					CommonHandler.LightModeDelayTime = v_lightmodeTime;
-					CommonHandler.ServiceMode = (short) (serviceMode.getSelectedItemId()+1);
-
+					CommonHandler.ServiceMode = (short) (serviceMode.getSelectedItemPosition()+1);
+					
+					CommonHandler.dbman.setPreference("servicemode", Integer.toString(CommonHandler.ServiceMode));
 					CommonHandler.dbman.setPreference("mindistance", Integer.toString(v_minDistance));
 					CommonHandler.dbman.setPreference("mintime", Integer.toString(v_minTime));
 					CommonHandler.dbman.setPreference("lightmodedelay", Integer.toString(v_lightmodeTime));
@@ -259,7 +260,7 @@ public class Settings extends Activity {
 				@Override
 				public void onProgressChanged(SeekBar seekBar, int progress,
 						boolean fromUser) {
-					v_lightmodeTime = progress+15;
+					v_lightmodeTime = progress+2;
 					lightmodeTimeLabel.setText(v_lightmodeTime+" m");
 					
 				}
@@ -281,7 +282,7 @@ public class Settings extends Activity {
 			else
 				towers.setText("0 "+getResources().getString(R.string.towers));
 			
-			if(CommonHandler.ServiceMode > 0)
+			if(CommonHandler.ServiceMode > 0 & CommonHandler.ServiceMode < 5)
 				serviceMode.setSelection(CommonHandler.ServiceMode-1);
 
 			if(CommonHandler.MinimumDistance-30 > 0)	{
@@ -294,8 +295,8 @@ public class Settings extends Activity {
 			minTime.setProgress(CommonHandler.MinimumTime);
 			minTimeLabel.setText(CommonHandler.MinimumTime+" ms");
 			
-			if(CommonHandler.LightModeDelayTime-15 > 0)
-				lightmodeTime.setProgress(CommonHandler.LightModeDelayTime-15);
+			if(CommonHandler.LightModeDelayTime-2 > 0)
+				lightmodeTime.setProgress(CommonHandler.LightModeDelayTime-2);
 			else
 				lightmodeTime.setProgress(0);
 			
@@ -431,9 +432,10 @@ public class Settings extends Activity {
 	@Override
 	public void onResume()	{
 		super.onResume();
-		if(CommonHandler.ServiceMode > 0)
+		
+		if(CommonHandler.ServiceMode > 0 & CommonHandler.ServiceMode < 5)
 			serviceMode.setSelection(CommonHandler.ServiceMode-1);
-
+		
 		if(CommonHandler.MinimumDistance-30 > 0)	{
 			minDistance.setProgress(CommonHandler.MinimumDistance-30);
 			minDistanceLabel.setText(CommonHandler.MinimumDistance+" m");

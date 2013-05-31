@@ -82,4 +82,5 @@
     <string name="extras">Extras</string>
     <string name="datasent">Dados enviados!</string>
     <string name="sending">Enviando</string>
+    <string name="lightmodemsg">O SignalTracker irá funcionar no LightMode</string>
 </resources>

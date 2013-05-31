@@ -108,6 +108,7 @@
 	function initialize() {
 		var myPoint;
 		$("#operator_list").listview();
+		$("#toplist").hide();
 		var myOptions = {zoom: 16,mapTypeId: google.maps.MapTypeId.ROADMAP};
 
 		geocoder = new google.maps.Geocoder();

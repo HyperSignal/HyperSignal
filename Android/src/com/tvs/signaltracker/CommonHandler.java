@@ -39,7 +39,7 @@ public class CommonHandler {
 	public static final String[] FB_read_perm	=	{	"email",				//	Permissões de Leitura no Face
 														"photo_upload"	};
 
-	public static final int	MaxMapContent		=	80;							//	
+	public static final int	MaxMapContent		=	40;							//	
 	
 	/*	Variáveis de funcionamento	*/
 	
