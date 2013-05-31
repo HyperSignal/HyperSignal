@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="Bitly"
+    targetNamespace="http://example.org/Bitly"
+    xmlns:tns="http://example.org/Bitly"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+    <message name="getShortenedRequest">
+        <part name="longUrl" type="xsd:string"/>
+    </message>
+    <message name="getShortenedResponse">
+        <part name="shortUrl" type="xsd:string"/>
+    </message>
+
+    <portType name="BitlyPortType">
+        <operation name="getShortened">
+            <input message="tns:getShortenedRequest"/>
+            <output message="tns:getShortenedResponse"/>
+        </operation>
+    </portType>
+
+    <binding name="BitlyBinding" type="tns:BitlyPortType">
+        <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="getShortened">
+            <soap:operation soapAction="urn:bitly-shortener#getShortened"/>
+            <input>
+                <soap:body use="encoded" namespace="urn:bitly-shortener" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </input>
+            <output>
+                <soap:body use="encoded" namespace="urn:bitly-shortener" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </output>
+        </operation>
+    </binding>
+
+    <service name="BitlyService">
+        <port name="BitlyPort" binding="BitlyBinding">
+            <soap:address location="http://www.ruslanas.com/bitly/soap.php"/>
+        </port>
+    </service>
+</definitions>

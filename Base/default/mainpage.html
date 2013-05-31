@@ -1,7 +1,7 @@
 <html>
 	<head>
 		<title>[TITLE]</title>
-		<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1">
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 		<meta name="title" content="[TITLE]">
 		<meta name="url" content="{SITEURL}">
 		<meta name="description" content="[PAGEDESCRIPTION]">
@@ -18,43 +18,73 @@
 		<meta property="fb:admins" content="1748067536"/>
 	
 		<meta http-equiv="X-UA-Compatible" content="IE=9" />
+		<link rel="shortcut icon" href="{SITEURL}favicon.ico" type="image/x-icon"/>
+		<link rel="stylesheet" href="{APIURL}?css=jquery.mobile-1.1.0.min" />
 		<link rel="stylesheet" href="{APIURL}?css=menu_style" type="text/css" />
 		<link rel="stylesheet" href="{APIURL}?css=signaltracker" type="text/css" />
-		<link rel="shortcut icon" href="{SITEURL}favicon.ico" type="image/x-icon"/>
+		<link href="https://code.google.com/apis/maps/documentation/javascript/examples/default.css" rel="stylesheet" type="text/css" />
 		<script type="text/javascript" src="{APIURL}?jscript=/jquery"></script>
-		{PREADDRESS}
-		{HEAD}
+		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+		<script type="text/javascript" src="{APIURL}/?jscript=json"></script>
+		<script type="text/javascript" src="{APIURL}/?jscript=tileoverlay"></script>
+		<script type="text/javascript" src="{APIURL}/?jscript=stracker&lang={LANG}"></script>
+		<script type="text/javascript" src="{SITEURL}bitly/jquery.bitly.js"></script>
+		<script language=javascript>
+			{PREADDRESS}
+			$.fn.bitly.defaults.url = '{SITEURL}bitly/bitly.php';
+			  $(document).bind("mobileinit", function () {
+				    $.mobile.ajaxLinksEnabled = false;
+				    $.extend(  $.mobile , { 
+				          ajaxFormsEnabled : false,
+				          ajaxLinksEnabled : false
+				     });
+			  });
+			$("#stpage").bind('pageshow', function(){
+				if($("#map_canvas").length)
+					initialize();
+			});
+			$(document).bind('pageinit', function () {
+				if($("#map_canvas").length)
+					initialize();
+			});
+		</script>
+		<script src="{SITEURL}/js/jquery.mobile-1.1.0.min"></script>
 	</head>
 	<body onLoad="{BODYONLOAD}">
-		<div id="logo" class="logo"><center><img src="{SITEURL}images/logo.png"></center></div>
-		<div id="login" class="login">
-			<center>
-			<iframe class="fbframe" src="{SITEURL}fb.php"></iframe>
-			</center>
-		</div>
-		<div id="menu_box" class="menu_box">
-			<div class="menu">
-				<ul>
-					<li><a href="{SITEURL}" >[HOME]</a></li>
-					<li><a href="javascript:void(0);" id="current">[SEECOVERAGE]</a>
-						<ul>
-							<li><a href="{SITEURL}maps/">[ALL]</a></li>
-					   </ul>
-					</li>
-					</li>
-					<li><a href="javascript:void(0);">[ABOUT]</a>
-				        <ul>
-						<li><a href="{SITEURL}page/devices">[TESTEDDEVICES]</a></li>
-						<!-- <li><a href="{SITEURL}page/statistics">[USESTATISTICS]</a></li> -->
-				        <li><a href="{SITEURL}page/about">[ABOUTPROJECT]</a></li>
-				        </ul>
-				  </li>
-				</ul>
+		<div id="content" data-role="page" class="content">
+			<div id="logo" class="logo"><center><img src="{SITEURL}images/logo.png" height="75"></center></div>
+			<div id="login" class="login">
+				<center>
+				<iframe class="fbframe" src="{SITEURL}fb.php"></iframe>
+				</center>
 			</div>
-		</div>
-		<div id="androidmarket" class="androidmarket"><a href="https://market.android.com/details?id=com.mobilles.signalsampler"><img border=0 src="{SITEURL}images/qrcode.png"></a></div>
-		<div id="content">
-		{PAGECONTENT}
+			<div id="menu_box" class="menu_box">
+				<div class="menu">
+					<ul>
+						<li><a href="{SITEURL}" data-ajax="false" data-role="none">[HOME]</a></li>
+						<li><a href="javascript:void(0);" id="current" data-ajax="false" data-role="none">[SEECOVERAGE]</a>
+							<ul>
+								<li><a href="{SITEURL}maps/" data-ajax="false" data-role="none">[ALL]</a></li>
+						   </ul>
+						</li>
+						</li>
+						<li><a href="javascript:void(0);" data-ajax="false" data-role="none">[ABOUT]</a>
+						    <ul>
+							<li><a href="{SITEURL}page/devices" data-ajax="false" data-role="none">[TESTEDDEVICES]</a></li>
+							<!-- <li><a href="{SITEURL}page/statistics" data-ajax="false" data-role="none"	>[USESTATISTICS]</a></li> -->
+						    <li><a href="{SITEURL}page/about" data-ajax="false" data-role="none">[ABOUTPROJECT]</a></li>
+						    </ul>
+					  </li>
+					</ul>
+				</div>
+				<div id="menu2">
+					{MENU2}
+				</div>
+			</div>
+			<div id="androidmarket" class="androidmarket"><a href="https://market.android.com/details?id=com.mobilles.signalsampler" data-ajax="false"><img border=0 src="{SITEURL}images/qrcode.png"></a></div>
+			<div id="content">
+			{PAGECONTENT}
+			</div>
 		</div>
 	</body>
 </html>

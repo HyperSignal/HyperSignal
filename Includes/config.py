@@ -19,6 +19,12 @@ MYDB			=	"hypersignal"					#	Banco de Dados
 
 HYPER_ZOOM_RANGE=	(10,18)							#	Range de Zoom para o Banco de Dados
 
+#	Chaves do Twitter API
+TW_CONSUMER_KEY 	=	'***REMOVED***'
+TW_CONSUMER_SECRET	=	'***REMOVED***'
+TW_ACCESS_KEY		=	'***REMOVED***'
+TW_ACCESS_SECRET	=	'***REMOVED***'
+
 
 JSREPLACES		=	{ "SITEURL" : "http://localhost/hypersignal/WebSite/", "APIURL" : "http://localhost/hypersignal/WebService/" }	#	Variáveis para se substituir nos arquivos JavaScript e CSS
 OPSREPLACES		=	{

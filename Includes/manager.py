@@ -32,7 +32,8 @@ def	LangReplace(text,lang="default"):
 		f.close();
 		langdata	=	json.loads(langdata)
 		for key, value in langdata.iteritems():
-			text	=	text.replace("["+key+"]",value)
+			pattern = re.compile(re.escape("["+str(key)+"]"), re.IGNORECASE)
+			text = pattern.sub(value, text)
 	else:
 		langfile	=	"%s/default/keywords.json" %( config.BASEPATH )
 		f			=	open(langfile)

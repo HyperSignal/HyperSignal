@@ -1,3 +1,5 @@
+	var preoperator = "";
+	var preaddres = "";	
 	var antenasEnable = false;
 	var pointsEnable = true;
 	var antenasOverlay = [];
@@ -13,18 +15,19 @@
 	var operatorLayer;
 	var logoLayer;
 	var geocoder;
-
 	var mouseLatLng = [0,0];
-	
+
 	function TogglePoints(anchor) {
 		pointsEnable = !pointsEnable;
 		anchor.innerText = (pointsEnable?"[DISABLESIGNALS]":"[ENABLESIGNALS]");
+		anchor.className = (pointsEnable?"btnenable":"btndisabled");
 		pointLayer.setVisible(pointsEnable);
 	}
 
 	function ToggleAntenas(anchor) {
 		antenasEnable = !antenasEnable;
-		anchor.innerHTML = (antenasEnable?"[DISABLEANTENNAS]":"[ENABLEANTENNAS]");
+		anchor.innerText = (antenasEnable?"[DISABLEANTENNAS]":"[ENABLEANTENNAS]");
+		anchor.className = (antenasEnable?"btnenable":"btndisabled");
 		for(var i=0;i<antenasOverlay.length;i++) {
 			antenasOverlay[i].setMap(antenasEnable?map:null);
 		}	
@@ -45,12 +48,10 @@
 		if(selectedOperator != operator) {
 			console.log("[CHANGINGOPERATORTO]: "+operator);
 			pointLayer.removeAllTiles();
-			for(var i=0;i<antenasOverlay.length;i++) {
+			for(var i=0;i<antenasOverlay.length;i++) 
 				antenasOverlay[i].setMap(null);
-			}	
 			antenasOverlay = [];
 			loadedAntenas = [];
-			operatorLayer.innerHTML = operator;
 			logoLayer.innerHTML = '<img src="{APIURL}?operadora='+operator+'&mode=logo" width=72 height=72/>';
 			selectedOperator = operator;
 			pointLayer.redraw();
@@ -98,24 +99,17 @@
 	}
 	function loadOperators() {
 		$.getJSON('{APIURL}', {"method":"operators"}, function(data) {
-			var container = document.getElementById('operator_list');
-			container.innerHTML = "";
-			for(var i=0;i<data.data.length;i++) {
-				var new_element = document.createElement('li');
-				new_element.innerHTML = "<a href=\"javascript:void(0);\" onClick=\"changeOperator('"+data.data[i]+"');\">"+data.data[i]+"</a>";
-				container.insertBefore(new_element, container.firstChild);	
-			}		
+			var output = "";
+			for(var i=0;i<data.data.length;i++) 
+				output += "<li><a href=\"javascript:void(0);\" onClick=\"changeOperator('"+data.data[i]+"');\">"+data.data[i]+"</a></li>";
+			$("#operator_list").html(output).listview('refresh');
 		});
 	}
-
 	function initialize() {
 		var myPoint;
+		$("#operator_list").listview();
 		var myOptions = {zoom: 16,mapTypeId: google.maps.MapTypeId.ROADMAP};
-		$("#search_address").keyup(function(event){
-			if(event.keyCode == 13){
-				procurar();
-			}
-		});
+
 		geocoder = new google.maps.Geocoder();
 		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
 		google.maps.event.addListener(map, 'click', function(event) {
@@ -125,19 +119,16 @@
 		});
 		loadOperators();
 		scaleLayer = document.createElement('div');
-		scaleLayer.innerHTML = '<img src="{SITEURL}images/scale.png"/>';
+		scaleLayer.innerHTML = '<center><h3 class="scale_Text" style="line-height: 0.2;">[SCALE]</h3><B class="scale_Text">0% </B><img class="scale_img" src="{SITEURL}images/scale.png" style="vertical-align:middle"/><B class="scale_Text"> 100%</B><BR><BR><B class="scale_Text">50%</B></center>';
 		scaleLayer.style.opacity = '0.8';
+		scaleLayer.style.lineHeight = "0.6";
 		map.controls[google.maps.ControlPosition.TOP_CENTER].push(scaleLayer);
-		
-		operatorLayer = document.createElement('div');
-		operatorLayer.innerHTML = selectedOperator==""?"[SELECTOPERATOR]":selectedOperator;
-		operatorLayer.style.backgroundColor = 'white';
-		operatorLayer.style.opacity = '0.8';
-		operatorLayer.style.width = '200px';
-		operatorLayer.style.textAlign = 'center';
-		operatorLayer.style.borderRadius = '12px';
-		map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(operatorLayer);
-		
+
+		$("#search_address").keyup(function(event){
+			if(event.keyCode == 13){
+				procurar();
+			}
+		});
 		logoLayer = document.createElement('div');
 		logoLayer.innerHTML = '<img src="{APIURL}?operadora=none&mode=logo" width=72 height=72/>';
 		logoLayer.style.opacity = '0.8';
@@ -145,6 +136,13 @@
 		logoLayer.style.height = '80px';
 		logoLayer.style.textAlign = 'center';
 		map.controls[google.maps.ControlPosition.RIGHT_TOP].push(logoLayer);
+		
+		btnlay  = document.createElement('div');
+		btnlay.innerHTML = '<center><a href="javascript:void(0);" onClick="TogglePoints(this);" class="btnenable" id="tgpoint" data-ajax="false" data-role="none">[DISABLESIGNALS]</a><BR><a href="javascript:void(0);" onClick="ToggleAntenas(this);" class="btndisabled" id="tgantena"data-ajax="false" data-role="none">[ENABLEANTENNAS]</a></center>';
+		btnlay.style.width = '220px';
+		btnlay.style.height = '100px';
+		map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(btnlay);
+
 		if(navigator.geolocation & preaddress == "") {
 				console.log("[GOINGTOHTMLLOC]"); 
 				navigator.geolocation.getCurrentPosition(function(position) {
@@ -171,6 +169,7 @@
 			loadAntena();
 		});
 		if(preaddress != "") {
+			$("#search_address").val(preaddress);
 			geocoder.geocode( { 'address': preaddress}, function(results, status) {
 			  if (status == google.maps.GeocoderStatus.OK) 
 				map.setCenter(results[0].geometry.location);
@@ -184,7 +183,31 @@
 			changeOperator(preoperator);
 		}
 	}
+	function ShortLink(link)	{
+		console.log("Shortening URL: "+link);
+		$.getJSON('{SITEURL}short.php', {"URL":link}, ShortLinkCB);
+	}
+	function ShortLinkCB(data)	{
+		if(data.url == null)
+			copyToClipboard("{SITEURL}maps/"+encodeURIComponent(preaddress)+"/"+encodeURIComponent(selectedOperator));
+		else
+			copyToClipboard(data.url);
+	}
+	function generateLink()	{
+		console.log("[SEARCHINGADDRESS]: "+center);
+		geocoder.geocode( { 'latLng': center}, function(results, status) {
+		  if (status == google.maps.GeocoderStatus.OK) {
+			preaddress = results[0].formatted_address;
+			ShortLink("{SITEURL}maps/"+encodeURIComponent(results[0].formatted_address)+"/"+encodeURIComponent(selectedOperator));
+		  } else {
+			alert("[WECANTFINDADDRESS]");
+		  }
+		});	 
+	}
 	function gotoPos(lat,lon) {
 			myPoint = new google.maps.LatLng(lat,lon);
 			map.setCenter(myPoint);	
+	}
+	function copyToClipboard (text) {
+	  window.prompt ("[COPYTOCLIPBOARD]: Ctrl+C, Enter", text);
 	}

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: UTF-8 -*-
 
-import tool, MySQLdb, Image, ImageDraw, math, numpy as np, threading, signal, sys, time, manager, os,config
+import tool, MySQLdb, Image, ImageDraw, math, numpy as np, threading, signal, sys, time, manager, os,config, tweepy
 from datetime import datetime
 from scipy import weave
 from multiprocessing import Process, Value, Array
@@ -12,6 +12,8 @@ stopsignal		=	Value('d', 0.0)
 
 tilesToDo		=	0
 threadsperzoom	= 	6
+
+tilesetdones	=	0
 
 def PrintProgress():
 	global doneTiles
@@ -138,5 +140,10 @@ if __name__ == '__main__':
 			endtime = datetime.now()
 			print "Tempo de fim: "+endtime.ctime()
 			print "Tempo decorrido: "+(endtime-starttime).__str__()
+			tilesetdones += tilesToDo
 	lasttime	=	datetime.now()
 	print "Tempo decorrido total: "+(lasttime-firsttime).__str__()	
+	auth = tweepy.OAuthHandler(TW_CONSUMER_KEY, TW_CONSUMER_SECRET)
+	auth.set_access_token(TW_ACCESS_KEY, TW_ACCESS_SECRET)
+	api = tweepy.API(auth)
+	api.update_status("Tiles Updated! Tiles made: %s - Time elapsed: %s" %(tilesetdones,(lasttime-firsttime).__str__())

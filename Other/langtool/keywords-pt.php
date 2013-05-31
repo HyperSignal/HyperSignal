@@ -46,6 +46,11 @@ $langrep = array(
 "selectoperator"		=>	'Selecione a operadora',
 "goingtohtmlloc"		=>	'Indo para localização determinada pelo HTML5',
 "goingtodefaultloc"		=>	'Indo para localização padrão',
+"scale"					=>	'Escala do Sinal',
+"go"					=>	'Ir',
+"search"				=>	'Procurar',
+"searchaddress"			=>	'Procurar endere&ccedil;o',
+"copytoclipboard"		=>	'Copiar para &aacute;rea de transfer&ecirc;ncia'
 );
 
 ?>
