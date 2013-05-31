@@ -79,7 +79,6 @@ public class HSAPI {
 				JSONObject out = Utils.getODataJSONfromURL(baseURL+"?odata="+URLEncoder.encode(jsondata, "UTF-8"));
 				if(out != null)	{
 					if(out.getString("result").indexOf("OK") > -1)	{
-						//Log.i("SignalTracker::SendTower","OK");
 						tower.state = 2;
 						CommonHandler.dbman.deleteTower(tower.id);
 					}else{

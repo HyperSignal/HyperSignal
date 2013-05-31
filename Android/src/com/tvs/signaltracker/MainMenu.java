@@ -19,20 +19,14 @@ package com.tvs.signaltracker;
  * Package: com.tvs.signaltracker
  */
 
-
-import java.util.List;
-
 import com.facebook.Session;
 
 import android.os.Bundle;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.telephony.NeighboringCellInfo;
-import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 public class MainMenu extends Activity {
 	Button	main_startbutton;
@@ -56,8 +50,19 @@ public class MainMenu extends Activity {
 			@Override
 			public void onClick(View v) {
 				if(CommonHandler.Configured){
-	                Intent intent = new Intent(v.getContext(), MainScreen.class);
-	                startActivity(intent);
+
+					if(CommonHandler.ServiceMode == 1 | CommonHandler.ServiceMode == 3)	{
+						if(STService.Opened == false)	{
+				    		Intent myIntent = new Intent(MainMenu.this, STService.class);
+				    		startService(myIntent);
+						}
+						CommonHandler.ServiceRunning = true;
+						Toast.makeText(MainMenu.this, getResources().getString(R.string.lightmodemsg), Toast.LENGTH_SHORT).show();
+						finish();
+					}else{
+		                Intent intent = new Intent(v.getContext(), MainScreen.class);
+		                startActivity(intent);
+					}
 				}else{
 	                Intent intent = new Intent(v.getContext(), FacebookActivity.class);
 	                startActivity(intent);
@@ -100,29 +105,12 @@ public class MainMenu extends Activity {
                 startActivity(intent);
 			}
 		});
-		try	{
-			TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-			List<NeighboringCellInfo> neighbours = tm.getNeighboringCellInfo();
-			for(int i=0;i<neighbours.size();i++)	{
-				NeighboringCellInfo n = neighbours.get(i);
-				Log.i("TOWER", n.toString());
-			}
-		}catch(Exception e)	{
-			e.printStackTrace();
-		}
 	}
-	/*
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main_menu, menu);
-		return true;
-	}*/
+
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 	  super.onActivityResult(requestCode, resultCode, data);
 	  Session.getActiveSession().onActivityResult(this, requestCode, resultCode, data);
-	  //Log.i("AcResult","requestCode: "+requestCode+" resultCode: "+resultCode+" data: "+data.describeContents());
 	}
 
 }

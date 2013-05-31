@@ -252,10 +252,16 @@ public class STService extends Service{
     	        .setSmallIcon(R.drawable.ic_stat_service)
     	        .setContentTitle(msg)
     	        .setContentText(bartext);
-	    	Intent resultIntent = new Intent(this, MainScreen.class);
 	    	TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-	    	stackBuilder.addParentStack(MainScreen.class);
-	    	stackBuilder.addNextIntent(resultIntent);
+    		if( CommonHandler.ServiceMode == 1 || CommonHandler.ServiceMode == 3)	{
+	    		Intent resultIntent = new Intent(this, MainMenu.class);
+		    	stackBuilder.addParentStack(MainMenu.class);
+		    	stackBuilder.addNextIntent(resultIntent);
+    		}else{
+	    		Intent resultIntent = new Intent(this, MainScreen.class);
+		    	stackBuilder.addParentStack(MainScreen.class);
+		    	stackBuilder.addNextIntent(resultIntent);    			
+    		}
 	    	PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);
 	    	mBuilder.setContentIntent(resultPendingIntent);
     	}else{
@@ -278,10 +284,16 @@ public class STService extends Service{
 	    	        .setSmallIcon(R.drawable.ic_stat_service)
 	    	        .setContentTitle(msg)
 	    	        .setContentText(getResources().getString(R.string.notasktodo));
-	    	Intent resultIntent = new Intent(this, MainScreen.class);
 	    	TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-	    	stackBuilder.addParentStack(MainScreen.class);
-	    	stackBuilder.addNextIntent(resultIntent);
+    		if( CommonHandler.ServiceMode == 1 || CommonHandler.ServiceMode == 3)	{
+	    		Intent resultIntent = new Intent(this, MainMenu.class);
+		    	stackBuilder.addParentStack(MainMenu.class);
+		    	stackBuilder.addNextIntent(resultIntent);
+    		}else{
+	    		Intent resultIntent = new Intent(this, MainScreen.class);
+		    	stackBuilder.addParentStack(MainScreen.class);
+		    	stackBuilder.addNextIntent(resultIntent);    			
+    		}
 	    	PendingIntent resultPendingIntent =  stackBuilder.getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);
 	    	mBuilder.setContentIntent(resultPendingIntent);
     	}else
