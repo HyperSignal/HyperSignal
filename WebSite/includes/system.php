@@ -50,13 +50,25 @@ if($loadfb)	{
 }else{
 	//	Página
 
-	$bodyonload = "";
-	$head = "";
-	$page = "";
+       function curPageURL() {
+                $pageURL = 'http';
+                if ($_SERVER["HTTPS"] == "on") {$pageURL .= "s";}
+                $pageURL .= "://";
+                if ($_SERVER["SERVER_PORT"] != "80") {
+                        $pageURL .= $_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"];
+                } else {
+                        $pageURL .= $_SERVER["SERVER_NAME"];                     
+                }
+                return $pageURL;
+        }
+    $bodyonload = "";
+   	$head = "";
+    $page = "";
 
-	$pagerequest = $_REQUEST["page"];
-	$uri	=	str_ireplace(str_ireplace("http://".$_SERVER["SERVER_NAME"]."","",$siteurl), "", $_SERVER["REQUEST_URI"]);
+    $pagerequest = $_REQUEST["page"];
+	$uri    =       str_ireplace(str_ireplace(curPageURL(),"",$siteurl), "", $_SERVER["REQUEST_URI"]);
 	$uri = explode("/",$uri);
+
 	$preaddress = "var preaddress = \"\"; var preoperator = \"\";\n";
 	switch($uri[0]) {
 		case "page":

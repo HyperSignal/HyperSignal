@@ -143,7 +143,7 @@ if __name__ == '__main__':
 			tilesetdones += tilesToDo
 	lasttime	=	datetime.now()
 	print "Tempo decorrido total: "+(lasttime-firsttime).__str__()	
-	auth = tweepy.OAuthHandler(TW_CONSUMER_KEY, TW_CONSUMER_SECRET)
-	auth.set_access_token(TW_ACCESS_KEY, TW_ACCESS_SECRET)
+	auth = tweepy.OAuthHandler(config.TW_CONSUMER_KEY, config.TW_CONSUMER_SECRET)
+	auth.set_access_token(config.TW_ACCESS_KEY, config.TW_ACCESS_SECRET)
 	api = tweepy.API(auth)
-	api.update_status("Tiles Updated! Tiles made: %s - Time elapsed: %s" %(tilesetdones,(lasttime-firsttime).__str__())
+	api.update_status("Tiles Updated! Tiles made: %s - Time elapsed: %s #signaltracker #cellphones" %(tilesetdones,(lasttime-firsttime).__str__())

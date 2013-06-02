@@ -252,6 +252,30 @@ class	HyperSignalManager:
 			row			=	self.cursor.fetchone()
 		return operators
 
+	def FetchDayStatistics(self):
+		self.cursor = self.con.cursor()
+		self.cursor.execute("SELECT * FROM `statistics` WHERE `date` = CURDATE()")
+		statistics	=	{"apicall":0,"tower":0,"signal":0,"tts":0}
+		row			=	self.cursor.fetchone()
+		while row is not None:
+			statistics[row[0]] = int(row[1])
+			row			=	self.cursor.fetchone()
+		return statistics
+
+	def FetchNumOperators(self):
+		self.cursor = self.con.cursor()
+		self.cursor.execute("SELECT COUNT(*) FROM (SELECT `operator` FROM `tiles` GROUP BY `operator`) tbl1 ")
+		row		=	self.cursor.fetchone()
+		numops = int(row[0])
+		return numops
+	
+	def FetchNumTiles(self):
+		self.cursor = self.con.cursor()
+		self.cursor.execute("SELECT COUNT(*) FROM `tiles`")
+		row		=	self.cursor.fetchone()
+		numtiles = int(row[0])
+		return numtiles
+		
 	def FetchTilesToDo(self,operator,alltiles=False):
 		self.cursor = self.con.cursor()
 		if alltiles:
