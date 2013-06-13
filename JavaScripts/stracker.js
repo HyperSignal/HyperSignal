@@ -148,17 +148,20 @@
 				console.log("[GOINGTOHTMLLOC]"); 
 				navigator.geolocation.getCurrentPosition(function(position) {
 				myPoint = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
+				map.setZoom(15);
 				map.setCenter(myPoint);
 			}, function() {
 				console.log("[GOINGTODEFAULTLOC]"); 
 					center = new google.maps.LatLng(-23.54894330,-46.63881820);
-					zoom = 16;
+					zoom = 15;
+				map.setZoom(15);
 					map.setCenter(center);
 				});
 			}else{
 				console.log("[GOINGTODEFAULTLOC]"); 
 				center = new google.maps.LatLng(-23.54894330,-46.63881820);
-				zoom = 16;
+				zoom = 15;
+				map.setZoom(15);
 				map.setCenter(center);
 		}
 	
@@ -183,6 +186,7 @@
 			changeOperator('none');
 			changeOperator(preoperator);
 		}
+		map.setOptions({maxZoom:15, minZoom:10});
 	}
 	function ShortLink(link)	{
 		console.log("Shortening URL: "+link);
