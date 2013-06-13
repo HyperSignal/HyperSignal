@@ -23,6 +23,9 @@ os.environ['PYTHON_EGG_CACHE'] = '/var/www/hypersignal/.python-egg'
 
 import tool, manager, theupcrypter, config
 
+
+sys.stdout = sys.stderr = tool.HSLogger(config.BASEPATH+"/hslogs/hs.log")
+
 def application(environ, start_response):
 
 	output,status,content = ProcessPage(environ)
@@ -50,39 +53,47 @@ def	ProcessPage(_SERVER):
 		'''
 		try:
 			data	=	json.loads(tup.ODataDecrypt(query["odata"][0]))
+			for k, v in data.iteritems():
+				data[k] = v.encode("utf-8").strip() if isinstance(v, str) or isinstance(v, unicode) else data[k]
+
 			if	data["metodo"]	==	"addsinal":
 				'''
 					Adicionar sinal
 				'''
 				try:
-					if  not data["op"].strip() == "":
+					if  not data["op"] == "":
 						if data.has_key("weight"):
 							weight = float(data["weight"])
 						else:
 							weight = 1.0
-						sigs = hsman.ProcessSignal(float(data["lat"]),float(data["lon"]),int(data["sig"]),data["op"].strip(), weight)
+						sigs = hsman.ProcessSignal(float(data["lat"]),float(data["lon"]),int(data["sig"]),data["op"], weight)
 						hsman.AddStatistics("apicall")
 						hsman.CommitToDB()
-						hsman.AddDevice(data["uid"].strip(), data["dev"].strip(), data["man"].strip(), data["model"].strip(), data["brand"].strip(), data["and"].strip(), data["rel"].strip(), data["sig"])
+						if data.has_key("dev"):
+							hsman.AddDevice(data["uid"], data["dev"], data["man"], data["model"], data["brand"], data["and"], data["rel"], data["sig"])
 						if data.has_key("uid"):
 							hsman.IncUserKM(data["uid"], 1)
 						hsman.CommitToDB()
+						output	=	tup.ODataEncrypt('{"result":"OK"}')
 				except Exception,e:
-					print e
-				output	=	tup.ODataEncrypt('{"result":"OK"}')
+					tool.PrintExcp("AddSinal", (data["lat"],data["lon"],data["sig"],data["op"]), e)
+					output	=	tup.ODataEncrypt('{"result":"INTERNAL_ERROR"}')
+					status = '500 Internal Server Error'
 
 			elif data["metodo"] == "addtorre":
 				'''
 					Adicionar Torre
 				'''
 				try:
-					if  not data["op"].strip() == "":
-						hsman.AddAntenna(float(data["lat"]),float(data["lon"]),data["op"].strip())
+					if  not data["op"] == "":
+						hsman.AddAntenna(float(data["lat"]),float(data["lon"]),data["op"])
 						hsman.AddStatistics("apicall")
 						hsman.CommitToDB()
+						output	=	tup.ODataEncrypt('{"result":"OK"}')
 				except Exception,e:
-					print e
-				output	=	tup.ODataEncrypt('{"result":"OK"}')
+					tool.PrintExcp("addtorre", (data["lat"],data["lon"],data["op"]), e)
+					output	=	tup.ODataEncrypt('{"result":"INTERNAL_ERROR"}')
+					status = '500 Internal Server Error'
 
 			elif data["metodo"] == "ttsadd":
 				'''
@@ -90,14 +101,16 @@ def	ProcessPage(_SERVER):
 				'''
 				try:
 					if  not data["op"].strip() == "":
-						hsman.ProcessSignal(float(data["lat"]),float(data["lon"]),int(data["sig"]),data["op"].strip())
+						hsman.ProcessSignal(float(data["lat"]),float(data["lon"]),int(data["sig"]),data["op"])
 						hsman.AddStatistics("apicall")
 						hsman.AddStatistics("tts")
 						hsman.CommitToDB()
+						output	=	tup.ODataEncrypt('{"result":"OK"}')
 				except Exception,e:
-					print e
-				output	=	tup.ODataEncrypt('{"result":"OK"}')
-		
+					tool.PrintExcp("ttsadd", (data["lat"],data["lon"],data["sig"],data["op"]), e)
+					output	=	tup.ODataEncrypt('{"result":"INTERNAL_ERROR"}')
+					status = '500 Internal Server Error'
+
 			elif data["metodo"]	==	"ttstoweradd":
 				'''
 					Adiciona torre via TeskeTrackingSystem
@@ -107,9 +120,12 @@ def	ProcessPage(_SERVER):
 					hsman.AddStatistics("apicall")
 					hsman.AddStatistics("tts")
 					hsman.CommitToDB()
+					output	=	tup.ODataEncrypt('{"result":"OK"}')
 				except Exception,e:
-					print e
-				output	=	tup.ODataEncrypt('{"result":"OK"}')
+					tool.PrintExcp("ttstoweradd", (data["lat"],data["lon"],data["op"]), e)
+					output	=	tup.ODataEncrypt('{"result":"INTERNAL_ERROR"}')
+					status = '500 Internal Server Error'
+
 			elif data["metodo"] == "adduser":
 				'''
 					Adiciona um usuário
@@ -118,9 +134,12 @@ def	ProcessPage(_SERVER):
 					hsman.AddUser(data["username"],data["uid"],data["name"],data["email"],_SERVER["REMOTE_ADDR"],data["city"],data["country"])
 					hsman.AddStatistics("apicall")
 					hsman.CommitToDB()
+					output	=	tup.ODataEncrypt('{"result":"OK"}')
 				except Exception, e:
-					print e
-				output	=	tup.ODataEncrypt('{"result":"OK"}')
+					tool.PrintExcp("adduser", (data["username"],data["uid"],data["name"],data["email"],_SERVER["REMOTE_ADDR"],data["city"],data["country"]), e)
+					output	=	tup.ODataEncrypt('{"result":"INTERNAL_ERROR"}')
+					status = '500 Internal Server Error'
+
 			else:
 				'''
 					Chamada da API errada!
@@ -129,12 +148,12 @@ def	ProcessPage(_SERVER):
 					hsman.AddStatistics("apicallerror")
 					hsman.CommitToDB()
 				except Exception,e:
-					print e
+					tool.PrintExcp("Wrong API Call", (data), e)
 				output	=	tup.ODataEncrypt('{"result":"INT_ERROR"}')
 				status = '500 Internal Server Error'
 
 		except Exception,e:
-			print e
+			tool.PrintExcp("OData Decode", query["odata"][0], e)
 			output	=	tup.ODataEncrypt('{"result":"INT_ERROR"}')
 			status = '500 Internal Server Error'
 

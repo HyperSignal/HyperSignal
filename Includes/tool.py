@@ -6,6 +6,7 @@ import json
 import urllib
 import sys
 import getopt
+import os
 import numpy as np
 from scipy import weave
 
@@ -19,6 +20,27 @@ tileSize = 256
 initialResolution = 2 * math.pi * 6378137 / tileSize
 
 originShift = 2 * math.pi * 6378137 / 2.0
+
+'''
+	Exceptions Handlers
+'''
+
+def PrintExcp(where, data, exception):
+	stck = (where, exception, sys.exc_info()[2].tb_lineno, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[0].__name__, data)
+	print "HyperSignal - {0} error: {1}\n--On Line {2} of {3}\n--Type: {4}\n--Data: {5}".format(*stck)
+
+
+class HSLogger(object):
+	def __init__(self, filename="hs.log"):
+		directory = os.path.dirname(filename)
+		if not os.path.exists(directory):
+			os.makedirs(directory)
+		#self.terminal = sys.stdout
+		self.log = open(filename, "a")
+
+	def write(self, message):
+		#self.terminal.write(message)
+		self.log.write(message)
 
 '''
 	Weaver
