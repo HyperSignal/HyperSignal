@@ -174,7 +174,27 @@ public class CommonHandler {
 			Log.e("SignalTracker::DelSignalCallback", "Error on remove callback: "+e.getMessage());
 		}
 	}
-	
+	/**
+	 * Deletes a Signal Callback by from
+	 * @param cb	The Signal Callback
+	 */
+	public static void DelSignalCallback(String from)	{
+		try	{
+			if(SignalCallbacks != null)	{
+				List<STCallBack> remove = new ArrayList<STCallBack>();
+				for(int i=0; i<SignalCallbacks.size();i++)
+					if(SignalCallbacks.get(i).from.contentEquals(from))	
+							remove.add(SignalCallbacks.get(i));
+				for(int i=0;i<remove.size();i++)	
+					SignalCallbacks.remove(remove.get(i));
+				remove = null;
+				Log.i("SignalTracker::DelSignalCallback","Removing callback ("+from+")");
+			}
+		}catch(Exception e)	{
+			Log.e("SignalTracker::DelSignalCallback", "Error on remove callback ("+from+"): "+e.getMessage());
+		}
+	}
+
 	/**
 	 * Deletes a Tower Callback with the ID
 	 * @param id	The id of Tower Callback
@@ -182,7 +202,7 @@ public class CommonHandler {
 	public static void DelTowerCallback(int id)	{
 		try{
 			if(TowerCallbacks != null)	{
-				TowerCallbacks.remove(id);
+					SignalCallbacks.remove(id);
 				Log.i("SignalTracker::DelTowerCallback","Removing ("+id+")");
 			}
 		}catch(Exception e)	{
@@ -206,6 +226,29 @@ public class CommonHandler {
 		}
 			
 	}
+	
+	/**
+	 * Deletes a Tower Callback by from
+	 * @param id	The id of Tower Callback
+	 */
+	public static void DelTowerCallback(String from)	{
+		try{
+			if(TowerCallbacks != null)	{
+				List<STCallBack> remove = new ArrayList<STCallBack>();
+				for(int i=0; i<TowerCallbacks.size();i++)
+					if(TowerCallbacks.get(i).from.contentEquals(from))	
+							remove.add(TowerCallbacks.get(i));
+				for(int i=0;i<remove.size();i++)	
+					TowerCallbacks.remove(remove.get(i));
+				remove = null;
+				Log.i("SignalTracker::DelTowerCallback","Removing ("+from+")");
+			}
+		}catch(Exception e)	{
+			Log.e("SignalTracker::DelTowerCallback", "Error on remove ("+from+"): "+e.getMessage());
+		}
+			
+	}
+	
 	@SuppressLint("NewApi")
 	/**
 	 * Resends the Tower and Signal data from memory

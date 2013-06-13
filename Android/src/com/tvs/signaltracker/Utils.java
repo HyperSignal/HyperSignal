@@ -25,13 +25,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.security.KeyStore;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ClientConnectionManager;
@@ -228,11 +226,12 @@ public class Utils {
 			uri.append("&lac=").append(lac2);
 			uri.append("&key=").append(APIKEY);
 
+			Log.d("SignalTracker::TowerFetch", "URL to Fetch Tower data: "+uri);
 			HttpGet request = new HttpGet(uri.toString());
 
 			HttpClient httpClient = new DefaultHttpClient();
 			HttpResponse response = httpClient.execute(request);
-
+ 
 			int status = response.getStatusLine().getStatusCode();
 			if (status != HttpURLConnection.HTTP_OK) {
 				switch (status) {
@@ -269,14 +268,8 @@ public class Utils {
 				double thisTowerLon = Double.parseDouble(tmp.item(0).getAttributes().getNamedItem("lon").getNodeValue());
 				CommonHandler.AddTower(thisTowerLat, thisTowerLon);
 			}
-		} catch (MalformedURLException e) {
-			Log.e("ERROR", e.getMessage());
-		} catch (IllegalArgumentException e) {
-			Log.e("ERROR", e.getMessage());
-		} catch (ClientProtocolException e) {
-			Log.e("ERROR", e.getMessage());
-		} catch (IOException e) {
-			Log.e("ERROR", e.getMessage());;
+		} catch (Exception e) {
+			Log.e("SignalTracker::TowerFecth", e.getMessage());
 		} finally {
 			try {
 				if (bos != null)

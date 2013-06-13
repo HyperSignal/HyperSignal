@@ -96,12 +96,13 @@ public class MainScreen  extends FragmentActivity {
 						int lvl	=	FinalVars.SignalLevels[msg.getData().getShort("signal")];
 						GroundOverlay sig = map.addGroundOverlay(new GroundOverlayOptions()
 				        .image(BitmapDescriptorFactory.fromResource(lvl)).anchor(0.5f, 0.5f)
-				        .position(new LatLng(msg.getData().getDouble("lat"), msg.getData().getDouble("lon")), 100f)); 
+				        .position(new LatLng(msg.getData().getDouble("lat"), msg.getData().getDouble("lon")), CommonHandler.MinimumDistance*2f)); 
 						signals.add(sig);
 						if(signals.size() > CommonHandler.MaxMapContent)	{
 							signals.get(0).remove();
 							signals.remove(0);
 						}
+						Log.i("SignalTracker::MainScreenHandler","Added Signal "+sig);
 						break;
 					case 1:	//	AddTower
 						GroundOverlay tow = map.addGroundOverlay(new GroundOverlayOptions()
@@ -112,8 +113,12 @@ public class MainScreen  extends FragmentActivity {
 							towers.get(0).remove();
 							towers.remove(0);
 						}
+						Log.i("SignalTracker::MainScreenHandler","Added Tower "+tow);
 						break;
 				}
+			}else{
+				Log.i("SignalTracker::MainScreenHandler","Variables not initialized, delaying in 2 seconds the message.");
+				MainScreenHandler.sendMessageDelayed(msg, 2000);
 			}
 		}
 		
@@ -222,39 +227,7 @@ public class MainScreen  extends FragmentActivity {
 			case 4:	runMode.setText(getResources().getString(R.string.fullmodeoff));		break;
 		}
 
-		if(CommonHandler.ServiceMode <3 )	{
-			SignalCallBack = new STCallBack()	{
-
-				@Override
-				public void Call(Object argument) {
-					SignalObject sig = (SignalObject) argument;
-					Bundle data = new Bundle();
-					data.putDouble("lat", sig.latitude);
-					data.putDouble("lon", sig.longitude);
-					data.putShort("signal", sig.signal);
-					Message msg = new Message();
-					msg.setData(data);
-					msg.what = 0;
-					MainScreenHandler.sendMessage(msg);
-				}
-				
-			};
-			TowerCallBack = new STCallBack()	{
-
-				@Override
-				public void Call(Object argument) {
-					TowerObject sig = (TowerObject) argument;
-					Bundle data = new Bundle();
-					data.putDouble("lat", sig.latitude);
-					data.putDouble("lon", sig.longitude);
-					Message msg = new Message();
-					msg.setData(data);
-					msg.what = 1;
-					MainScreenHandler.sendMessage(msg);
-				}
-				
-			};
-		}
+		InitUp();
 
 		MainScreenHandler.postDelayed(UpdateUI, 1000);
 		CommonHandler.ServiceRunning = true;
@@ -322,17 +295,19 @@ public class MainScreen  extends FragmentActivity {
     			sigdata.putDouble("lon", sig.longitude);
     			sigmsg.what = 0;
     			sigmsg.setData(sigdata);
-    			MainScreenHandler.sendMessage(sigmsg);
+    			if(!MainScreenHandler.sendMessage(sigmsg))
+    				Log.i("SignalTracker::MainScreen","Failed to put point on map");
     		}
     		for(int i=CommonHandler.Towers.size()-1;i>minTow;i--)	{
     			TowerObject sig = CommonHandler.Towers.get(i);
     			Bundle sigdata = new Bundle();
     			Message sigmsg = new Message();
     			sigdata.putDouble("lat", sig.latitude);
-    			sigdata.putDouble("lon", sig.longitude);
+    			sigdata.putDouble("lon", sig.longitude); 
     			sigmsg.what = 1;
     			sigmsg.setData(sigdata);
-    			MainScreenHandler.sendMessage(sigmsg);
+    			if(!MainScreenHandler.sendMessage(sigmsg)) 
+    				Log.i("SignalTracker::MainScreen","Failed to put tower on map");
     		}
 			
 			return null;
@@ -340,6 +315,70 @@ public class MainScreen  extends FragmentActivity {
 	}
 	public static int getDrawableIdentifier(Context context, String name) {
 	    return context.getResources().getIdentifier(name, "drawable", context.getPackageName());
+	}
+	private void InitUp()	{
+		if(CommonHandler.ServiceMode <3 )	{
+			SignalCallBack = new STCallBack()	{
+
+				@Override
+				public void Call(Object argument) {
+					SignalObject sig = (SignalObject) argument;
+					Bundle data = new Bundle();
+					data.putDouble("lat", sig.latitude);
+					data.putDouble("lon", sig.longitude);
+					data.putShort("signal", sig.signal);
+					Message msg = new Message();
+					msg.setData(data);
+					msg.what = 0;
+					if(!MainScreenHandler.sendMessage(msg))	{
+	    				Log.i("SignalTracker::MainScreen","Failed to put signal on map. Delaying 2s");
+	    				MainScreenHandler.sendMessageDelayed(msg, 2000);
+					}
+				}
+				
+			};
+			SignalCallBack.from = "MainScreen";
+			TowerCallBack = new STCallBack()	{
+
+				@Override
+				public void Call(Object argument) {
+					TowerObject sig = (TowerObject) argument;
+					Bundle data = new Bundle();
+					data.putDouble("lat", sig.latitude);
+					data.putDouble("lon", sig.longitude);
+					Message msg = new Message();
+					msg.setData(data);
+					msg.what = 1;
+					if(!MainScreenHandler.sendMessage(msg))	{
+		    				Log.i("SignalTracker::MainScreen","Failed to put tower on map. Delaying 2s");
+		    				MainScreenHandler.sendMessageDelayed(msg, 2000);
+					}
+				}
+				
+			};
+			TowerCallBack.from = "MainScreen";
+			CommonHandler.AddTowerCallback(TowerCallBack);
+			CommonHandler.AddSignalCallback(SignalCallBack);
+		}
+	}
+	private void CleanUp()	{
+		CommonHandler.DelTowerCallback("MainScreen");
+		CommonHandler.DelSignalCallback("MainScreen");
+		MainScreenHandler.removeCallbacks(UpdateUI);
+		MainScreenHandler.removeMessages(0);
+		MainScreenHandler.removeMessages(1);
+		
+		List<GroundOverlay> st = signals;
+		List<GroundOverlay> tow = towers;
+		
+
+		int lensig = signals.size(),
+			lentow = towers.size();
+		
+		for(int i=0;i<lensig;i++)	
+			st.get(i).remove();
+		for(int i=0;i<lentow;i++)	
+			tow.get(i).remove();
 	}
     @Override
     protected void onResume() {
@@ -360,17 +399,17 @@ public class MainScreen  extends FragmentActivity {
         if(!CommonHandler.ServiceRunning)	
 			CommonHandler.LoadLists();
         setUpMap();
-		CommonHandler.AddTowerCallback(TowerCallBack);
-		CommonHandler.AddSignalCallback(SignalCallBack);
+        InitUp();
+    }
+    @Override
+    protected void onPause()	{
+    	super.onPause();
+    	CleanUp();
     }
 	@Override
 	protected void onDestroy()	{
 		super.onDestroy();
-		CommonHandler.DelSignalCallback(SignalCallBack);
-		CommonHandler.DelTowerCallback(TowerCallBack);
-		MainScreenHandler.removeCallbacks(UpdateUI);
-		MainScreenHandler.removeMessages(0);
-		MainScreenHandler.removeMessages(1);
+		CleanUp();
 		if(LoadToMapTask!=null)
 			LoadToMapTask.cancel(true);
 	}

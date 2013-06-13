@@ -17,7 +17,7 @@ MYUSER			=	"root"							#	Usuário para conexão
 MYPASS			=	"***REMOVED***"							#	Senha para conexão
 MYDB			=	"hypersignal"					#	Banco de Dados
 
-HYPER_ZOOM_RANGE=	(10,18)							#	Range de Zoom para o Banco de Dados
+HYPER_ZOOM_RANGE=	(10,16)							#	Range de Zoom para o Banco de Dados
 
 #	Chaves do Twitter API
 TW_CONSUMER_KEY 	=	'***REMOVED***'

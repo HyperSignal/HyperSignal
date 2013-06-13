@@ -6,15 +6,15 @@ from scipy import weave
 
 HYPER_STEP		=	0.0005					#	Step usado no banco de dados - 0.0005 dá uma precisão de ~100 metros
 HYPER_BRUSH		=	2						#	Tamanho do Brush de interpolação local 
-HYPER_GAP		=	20						#	Gap para interpolação entre tiles
-HYPER_BLUR		=	3						#	Blur para suavização de bordas
+HYPER_GAP		=	5 						#	Gap para interpolação entre tiles
+HYPER_BLUR		=	5						#	Blur para suavização de bordas
 
 HYPER_BRUSH_INT	=	[	
-						[0,0,1,0,0],		#	|
-						[0,1,1,1,0],		#	|
-						[1,1,1,1,1],		#	|---- Brush de Interpolação
-						[0,1,1,1,0],		#	|
-						[0,0,1,0,0]			#	|
+						[0	,0	,0	,0	,0],		#	|
+						[0	,0.5,0.5,0.5,0],		#	|
+						[0	,0.5,1	,0.5,0],		#	|---- Brush de Interpolação
+						[0	,0.5,0.5,0.5,0],		#	|
+						[0	,0	,0	,0	,0]			#	|
 					]						
 
 '''
@@ -80,6 +80,7 @@ def GetGoogleTileFromHS(x,y,zoom):
 	return tool.GoogleTile(lat, lon, zoom)
 
 def OperatorCorrect(operator):
+	operator = operator.replace("'","").replace('"',"").replace("`","").replace("´","")
 	for key, value in config.OPSREPLACES.iteritems():
 		operator	=	operator.replace(key,value)
 	return operator
@@ -122,7 +123,7 @@ class	HyperSignalManager:
 		tiledata	=	tool.WeaveBilinear(tileraw.astype('uint8'), newTileSize, newTileSize, w, h)
 		#tiledata	=	Image.fromarray(np.array(tileraw, dtype=numpy.uint8), "RGBA").resize((newTileSize,newTileSize), HYPER_FILTER)
 		#tiledata	=	np.array(tiledata.getdata(), numpy.uint8).reshape(newTileSize, newTileSize, 4)
-		tiledata	=	scipy.ndimage.gaussian_filter(tiledata, (HYPER_BLUR,HYPER_BLUR,0))
+		tiledata	=	scipy.ndimage.gaussian_filter(tiledata, (HYPER_BLUR*(z/10.0),HYPER_BLUR*(z/10.0),0))
 		return Image.fromarray(np.array(tiledata, dtype=np.uint8), "RGBA").transpose(Image.ROTATE_90).crop((dts,dts,tool.tileSize+dts,tool.tileSize+dts))
 
 	def InsertToDB(self,x,y,value,operator,weight=1.0):
@@ -135,74 +136,66 @@ class	HyperSignalManager:
 		self.cursor.execute("INSERT INTO tiles VALUES(%s,%s,%s,%s,0) ON DUPLICATE KEY UPDATE `updated`=0", (x,y,z,operator))
 
 	def ProcessSignal(self,lat,lon,value,operator,weight=1.0):
-		if operator.strip() == "" or operator == "None" or operator == None:
+		if operator.strip() == "" or operator == "None" or operator == None or value < 0 or value > 31:
 			return 0
 		operator = OperatorCorrect(operator)
 		value	=	int(value)
 		x,	y	=	LatLonToHyper(lat,lon)
 		signals	=	[(x,y,value,operator,weight)]
 		
-		bx = HYPER_BRUSH-1
-		by = HYPER_BRUSH-1	
+		bx = HYPER_BRUSH
+		by = HYPER_BRUSH	
+		x = x - HYPER_BRUSH / 2
+		y = y - HYPER_BRUSH / 2
+		for i in range(0,HYPER_BRUSH):
+			for j in range(0,HYPER_BRUSH):
+				
+				if	x > -1:
+					if y+i > -1:
+						signals.append( (x,y+i,value,operator,HYPER_BRUSH_INT[by+i][bx]*weight) )
+					if y-i > -1:
+						signals.append( (x,y-i,value,operator,HYPER_BRUSH_INT[by-i][bx]*weight) )
 
-		for i in range(1,HYPER_BRUSH+1):
-			for j in range(1,HYPER_BRUSH+1):
-				w 	= 	(1 - math.sqrt((i-1)*(i-1)+(j-1)*(j-1))/math.sqrt(2*HYPER_BRUSH*HYPER_BRUSH)) * weight
-				wi	=	(1 - (i-1)/math.sqrt(2*HYPER_BRUSH*HYPER_BRUSH)) * weight
-				wj	=	(1 - (j-1)/math.sqrt(2*HYPER_BRUSH*HYPER_BRUSH)) * weight
+				if	y > -1:
+					if	x-j > -1:
+						signals.append( (x-j,y,value,operator,HYPER_BRUSH_INT[by][bx-j]*weight) )
+					if	x+j > -1:
+						signals.append( (x+j,y,value,operator,HYPER_BRUSH_INT[by][bx+j]*weight) )
 
-				if	HYPER_BRUSH_INT[by][bx+j] == 1:
-					signals.append( (x+j,y,value,operator,wj) )
-				if	HYPER_BRUSH_INT[by+i][bx]:
-					signals.append( (x,y+i,value,operator,wi) )
-				if	HYPER_BRUSH_INT[by+i][bx+j] == 1:
-					signals.append( (x+j,y+i,value,operator,w) )
 
-				if x-j > -1:
-					if HYPER_BRUSH_INT[by][bx-j] == 1:
-						signals.append( (x-j,y,value,operator,wj) )
-					if HYPER_BRUSH_INT[by+i][bx-j] == 1:
-						signals.append( (x-j,y+i,value,operator,w) )
+				if	x-j > -1 and y+i > -1:
+					signals.append( (x-j,y+i,value,operator,HYPER_BRUSH_INT[by+i][bx-j]) )
+				if	y-i > -1 and x+j > -1:
+					signals.append( (x+j,y-i,value,operator,HYPER_BRUSH_INT[by-i][bx+j]) )
 
-				if y-i > -1:
-					if HYPER_BRUSH_INT[by-i][bx] == 1:
-						signals.append( (x,y-i,value,operator,wi) )
+				if	x-j > -1 and y-i > -1:
+					signals.append( (x-j,y-i,value,operator,HYPER_BRUSH_INT[by-i][bx-j]) )
 
-					if x-j > -1 and HYPER_BRUSH_INT[by-i][bx-j] == 1:
-						signals.append( (x-j,y-i,value,operator,w) )
+				if	x+j > -1 and y+i > -1:
+					signals.append( (x+j,y+i,value,operator,HYPER_BRUSH_INT[by+i][bx+j]) )
 
-				if x-j > -1 and HYPER_BRUSH_INT[by][bx-j] == 1:
-					signals.append( (x-j,y,value,operator,wj) )
 		
 		for signal in signals:
 			self.InsertToDB(signal[0],signal[1],signal[2],signal[3],signal[4])
 
 		tiles	=	[]
 		for zoom in range(config.HYPER_ZOOM_RANGE[0],config.HYPER_ZOOM_RANGE[1]):
-			tile1 = GetGoogleTileFromHS(x,y+HYPER_BRUSH,zoom)
-			tile2 = GetGoogleTileFromHS(x+HYPER_BRUSH,y,zoom)
-			tile3 = GetGoogleTileFromHS(x+HYPER_BRUSH,y+HYPER_BRUSH,zoom)
-			tile4 = GetGoogleTileFromHS(x,y-HYPER_BRUSH,zoom)
-			tile5 = GetGoogleTileFromHS(x-HYPER_BRUSH,y,zoom)
-			tile6 = GetGoogleTileFromHS(x-HYPER_BRUSH,y-HYPER_BRUSH,zoom)
-			if tile1 not in tiles:
-				tiles.append(tile1)
-			if tile2 not in tiles:
-				tiles.append(tile2)
-			if tile3 not in tiles:
-				tiles.append(tile3)
-			if tile4 not in tiles:
-				tiles.append(tile4)
-			if tile5 not in tiles:
-				tiles.append(tile5)
-			if tile6 not in tiles:
-				tiles.append(tile6)
+			for i in range(HYPER_BRUSH*2+1):
+				tiles.append(GetGoogleTileFromHS(x+i,y,zoom))
+				tiles.append(GetGoogleTileFromHS(x-i,y,zoom))
+
+				tiles.append(GetGoogleTileFromHS(x,y+i,zoom))
+				tiles.append(GetGoogleTileFromHS(x,y-i,zoom))
+
+				tiles.append(GetGoogleTileFromHS(x+i,y-i,zoom))
+				tiles.append(GetGoogleTileFromHS(x-i,y+i,zoom))
 
 		for tile in tiles:
 			z,x,y = tile
 			self.InsertTileToDB(z,x,y,operator)
 
 		self.AddStatistics("signal",len(signals))
+		self.AddStatistics("abssignal",1)
 
 		return len(signals)
 

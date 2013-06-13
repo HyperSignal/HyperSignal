@@ -21,5 +21,6 @@ package com.tvs.signaltracker;
 
 
 public abstract class STCallBack {
+	public String from = "default";
 	public abstract void	Call(Object argument);
 }

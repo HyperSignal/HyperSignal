@@ -1,0 +1,59 @@
+<html>
+	<head>
+		<title>HyperSignal Signal Image Generator</title>
+	</head>
+	<script type="text/javascript">
+	function HSV2RGB(hsv) {
+		var rgb=new Object();
+		if (hsv.saturation==0) {
+			rgb.r=rgb.g=rgb.b=Math.round(hsv.value*2.55);
+		} else {
+			hsv.hue/=60;
+			hsv.saturation/=100;
+			hsv.value/=100;
+			i=Math.floor(hsv.hue);
+			f=hsv.hue-i;
+			p=hsv.value*(1-hsv.saturation);
+			q=hsv.value*(1-hsv.saturation*f);
+			t=hsv.value*(1-hsv.saturation*(1-f));
+			switch(i) {
+			case 0: rgb.r=hsv.value; rgb.g=t; rgb.b=p; break;
+			case 1: rgb.r=q; rgb.g=hsv.value; rgb.b=p; break;
+			case 2: rgb.r=p; rgb.g=hsv.value; rgb.b=t; break;
+			case 3: rgb.r=p; rgb.g=q; rgb.b=hsv.value; break;
+			case 4: rgb.r=t; rgb.g=p; rgb.b=hsv.value; break;
+			default: rgb.r=hsv.value; rgb.g=p; rgb.b=q;
+			}
+			rgb.r=Math.round(rgb.r*255);
+			rgb.g=Math.round(rgb.g*255);
+			rgb.b=Math.round(rgb.b*255);
+		}
+		return rgb;
+	}
+	function draw()	{
+		var c=document.getElementById("cnv");
+		var ctx=c.getContext("2d");
+		for(var x=0;x<8;x++)	{
+			for(var y=0;y<4;y++)	{
+				var siglvl = x*4 + y;
+				console.log(siglvl);
+				var hsv = { "hue" : (siglvl/31.0)*120, "saturation" : 100, "value" : 90.2 };
+				var rgb = HSV2RGB(hsv);   
+				var grd=ctx.createRadialGradient(x*200+100,y*200+100,1,x*200+100,y*200+100,95);
+				grd.addColorStop(0,'rgba('+rgb.r+','+rgb.g+','+rgb.b+',1)');
+				grd.addColorStop(0.75,'rgba('+rgb.r+','+rgb.g+','+rgb.b+',0.2)');
+				grd.addColorStop(1,'rgba('+rgb.r+','+rgb.g+','+rgb.b+',0)');
+
+				// Fill with gradient
+				ctx.fillStyle=grd;
+				ctx.fillRect(x*200,y*200,200+x*200,200+y*200);
+			}
+		}
+		var dataURL = c.toDataURL();
+		console.log(dataURL);
+	}
+	</script>
+	<body onload="draw()"> 
+		<canvas id="cnv" width="1600" height="800"></canvas>
+	</body>
+</html>

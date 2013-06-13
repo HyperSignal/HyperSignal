@@ -162,7 +162,7 @@
 				map.setCenter(center);
 		}
 	
-        pointLayer = new mobilles.web.TileOverlay(function(x, y, z) {  return selectedOperator!=""?"{APIURL}?operadora="+selectedOperator+"&tile=" + z + "-" + x + "-" + y:""; },{'map': map, 'visible': true,'minZoom': 10,'maxZoom': 16, 'percentOpacity': 100} );
+        pointLayer = new mobilles.web.TileOverlay(function(x, y, z) {  return selectedOperator!=""?"{APIURL}?operadora="+selectedOperator+"&tile=" + z + "-" + x + "-" + y:""; },{'map': map, 'visible': true,'minZoom': 10,'maxZoom': 15, 'percentOpacity': 100} );
 		google.maps.event.addListener(map, 'bounds_changed', function() {
 			center = map.getCenter();
 			zoom = map.getZoom();
