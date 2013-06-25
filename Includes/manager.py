@@ -135,6 +135,10 @@ class	HyperSignalManager:
 		self.cursor = self.con.cursor()
 		self.cursor.execute("INSERT INTO tiles VALUES(%s,%s,%s,%s,0) ON DUPLICATE KEY UPDATE `updated`=0", (x,y,z,operator))
 
+	def	InsertOperatorToDB(self,mcc,mnc,name,fullname=""):
+		self.cursor = self.con.cursor()
+		self.cursor.execute("INSERT INTO `operators` VALUES(%s,%s,%s,%s) ON DUPLICATE KEY UPDATE `fullname`=VALUES(`fullname`)", (mcc,mnc,name,fullname))
+
 	def ProcessSignal(self,lat,lon,value,operator,weight=1.0):
 		if operator.strip() == "" or operator == "None" or operator == None or value < 0 or value > 31:
 			return 0
@@ -289,6 +293,24 @@ class	HyperSignalManager:
 			numtiles	=	numtiles + 1
 
 		return tiles,numtiles
+
+	def FetchOperatorName(self,mcc,mnc):
+		self.cursor = self.con.cursor()
+		self.cursor.execute("SELECT * FROM `operators`	WHERE `mcc` = %s and `mnc` = %s", (mcc,mnc))
+		row		=	self.cursor.fetchone()
+		if row != None:
+			return row[2].decode("ISO-8859-1").encode("UTF-8")
+		else:
+			return str(mcc)+str(mnc)
+
+	def FetchOperatorList(self):
+		self.cursor = self.con.cursor()
+		self.cursor.execute("SELECT * FROM `operators`")
+		data = self.cursor.fetchall()
+		newdata = []
+		for i in range(len(data)):
+			newdata.append((data[i][0],data[i][1],data[i][2],data[i][3].decode("ISO-8859-1").encode("UTF-8")))
+		return newdata
 
 	def RemoveTileToDo(self, z, x, y, operator):
 		self.cursor = self.con.cursor()

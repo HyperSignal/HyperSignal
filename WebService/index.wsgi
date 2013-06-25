@@ -62,10 +62,16 @@ def	ProcessPage(_SERVER):
 				'''
 				try:
 					if  not data["op"] == "":
+						if  data.has_key("mcc") and data.has_key("mnc"):
+							data["op"] = hsman.FetchOperatorName(data["mcc"],data["mnc"])
+							if data["op"] == str(data["mcc"]) + str(data["mnc"]):
+								hsman.InsertOperatorToDB(data["mcc"],data["mnc"],data["op"],"BLOCK_TODO")
+
 						if data.has_key("weight"):
 							weight = float(data["weight"])
 						else:
 							weight = 1.0
+
 						sigs = hsman.ProcessSignal(float(data["lat"]),float(data["lon"]),int(data["sig"]),data["op"], weight)
 						hsman.AddStatistics("apicall")
 						hsman.CommitToDB()
@@ -85,7 +91,11 @@ def	ProcessPage(_SERVER):
 					Adicionar Torre
 				'''
 				try:
-					if  not data["op"] == "":
+					if  not data["op"] == "":	
+						if  data.has_key("mcc") and data.has_key("mnc"):
+							data["op"] = hsman.FetchOperatorName(data["mcc"],data["mnc"])
+							if data["op"] == str(data["mcc"]) + str(data["mnc"]):
+								hsman.InsertOperatorToDB(data["mcc"],data["mnc"],data["op"],"BLOCK_TODO")
 						hsman.AddAntenna(float(data["lat"]),float(data["lon"]),data["op"])
 						hsman.AddStatistics("apicall")
 						hsman.CommitToDB()
@@ -175,7 +185,12 @@ def	ProcessPage(_SERVER):
 			'''
 			operators	=	hsman.FetchOperators()
 			output = json.dumps({"data":operators,"results":len(operators)})
-
+		elif query["method"] == "operatorlist":
+			'''
+				Retornar lista de operadoras + MCC/MNC
+			'''
+			operatorlist = hsman.FetchOperatorList()
+			output = json.dumps({"data":operatorlist,"results":len(operatorlist)})
 		else:	
 			output = '{"result":"INT_ERROR"}'
 

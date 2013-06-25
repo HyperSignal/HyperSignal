@@ -67,4 +67,13 @@
         android:layout_below="@+id/textView4"
         android:text="@string/senddata" />
 
+    <Button
+        android:id="@+id/settings_update_operator_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/settings_senddata"
+        android:text="@string/updateoperatordata" />
+
 </RelativeLayout>

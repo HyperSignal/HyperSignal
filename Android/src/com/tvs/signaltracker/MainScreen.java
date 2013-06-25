@@ -142,13 +142,13 @@ public class MainScreen  extends FragmentActivity {
 				}
 			}
 			if(Utils.isBetterLocation(CommonHandler.GPSLocation, CommonHandler.NetLocation))
-				connectionInfo.setText(String.format(Locale.getDefault(), gpssatmsg, CommonHandler.NumSattelites));
+				connectionInfo.setText(String.format(Locale.getDefault(), gpssatmsg, CommonHandler.NumConSattelites, CommonHandler.NumSattelites));
 			else
-				connectionInfo.setText(String.format(Locale.getDefault(), netsatmsg, CommonHandler.NumSattelites));
+				connectionInfo.setText(String.format(Locale.getDefault(), netsatmsg, CommonHandler.NumConSattelites, CommonHandler.NumSattelites));
 			signalBar.setProgress(CommonHandler.Signal);
 			signalPercent.setText((Math.round((CommonHandler.Signal/31.0f)*100))+"%");
 			if(lastLocation != null && controlLocked && CommonHandler.GPSLocation.getLatitude() != 0 && CommonHandler.GPSLocation.getLongitude() != 0)
-				UpdateMapPosition(lastLocation.getLatitude(), lastLocation.getLongitude(), 16);
+				UpdateMapPosition(lastLocation.getLatitude(), lastLocation.getLongitude(), 15);
 			MainScreenHandler.postDelayed(this, 2000);
 		}
 		
@@ -228,8 +228,6 @@ public class MainScreen  extends FragmentActivity {
 		}
 
 		InitUp();
-
-		MainScreenHandler.postDelayed(UpdateUI, 1000);
 		CommonHandler.ServiceRunning = true;
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
@@ -359,7 +357,16 @@ public class MainScreen  extends FragmentActivity {
 			TowerCallBack.from = "MainScreen";
 			CommonHandler.AddTowerCallback(TowerCallBack);
 			CommonHandler.AddSignalCallback(SignalCallBack);
+			if(CommonHandler.Signals != null)	{
+				for(int i=0;i<CommonHandler.Signals.size();i++)
+					SignalCallBack.Call(CommonHandler.Signals.get(i));
+			}
+			if(CommonHandler.Towers != null)	{
+				for(int i=0;i<CommonHandler.Towers.size();i++)
+					TowerCallBack.Call(CommonHandler.Towers.get(i));
+			}
 		}
+		MainScreenHandler.postDelayed(UpdateUI, 100);
 	}
 	private void CleanUp()	{
 		CommonHandler.DelTowerCallback("MainScreen");
@@ -383,6 +390,7 @@ public class MainScreen  extends FragmentActivity {
     @Override
     protected void onResume() {
         super.onResume();
+    	CleanUp();
         try {
 			if(STService.Opened == false)	{
 	    		Intent myIntent = new Intent(MainScreen.this, STService.class);
@@ -404,7 +412,6 @@ public class MainScreen  extends FragmentActivity {
     @Override
     protected void onPause()	{
     	super.onPause();
-    	CleanUp();
     }
 	@Override
 	protected void onDestroy()	{

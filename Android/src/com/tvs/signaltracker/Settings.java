@@ -52,7 +52,7 @@ import android.widget.Toast;
 public class Settings extends Activity {
 	
 	//	Elementos visuais
-	private Button	saveButton,cancelButton, facebookLogin, senddata;
+	private Button	saveButton,cancelButton, facebookLogin, senddata, downloadoperator;
 	private SeekBar minDistance,minTime,lightmodeTime;
 	private CheckBox WifiSend;
 	private TextView minDistanceLabel, minTimeLabel, lightmodeTimeLabel, facebookName, signals, towers;
@@ -66,6 +66,7 @@ public class Settings extends Activity {
 	//	Tasks
 	private AsyncTask<List<TowerObject>, Integer, Long> stt;
 	private AsyncTask<List<SignalObject>, Double, Long> sst;
+	private AsyncTask<Object, Integer, Long> downloadops;
 	private boolean towersent, signalsent;
 	private static Handler SettingsHandler = new Handler();
 	private boolean RUN = false;
@@ -101,7 +102,8 @@ public class Settings extends Activity {
 			cancelButton		=	(Button) findViewById(R.id.settings_cancelBtn);
 			facebookLogin		=	(Button) findViewById(R.id.settings_fblogin);
 			senddata			=	(Button) findViewById(R.id.settings_senddata);
-
+			downloadoperator	=	(Button) findViewById(R.id.settings_update_operator_data);
+			
 			minDistance			=	(SeekBar) findViewById(R.id.settings_minDistance);
 			minTime				=	(SeekBar) findViewById(R.id.settings_minTime);
 			lightmodeTime		=	(SeekBar) findViewById(R.id.settings_lightmodeTime);
@@ -147,6 +149,20 @@ public class Settings extends Activity {
 							stt = new SendTowerTask().execute(CommonHandler.Towers);
 						}
 
+				}
+			});
+			downloadoperator.setOnClickListener(new View.OnClickListener() {
+				
+				@SuppressLint("NewApi")
+				@Override
+				public void onClick(View v) {
+					downloadoperator.setText(getResources().getString(R.string.downloading));
+					downloadoperator.setClickable(false);
+					if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
+						downloadops = new DownloadOpsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, CommonHandler.Signals);
+					} else {
+						downloadops = new DownloadOpsTask().execute(CommonHandler.Signals);
+					}
 				}
 			});
 			facebookLogin.setOnClickListener(new View.OnClickListener() {
@@ -365,7 +381,7 @@ public class Settings extends Activity {
 	         }
 	     }
 	}
-	 	private class SendTowerTask extends AsyncTask<List<TowerObject>, Integer, Long> {
+	private class SendTowerTask extends AsyncTask<List<TowerObject>, Integer, Long> {
 		     protected Long doInBackground(List<TowerObject>... objectlist) {
 		         int count = objectlist[0].size();
 		         int sent = 0;
@@ -418,6 +434,29 @@ public class Settings extends Activity {
 	         }
 	     }
 	}
+	private class DownloadOpsTask extends AsyncTask<Object, Integer, Long>	{
+
+			@Override
+			protected Long doInBackground(Object... params) {
+				HSAPI.DownloadOperatorList();
+				if(CommonHandler.OperatorList == null)	{
+					Log.i("SignalTracker::DownloadWorker","Cannot download operator list");
+					CommonHandler.OperatorList = CommonHandler.dbman.getOperatorList();
+				}else{
+					for(int i=0,len=CommonHandler.OperatorList.length;i<len;i++)	{
+						Operator op = CommonHandler.OperatorList[i];
+						CommonHandler.dbman.insertOperator(op.mcc, op.mnc, op.name, op.fullname);
+					}
+				}
+				return null;
+			}
+			
+			protected void onPostExecute(Long result) {
+		         Toast.makeText(Settings.this, String.format(getResources().getString(R.string.downloadedoperator), CommonHandler.OperatorList.length), Toast.LENGTH_LONG).show();
+		         downloadoperator.setText(getResources().getString(R.string.updateoperatordata));
+		         downloadoperator.setClickable(true);
+		    }
+	    }
 	@Override
 	public void onDestroy()	{
 		super.onDestroy();
@@ -428,6 +467,9 @@ public class Settings extends Activity {
 		if(sst != null)
 			if(!sst.isCancelled())
 				sst.cancel(true);
+		if(downloadops != null)
+			if(!downloadops.isCancelled())
+				downloadops.cancel(true);
 	}
 	@Override
 	public void onResume()	{

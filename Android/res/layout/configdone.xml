@@ -18,7 +18,7 @@
         android:src="@drawable/logo_400x400" />
 
     <TextView
-        android:id="@+id/runMode"
+        android:id="@+id/splash_screen_msg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/imageView1"

@@ -60,8 +60,8 @@
     <string name="savesettings">Save</string>
     <string name="cancel">Cancel</string>
     <string name="welcometext">Hello %s \n You authorized SignalTracker!</string>
-    <string name="gpssatmsg">Connected via GPS - %s connected sattellites.</string>
-    <string name="netsatmsg">Connected via Network - %s connected sattellites.</string>
+    <string name="gpssatmsg">Connected via GPS -  %1$s/%2$s connected sattellites.</string>
+    <string name="netsatmsg">Connected via Network - %1$s/%2$s connected sattellites.</string>
     <string name="stoppingst">Stopping SignalTracker</string>
     <string name="savingpref">Saving preferences</string>
     <string name="prefsavedrestarting">Preferences saved. Starting service.</string>
@@ -69,7 +69,7 @@
     <string name="willdisconnectonsave">Will be disconnected on save</string>
     <string name="stservicestopped">SignalTracker service stopped!</string>
     <string name="stservicestarted">SignalTracker service started!</string>
-    <string name="barnotice">Points(%1$s km) Towers(%2$s) Sats(%3$s)</string>
+    <string name="barnotice">Points(%1$s km) Towers(%2$s) Sats(%3$s/%4$s)</string>
     <string name="notasktodo">No task to do..</string>
     <string name="gpsdisabled">GPS disabled, please enable it!</string>
     <string name="gpsenabled">GPS Enabled!</string>
@@ -83,4 +83,8 @@
     <string name="datasent">Data sent!</string>
     <string name="sending">Sending</string>
     <string name="lightmodemsg">The SignalTracker will run in lightmode.</string>
+    <string name="downloadingops">Downloading operator list. This could take a while. Please wait.</string>
+    <string name="updateoperatordata">Update Operator Data</string>
+    <string name="downloadedoperator">%s operators downloaded!</string>
+    <string name="downloading">Downloading</string>
 </resources>

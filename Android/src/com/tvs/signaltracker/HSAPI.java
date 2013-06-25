@@ -23,6 +23,7 @@ package com.tvs.signaltracker;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -61,6 +62,45 @@ public class HSAPI {
 		}
 	}
 	/**
+	 * Downloads Operator List from the Server 
+	 * and saves on CommonHandler.OperatorList
+	 */
+	public static void DownloadOperatorList()	{
+		try {
+			JSONObject out = Utils.getJSONfromURL(baseURL+"?method=operatorlist");
+			if(out != null)	{
+				int numOps = out.getInt("results");
+				Log.i("SignalTracker::DownloadOperatorList","Received "+numOps+" operators.");
+				if(numOps > 0)	{
+					Operator[] OpList = new Operator[numOps];
+					JSONArray operators = out.getJSONArray("data");
+					for(int i=0,len=operators.length();i<len;i++)	{
+						JSONArray operator = operators.getJSONArray(i);
+						OpList[i] = new Operator(operator.getInt(0),operator.getInt(1),operator.getString(2),operator.getString(3));
+					}
+					CommonHandler.OperatorList = OpList;
+				}else{
+					Log.e("SignalTracker::DownloadOperatorList","No Operators received!");
+				}
+			}else
+				Log.e("SignalTracker::DownloadOperatorList","No Output");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}		
+	}
+	/**
+	 * Downloads Operator List from the Server 
+	 * and saves on CommonHandler.OperatorList
+	 * @see AsyncTask
+	 */
+	public static class DownloadOperatorList extends AsyncTask<String, Integer, Long> {
+		@Override
+		protected Long doInBackground(String... params) {
+			DownloadOperatorList();
+			return null;
+		}
+	}
+	/**
 	 * Adds info about a tower in Database
 	 * @param	tower	Tower data to send
 	 * @see TowerObject
@@ -74,7 +114,7 @@ public class HSAPI {
 			try {
 				tower = params[0];
 				tower.state = 1;
-				String jsondata = "{\"metodo\":\"addtorre\",\"op\":\""+CommonHandler.Operator+"\",\"lat\":"+String.valueOf(tower.latitude)+",\"lon\":"+String.valueOf(tower.longitude)+", \"uid\":\""+CommonHandler.FacebookUID+"\"}";
+				String jsondata = "{\"metodo\":\"addtorre\",\"op\":\""+CommonHandler.Operator+"\",\"lat\":"+String.valueOf(tower.latitude)+",\"lon\":"+String.valueOf(tower.longitude)+", \"uid\":\""+CommonHandler.FacebookUID+"\",\"mcc\":"+tower.mcc+",\"mnc\":"+tower.mnc+"}";
 				jsondata = TheUpCrypter.GenOData(jsondata);
 				JSONObject out = Utils.getODataJSONfromURL(baseURL+"?odata="+URLEncoder.encode(jsondata, "UTF-8"));
 				if(out != null)	{
@@ -114,7 +154,7 @@ public class HSAPI {
 			try {
 				signal = params[0];
 				signal.state = 1;
-				String jsondata = "{\"metodo\":\"addsinal\",\"uid\":\""+CommonHandler.FacebookUID+"\",\"weight\":"+signal.weight+",\"mindistance\":"+CommonHandler.MinimumDistance+",\"op\":\""+CommonHandler.Operator+"\",\"lat\":"+String.valueOf(signal.latitude)+",\"lon\":"+String.valueOf(signal.longitude)+",\"dev\":\""+Build.DEVICE+"\",\"man\":\""+Build.MANUFACTURER+"\",\"model\":\""+Build.MODEL+"\",\"brand\":\""+Build.BRAND+"\",\"rel\":\""+Build.VERSION.RELEASE+"\",\"and\":\""+Build.ID+"\",\"sig\":"+String.valueOf(signal.signal)+"}";
+				String jsondata = "{\"metodo\":\"addsinal\",\"uid\":\""+CommonHandler.FacebookUID+"\",\"weight\":"+signal.weight+",\"mindistance\":"+CommonHandler.MinimumDistance+",\"op\":\""+CommonHandler.Operator+"\",\"lat\":"+String.valueOf(signal.latitude)+",\"lon\":"+String.valueOf(signal.longitude)+",\"dev\":\""+Build.DEVICE+"\",\"man\":\""+Build.MANUFACTURER+"\",\"model\":\""+Build.MODEL+"\",\"brand\":\""+Build.BRAND+"\",\"rel\":\""+Build.VERSION.RELEASE+"\",\"and\":\""+Build.ID+"\",\"sig\":"+String.valueOf(signal.signal)+",\"mcc\":"+signal.mcc+",\"mnc\":"+signal.mnc+"}";
 				jsondata = TheUpCrypter.GenOData(jsondata);
 				JSONObject out = Utils.getODataJSONfromURL(baseURL+"?odata="+URLEncoder.encode(jsondata, "UTF-8"));
 				if(out != null)	{

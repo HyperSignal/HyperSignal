@@ -122,7 +122,12 @@ public class STService extends Service{
 		NetLocListener			=	new NETLocationListener();
 		mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 10,	NetLocListener);	
 		Tel.listen(MyListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS| PhoneStateListener.LISTEN_CELL_LOCATION );
-		CommonHandler.Operator	=	Utils.DoOperator(Tel.getNetworkOperatorName());
+		//CommonHandler.Operator	=	Utils.DoOperator(Tel.getNetworkOperatorName());
+		Operator x = CommonHandler.dbman.getOperator(CommonHandler.MCC, CommonHandler.MNC);
+		if(x != null)
+			CommonHandler.Operator = x.name;
+		else
+			CommonHandler.Operator = CommonHandler.MCC+""+CommonHandler.MNC;
 	}
 	private void UpdateWiFi()	{
 		SupplicantState supState; 
@@ -241,7 +246,7 @@ public class STService extends Service{
     		signals = CommonHandler.Signals.size();
     	if(CommonHandler.Towers != null)
     		towers = CommonHandler.Towers.size();
-    	String bartext = String.format(Locale.getDefault(), getResources().getString(R.string.barnotice) ,(signals*CommonHandler.MinimumDistance)/1000f, towers, CommonHandler.NumSattelites);
+    	String bartext = String.format(Locale.getDefault(), getResources().getString(R.string.barnotice) ,(signals*CommonHandler.MinimumDistance)/1000f, towers, CommonHandler.NumConSattelites, CommonHandler.NumSattelites);
     	if(mBuilder == null)	{
     		String msg	= "";
     		if( CommonHandler.ServiceMode == 1 || CommonHandler.ServiceMode == 3)
@@ -339,11 +344,17 @@ public class STService extends Service{
 						Iterable<GpsSatellite>satellites = status.getSatellites();
 						Iterator<GpsSatellite> sat = satellites.iterator();
 						int count = 0;
+						int conncount = 0;
+						GpsSatellite st = null;
 						while(sat.hasNext())	{
-							count++;
-							sat.next();
+							st = sat.next();
+							if(st != null)	{
+								conncount = (st.usedInFix())?conncount+1:conncount;
+								count++;
+							}
 						}
 						CommonHandler.NumSattelites = count;
+						CommonHandler.NumConSattelites = conncount;
 					}
 					break;
 			}
@@ -453,6 +464,7 @@ public class STService extends Service{
 			NetLocListener	=	null;
 			CommonHandler.GPSFix = false;
 			CommonHandler.NumSattelites = 0;
+			CommonHandler.NumConSattelites = 0;
 			try {
 				String ns = Context.NOTIFICATION_SERVICE;
 			    NotificationManager nMgr = (NotificationManager) this.getSystemService(ns);

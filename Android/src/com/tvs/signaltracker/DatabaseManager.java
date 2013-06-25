@@ -36,7 +36,7 @@ import android.util.Log;
 
 public class DatabaseManager {
 	private static final String DATABASE_NAME = "signaltracker.db";
-	private static final int DATABASE_VERSION = 3;
+	private static final int DATABASE_VERSION = 5;
 	
 	private Context context;
 	private SQLiteDatabase db;
@@ -44,6 +44,7 @@ public class DatabaseManager {
 	private SQLiteStatement insTower;
 	private static final String INSERTSIGNAL = "insert into signals(latitude,longitude,sinal,state) values (?,?,?,0)";
 	private static final String INSERTTOWER = "insert into towers(latitude,longitude,state) values (?,?,0)";
+	
 	private List<DBUsers> users;
 	
 	/**
@@ -328,6 +329,66 @@ public class DatabaseManager {
 	}
 	
 	/**
+	 * Insert one operator to database
+	 * @param mcc		The Mobile Country Code from Operator
+	 * @param mnc		The pMobile Network Code from Operator
+	 * @param name		The Operator Short Name
+	 * @param fullname	The Operator Fullname
+	 * @return Number of Rows affected if preference exists, or Row ID if not.
+	 */
+	public long insertOperator(int mcc, int mnc, String name, String fullname)	{
+			if(getOperator(mcc,mnc) != null)	{
+				ContentValues values = new ContentValues();
+				values.put("name", name);	
+				values.put("fullname", fullname);		
+				return this.db.update("operators", values, "mcc=? and mnc=?", new String[] { Integer.toString(mcc), Integer.toString(mnc) });			
+			}else{
+				ContentValues values = new ContentValues();
+				values.put("name", name);	
+				values.put("fullname", fullname);	
+				values.put("mcc",mcc);
+				values.put("mnc",mnc);
+				return this.db.insert("operators", null, values);
+			}
+	}
+	
+	/**
+	 * Get the operator data from database
+	 * @param mcc		The Mobile Country Code from Operator
+	 * @param mnc		The pMobile Network Code from Operator
+	 * @return	Returns an Operator object, or null if not found
+	 * @see Operator
+	 */
+	public Operator	getOperator(int mcc, int mnc)	{
+			Cursor cursor = this.db.query("operators", new String[] 	{ "mcc","mnc","name", "fullname" }, "mcc=? and mnc=?" , new String[] { Integer.toString(mcc), Integer.toString(mnc) }, null, null, null);
+			if(cursor.moveToFirst())	{
+				Operator operator = new Operator(cursor.getInt(cursor.getColumnIndex("mcc")),cursor.getInt(cursor.getColumnIndex("mnc")),cursor.getString(cursor.getColumnIndex("name")),cursor.getString(cursor.getColumnIndex("fullname")));
+				cursor.close();
+				return operator;
+			}else{
+				cursor.close();
+				return null;
+			}
+	}
+	/**
+	 * Get the operator list data from database
+	 * @return	Returns an Operator object array, or null if not found
+	 * @see Operator
+	 */
+	public Operator[] getOperatorList()	{
+		Operator[] OperatorList = null;
+		Cursor cursor = this.db.query("operators", new String[] 	{ "mcc","mnc","name", "fullname" }, null , null, null, null, null);
+		if(cursor.moveToFirst())	{
+			OperatorList = new Operator[cursor.getCount()];
+			for(int i=0,len=OperatorList.length;i<len;i++)	{
+				OperatorList[i] = new Operator(cursor.getInt(cursor.getColumnIndex("mcc")),cursor.getInt(cursor.getColumnIndex("mnc")),cursor.getString(cursor.getColumnIndex("name")),cursor.getString(cursor.getColumnIndex("fullname")));
+				cursor.moveToNext();
+			}
+		}
+		cursor.close();
+		return OperatorList;
+	}
+	/**
 	 * Static DBUser Class for manage activities that is acessing database
 	 * @author Lucas Teske
 	 *
@@ -360,6 +421,7 @@ public class DatabaseManager {
 	    	db.execSQL("CREATE TABLE signals (id INTEGER PRIMARY KEY, latitude DOUBLE, longitude DOUBLE, sinal INTEGER, state INTEGER)");
 	    	db.execSQL("CREATE TABLE towers (id INTEGER PRIMARY KEY, latitude DOUBLE, longitude DOUBLE, state INTEGER)");
 	    	db.execSQL("CREATE TABLE preferences (prefkey TEXT PRIMARY KEY, prefval TEXT)");
+	    	db.execSQL("CREATE TABLE operators (mcc INTEGER NOT NULL , mnc INTEGER NOT NULL, name TEXT, fullname TEXT, PRIMARY KEY(mcc,mnc))");
 	    }
 	    /**
 	     * Fills the new database with data from the old database.
@@ -451,6 +513,7 @@ public class DatabaseManager {
 	       db.execSQL("DROP TABLE IF EXISTS signals");
 	       db.execSQL("DROP TABLE IF EXISTS towers");
 	       db.execSQL("DROP TABLE IF EXISTS preferences");
+	       db.execSQL("DROP TABLE IF EXISTS operators");
 	       onCreate(db);
 	       FillNewDB(db,sigtable,towertable,preferences);
 	       sigtable = null;

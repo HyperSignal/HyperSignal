@@ -30,6 +30,7 @@ import android.content.Context;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 public class CommonHandler {
@@ -53,7 +54,8 @@ public class CommonHandler {
 	
 	public static Location 	GPSLocation;							//	Localização pelo GPS
 	public static Location 	NetLocation;							//	Localização pela Rede
-	public static int		NumSattelites;							//	Número de Satélites Conectados
+	public static int		NumSattelites;							//	Número de Satélites
+	public static int		NumConSattelites;						//	Número de Satélites Conectados
 	public static short		Signal;									//	Sinal do celular
 	
 	public static float		Weight				=	1f;				//	Peso do sinal (para média)
@@ -81,8 +83,12 @@ public class CommonHandler {
 	public static int		LightModeDelayTime		=	30;				//	Tempo de espera do modo Light
 	public static double	SentSignals				=	0;				//	Sinais Enviados
 	public static int		SentTowers				=	0;				//	Torres Enviadas
+	public static int		MCC						=	0;				//	Mobile Country Code
+	public static int		MNC						=	0;				//	Mobile Network Code
 	
-	public static GraphLocation FacebookLocation;					//	Localização no Facebook, caso logado
+	public static Operator[]	OperatorList;							//	List of Operators
+	
+	public static GraphLocation FacebookLocation;						//	Localização no Facebook, caso logado
 	
 
 	
@@ -97,6 +103,15 @@ public class CommonHandler {
 			Towers = new ArrayList<TowerObject>();
 	}
 	
+	/**
+	 * Loads the operator data
+	 */
+	public static void InitOperatorData(Context ctx)	{
+		TelephonyManager manager = (TelephonyManager) ctx.getSystemService(Context.TELEPHONY_SERVICE);
+		String netoperator = manager.getSimOperator ();
+		MCC = Integer.parseInt(netoperator.substring(0, 3));
+		MNC = Integer.parseInt(netoperator.substring(3));
+	}
 	/**
 	 * Loads the database data into Towers and Signal Lists
 	 */
@@ -317,7 +332,7 @@ public class CommonHandler {
 	 */
 	public static void AddSignal(double lat, double lon, short signal, float weight, boolean doCallback)	{
 		if(Signals != null)	{
-			SignalObject tmp	=	new SignalObject(lat,lon,signal,(short)0,weight);
+			SignalObject tmp	=	new SignalObject(lat,lon,signal,(short)0,weight,MCC,MNC);
 			boolean add = true;
 			for(int i=0; i<Signals.size();i++)	{
 				if(tmp.distance(Signals.get(i)) < MinimumDistance-(MinimumDistance/5f))	{
@@ -371,7 +386,7 @@ public class CommonHandler {
 	 */
 	public static void AddTower(double lat, double lon)	{
 		if(Towers != null)	{
-			TowerObject tmp	=	new TowerObject(lat,lon);
+			TowerObject tmp	=	new TowerObject(lat,lon,MCC,MNC);
 			boolean add = true;
 			for(int i=0; i<Towers.size();i++)	{
 				if(tmp.distance(Towers.get(i)) < MinimumDistance-(MinimumDistance/5f))	{
@@ -452,6 +467,7 @@ public class CommonHandler {
 			String wifisend			=	dbman.getPreference("wifisend");
 			String senttower		=	dbman.getPreference("senttowers");
 			String sentsignal		=	dbman.getPreference("sentsignals");
+			OperatorList 			=	dbman.getOperatorList();
 			
 			if(fbid != null)
 				FacebookUID			=	fbid;
@@ -465,8 +481,12 @@ public class CommonHandler {
 				ServiceMode			=	Short.parseShort(servicemode);
 			if(mindistance != null)
 				MinimumDistance		=	Integer.parseInt(mindistance);
+			else
+				dbman.setPreference("mindistance", Integer.toString(MinimumDistance));
 			if(mintime != null)
 				MinimumTime			=	Integer.parseInt(mintime);
+			else
+				dbman.setPreference("mintime", Integer.toString(MinimumTime));
 			if(wakelock != null)	
 				WakeLock			=	(wakelock.contains("True")?true:false);
 			if(lightmodet != null)

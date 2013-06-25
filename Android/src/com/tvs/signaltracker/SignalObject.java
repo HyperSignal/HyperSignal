@@ -25,7 +25,7 @@ public class SignalObject {
 	public short signal;
 	public short state;
 	public float weight;
-	public int id;
+	public int id, mnc, mcc;
 	
 	public SignalObject(double latitude, double longitude, short signal)	{
 		this.latitude = latitude;
@@ -48,6 +48,15 @@ public class SignalObject {
 		this.state = state;
 		this.weight = weight;
 	}
+	public SignalObject(double latitude, double longitude, short signal, short state, float weight, int mcc, int mnc)	{
+		this.latitude = latitude;
+		this.longitude = longitude;
+		this.signal = signal;
+		this.state = state;
+		this.weight = weight;
+		this.mcc = mcc;
+		this.mnc = mnc;
+	}
 	public String toString()	{
 		return "Signal ("+latitude+","+longitude+")["+signal+"] - Weight: "+weight;
 	}
@@ -60,5 +69,9 @@ public class SignalObject {
 		double a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
 		
 		return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+	}
+	public void UpdateOperatorData(int mcc, int mnc)	{
+		this.mcc = mcc;
+		this.mnc = mnc;
 	}
 }

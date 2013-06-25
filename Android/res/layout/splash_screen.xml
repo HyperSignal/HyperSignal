@@ -19,7 +19,7 @@
         android:src="@drawable/logo_400x400" />
 
     <TextView
-        android:id="@+id/runMode"
+        android:id="@+id/splash_screen_msg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/signalBar"
@@ -28,7 +28,8 @@
         android:layout_below="@+id/imageView1"
         android:gravity="center"
         android:text="@string/loading"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textSize="20sp" />
 
     <ProgressBar
         android:id="@+id/signalBar"
