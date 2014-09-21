@@ -32,7 +32,7 @@ import android.os.Build;
 import android.util.Log;
 
 public class HSAPI {
-	public static final String baseURL	=	"http://server-b02.tvssite.ws:81/hsapi/";		//	The Base URL for the API
+	public static final String baseURL	=	"https://hypersignal.tvssite.com:448/";		//	The Base URL for the API
     public static final String TILES_SYNTAX = baseURL+"?operadora=%s&tile=%d-%d-%d";		//	The Syntax for download tiles
 
 	/**
