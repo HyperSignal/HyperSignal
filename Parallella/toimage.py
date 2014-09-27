@@ -2,6 +2,7 @@
 
 import Image, numpy as np, math
 
+
 def hsv2rgb(h, s, v):
     h = float(h)
     s = float(s)
@@ -23,26 +24,28 @@ def hsv2rgb(h, s, v):
     r, g, b = int(r * 255), int(g * 255), int(b * 255)
     return r, g, b
 
-def BuildImage(data,w,h):
-	arr = np.zeros((w,h,3), dtype=np.uint8)
+def BuildTable(s,v):
+    table = []
+    for i in range(0,256):
+        table.append(hsv2rgb((i/256.0)*120, s, v))
+    return table
+
+def BuildImage(data,w,h, table):
+	arr = np.zeros((h,w,3), dtype=np.uint8)
 	for y in range(h):
 		for x in range(w):
 			p = y * w + x
-			#r,g,b = hsv2rgb(360*(ord(data[p])/256.0),1,1)
-			arr[y][x][0] = ord(data[p]) #r
-			arr[y][x][1] = ord(data[p]) #g
-			arr[y][x][2] = ord(data[p]) #b
+			r,g,b = table[ord(data[p])]
+			arr[y][x][0] = r
+			arr[y][x][1] = g
+			arr[y][x][2] = b
 	return Image.fromarray(arr)
 
-f = open("initial.mat")
-data = f.read()
-f.close()
-image = BuildImage(data,4,4)
-image.save("initial.png")
+table = BuildTable(1.0,0.902)
 
 f = open("output.mat")
 data = f.read()
 f.close()
-image = BuildImage(data,320,320)
+image = BuildImage(data,384,384, table)
 image.save("output.png")
 

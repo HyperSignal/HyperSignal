@@ -1,0 +1,32 @@
+
+#ifndef COMMON_H
+#define COMMON_H
+
+#define SAMPLE_WIDTH 8
+#define SAMPLE_HEIGHT 8
+
+#define OUTPUT_WIDTH 128
+#define OUTPUT_HEIGHT 128
+
+#define SAMPLE_SIZE (SAMPLE_WIDTH * SAMPLE_HEIGHT)
+#define OUTPUT_SIZE (OUTPUT_WIDTH * OUTPUT_HEIGHT)
+
+#define CURRENT_POS (0x2000)
+
+#define NUM_WORKS 4
+#define BUF_SIZE 32
+
+#define ALIGN8 8
+
+typedef struct __attribute__((aligned(ALIGN8))) {
+   int workid;							       //	Work ID
+   float x0, y0;						       //	Coordinates
+   float sx, sy;						       //	ScaleX and ScaleY
+   unsigned char sample[SAMPLE_SIZE];	 //	Origin Matrix
+   unsigned char output[OUTPUT_SIZE];	 //	Output Matrix
+   unsigned char done;                  //	Done Flag
+   unsigned char error;					    //	Error Flag
+   int coreid;							       //	Core ID
+} HSWork;
+
+#endif
