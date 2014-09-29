@@ -8,4 +8,4 @@ EHDF=${EPIPHANY_HDF}
 
 cd Build/epiphany/
 
-sudo -E LD_LIBRARY_PATH=${ELIBS} EPIPHANY_HDF=${EHDF} ./test.elf
+sudo -E LD_LIBRARY_PATH=${ELIBS} EPIPHANY_HDF=${EHDF}  ./test.elf "$@" < /dev/stdin

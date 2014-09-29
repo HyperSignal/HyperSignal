@@ -44,6 +44,7 @@ int main(void) {
   unsigned char val;
   unsigned row, col;
   unsigned sx, sy;
+  float costable[MAX_CIRCLE_ANGLE];
 
   sx = vals[2];
   sy = vals[3];
@@ -57,45 +58,28 @@ int main(void) {
   HSWork work;
 
   e_dma_copy(&work, &ext_works[workid], sizeof(HSWork));
+  e_dma_copy(&costable, &ext_works[sx*sy], sizeof(float) * MAX_CIRCLE_ANGLE);
 
   int *curx = (int *)CURRENT_POS, *cury = (int *)(CURRENT_POS + 1);
   vals[0] = 0;
   vals[1] = 0;
 
-/*
-  float x=0, y=0;
-  while(y<OUTPUT_HEIGHT)  {
-    vals[1] = (unsigned)y;
-    while(x<OUTPUT_WIDTH) {
-      vals[0] = (unsigned)x;
-      x2 = (x / (((float)OUTPUT_WIDTH)  * (work.sx) ))   * (((float)SAMPLE_WIDTH)-1.f);
-      y2 = (y / (((float)OUTPUT_HEIGHT) * (work.sy) ))   * (((float)SAMPLE_HEIGHT)-1.f);
-      x2 += work.x0;
-      y2 += work.y0;
-      val = bilinear(work.sample,x2,y2,SAMPLE_WIDTH);
-      setval(work.output,(int)x,(int)y,OUTPUT_WIDTH,val);
-      x+=1.f;
-    }
-    y+=1.f;
-  }
-  */
   const float sw_ow = ((SAMPLE_WIDTH-1) /  (float)OUTPUT_WIDTH ) / work.sx;
   const float sh_oh = ((SAMPLE_HEIGHT-1) / (float)OUTPUT_HEIGHT) /  work.sy;
-  //const float sw_ow = ((float)SAMPLE_WIDTH  * work.sx)  / (float)OUTPUT_WIDTH;
-  //const float sh_oh = ((float)SAMPLE_HEIGHT * work.sy)  / (float)OUTPUT_HEIGHT;
-
 
   for(int y=0;y<OUTPUT_HEIGHT;y++)  {
     vals[1] = y;
     for(int x=0;x<OUTPUT_WIDTH;x++) {
       vals[0] = x;
-      //x2 = (x / (((float)OUTPUT_WIDTH)  * (work.sx) ))   * (((float)SAMPLE_WIDTH)-1.f);
-      //y2 = (y / (((float)OUTPUT_HEIGHT) * (work.sy) ))   * (((float)SAMPLE_HEIGHT)-1.f);
       x2 = sw_ow * x;
       y2 = sh_oh * y;
       x2 += work.x0;
       y2 += work.y0;
+      #ifdef BICOSINE_INTERPOLATION
+      val = bicosine(work.sample, x2, y2, SAMPLE_WIDTH, costable);
+      #else
       val = bilinear(work.sample,x2,y2,SAMPLE_WIDTH);
+      #endif
       setval(work.output,x,y,OUTPUT_WIDTH,val);
     }
   }
