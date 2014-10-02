@@ -37,6 +37,7 @@ static inline float min(float v1, float v2)	{
 }
 
 static inline unsigned char val(const unsigned char *data, int x, int y, int mw)	{
+	if(x > mw)	x = mw;
 	return data[y * mw + x];
 }
 

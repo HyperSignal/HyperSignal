@@ -33,6 +33,9 @@ unsigned char bicosine(const unsigned char *data, double x, double y, int mw)	{
 	return cosineInterpolate(top,bottom,fracY);
 
 }
+/**
+
+**/
 
 unsigned char bilinear(const unsigned char *data, double x, double y, int mw)	{	
 	int rx = floor(x);

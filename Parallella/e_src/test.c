@@ -20,6 +20,8 @@ typedef int bool;
 #define true 1
 #define false 0
 
+/*
+//8x8 test sample
 unsigned char Data[] = {
 	157,83 ,153,147,223,114,248,200,
 	120,185,30 ,86 ,50 ,28 ,29 ,180,
@@ -29,7 +31,7 @@ unsigned char Data[] = {
 	151,206,52 ,100,232,163,191,135,
 	125,81 ,122,246,20 ,197,194,210,
 	87 ,122,11 ,16 ,163,90 ,1  ,152 
-};
+};*/
 
 unsigned char *colortable;
 
@@ -44,6 +46,9 @@ unsigned int A = 0;
 unsigned int B = 0;
 unsigned int C = 384;
 unsigned int D = 384;
+
+unsigned int SAMPLE_WIDTH = 32;
+unsigned int SAMPLE_HEIGHT = 32;
 
 bool cosine_mode	= 	false;
 bool pipestdout 	= 	false;
@@ -74,6 +79,8 @@ void ShowHelp()	{
 	fprintf(stderr, "\t\t-c      \t\t Cosine Mode Interpolation (DEFAULT: Bilinear)\n");
 	fprintf(stderr, "\t\t-w      \t\t Tile Width  ( Excluding CROP )\n");
 	fprintf(stderr, "\t\t-h      \t\t Tile Height ( Excluding CROP )\n");
+	fprintf(stderr, "\t\t-r      \t\t Sample Width \n");
+	fprintf(stderr, "\t\t-u      \t\t Sample Height \n");
 	fprintf(stderr, "\t\t-k      \t\t Sample Input from STDIN\n");
 	fprintf(stderr, "\t\t-z      \t\t Redirect output to STDOUT (Default save to output.mat)\n");
 	fprintf(stderr, "\n\n");
@@ -98,7 +105,7 @@ int main(int argc, char *argv[])
 	extern int optind, optopt, opterr;
 	char *filename;
 
-	while ((c = getopt(argc, argv, "A:B:C:D:ckztvw:h:")) != -1) {
+	while ((c = getopt(argc, argv, "A:B:C:D:ckztvw:h:r:u:")) != -1) {
         switch(c) {
         case 'c':
         	if(verbose)
@@ -115,6 +122,12 @@ int main(int argc, char *argv[])
            		fprintf(stderr,"Output for stdout\n");
             pipestdout = true;
             break;
+    	case 'r':
+    		SAMPLE_WIDTH = atoi(optarg);
+			break;
+		case 'u':
+    		SAMPLE_HEIGHT = atoi(optarg);
+    		break;
         case 'w':
         	OUT_X = atoi(optarg);
         	break;
@@ -152,7 +165,17 @@ int main(int argc, char *argv[])
 	int WIDTH = C-A;
 	int HEIGHT = D-B;
 	unsigned char outdata[WIDTH*HEIGHT];
+	unsigned char Data[SAMPLE_WIDTH*SAMPLE_HEIGHT];
 	unsigned char *outcolor;
+
+	if(!pipestdin)	{
+		// Generate random data
+		srand(time(NULL));
+		for(int i=0;i<SAMPLE_HEIGHT*SAMPLE_WIDTH;i++)
+			Data[i] = (rand() % 64) & 0xFF;
+	}
+	for(int i=0;i<SAMPLE_WIDTH*SAMPLE_HEIGHT;i++)
+		Data[i] = 0xFF;
 
 	const unsigned int SX = OUT_X / OUTPUT_WIDTH;
 	const unsigned int SY = OUT_Y / OUTPUT_HEIGHT;
@@ -185,7 +208,7 @@ int main(int argc, char *argv[])
 		freopen (NULL,"rb",stdin);
 		int c = fread(Data, sizeof(char), SAMPLE_WIDTH*SAMPLE_HEIGHT, stdin);	
 		if(verbose)
-           		fprintf(stderr, "Read %d bytes from stdin. \n", c);	
+           	fprintf(stderr, "Read %d bytes from stdin. \n", c);	
 		freopen (NULL,"r",stdin);
 	}
 
@@ -202,6 +225,8 @@ int main(int argc, char *argv[])
 			works[p].y0 = y * (by-(1.0f/SY));
 			works[p].sx = SX;
 			works[p].sy = SY;
+			works[p].sample_width = SAMPLE_WIDTH;
+			works[p].sample_height = SAMPLE_HEIGHT;
 			works[p].done = 0;
 			works[p].error = 0;
 			memcpy(works[p].sample, Data, sizeof(unsigned char) * SAMPLE_WIDTH * SAMPLE_HEIGHT);
@@ -246,7 +271,7 @@ int main(int argc, char *argv[])
 	if(verbose)
    		fprintf(stderr, "Waiting...\n");
 
-	//	Every 2 seconds, read the works from Shared DRAM and see if there is any change.
+	//	Every 1 ms, read the works from Shared DRAM and see if there is any change.
 	while(1)	{
 		flag = 1;
 		e_read(&emem, 0, 0, 0, &works, sizeof(works));
@@ -290,7 +315,7 @@ int main(int argc, char *argv[])
 					int tx 	=	i + x * (OUT_X/SX);
 					int ty 	= 	j + y * (OUT_Y/SY);
 					if(tx >= A && tx < C && ty >= B && ty < D)	{
-						int pt 	=	(ty-B)*(WIDTH)+(tx-A);
+						int pt 	=	(D-ty-1)*(WIDTH)+(tx-A);
 						unsigned char val = works[p].output[j*OUTPUT_WIDTH+i];
 						if(colorize)	{
 							outcolor[pt*4] 		= 	colortable[val*4];

@@ -64,6 +64,10 @@ int main(void) {
   vals[0] = 0;
   vals[1] = 0;
 
+
+  const unsigned int  SAMPLE_WIDTH  = work.sample_width, 
+                      SAMPLE_HEIGHT = work.sample_height;
+
   const float sw_ow = ((SAMPLE_WIDTH-1) /  (float)OUTPUT_WIDTH ) / work.sx;
   const float sh_oh = ((SAMPLE_HEIGHT-1) / (float)OUTPUT_HEIGHT) /  work.sy;
 
