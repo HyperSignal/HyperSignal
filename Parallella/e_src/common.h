@@ -21,8 +21,14 @@
 
 #define ALIGN8 8
 
+#define MAX_CORES 16
+#define MAX_CORES_X 4
+#define MAX_CORES_Y 4
+
+#define LOOP_SLEEP 4
+
 typedef struct __attribute__((aligned(ALIGN8))) {
-   int workid;							       	//	Work ID
+   int scheduleid;						       	//	Work ID
    float x0, y0;						       	//	Coordinates
    float sx, sy;						       	//	ScaleX and ScaleY
    unsigned int sample_width;					//	Sample Width
@@ -33,5 +39,10 @@ typedef struct __attribute__((aligned(ALIGN8))) {
    unsigned char error;					    	//	Error Flag
    int coreid;							      	//	Core ID
 } HSWork;
+
+typedef struct  {
+	unsigned int id, width, height, A,B,C,D;
+	unsigned char swidth, sheight, *sample;
+} HSInfo;
 
 #endif

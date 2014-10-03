@@ -1,30 +1,3 @@
-/*
-  e_hello_world.c
-
-  Copyright (C) 2012 Adapteva, Inc.
-  Contributed by Yaniv Sapir <yaniv@adapteva.com>
-
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program, see the file COPYING.  If not, see
-  <http://www.gnu.org/licenses/>.
-*/
-
-// This is the DEVICE side of the Hello World example.
-// The host may load this program to any eCore. When
-// launched, the program queries the CoreID and prints
-// a message identifying itself to the shared external
-// memory buffer.
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,34 +15,30 @@ int main(void) {
   e_coreid_t coreid = e_get_coreid();
   float x2, y2;
   unsigned char val;
-  unsigned row, col;
   unsigned sx, sy;
   float costable[MAX_CIRCLE_ANGLE];
 
-  sx = vals[2];
-  sy = vals[3];
+  unsigned workid   =   vals[2];
+  unsigned numworks =   vals[3];
 
-  e_coords_from_coreid(coreid, &row, &col); 
+  if(workid > 15) {
+    vals[0] = workid;
+    vals[1] = -1;
+    return EXIT_SUCCESS;
+  }
 
-
-  char workid = row * sx + col;
-
-  HSWork *ext_works = (void *) BUFSTART;
+  HSWork *ext_works =   (void *) BUFSTART;
   HSWork work;
 
   e_dma_copy(&work, &ext_works[workid], sizeof(HSWork));
-  e_dma_copy(&costable, &ext_works[sx*sy], sizeof(float) * MAX_CIRCLE_ANGLE);
+  e_dma_copy(&costable, &ext_works[numworks], sizeof(float) * MAX_CIRCLE_ANGLE);
 
-  int *curx = (int *)CURRENT_POS, *cury = (int *)(CURRENT_POS + 1);
+  int *curx         =   (int *)CURRENT_POS, *cury = (int *)(CURRENT_POS + 1);
   vals[0] = 0;
   vals[1] = 0;
 
-
-  const unsigned int  SAMPLE_WIDTH  = work.sample_width, 
-                      SAMPLE_HEIGHT = work.sample_height;
-
-  const float sw_ow = ((SAMPLE_WIDTH-1) /  (float)OUTPUT_WIDTH ) / work.sx;
-  const float sh_oh = ((SAMPLE_HEIGHT-1) / (float)OUTPUT_HEIGHT) /  work.sy;
+  const float sw_ow =   ((work.sample_width-1) /  (float)OUTPUT_WIDTH ) /  work.sx;
+  const float sh_oh =   ((work.sample_height-1) / (float)OUTPUT_HEIGHT) /  work.sy;
 
   for(int y=0;y<OUTPUT_HEIGHT;y++)  {
     vals[1] = y;
@@ -80,9 +49,9 @@ int main(void) {
       x2 += work.x0;
       y2 += work.y0;
       #ifdef BICOSINE_INTERPOLATION
-      val = bicosine(work.sample, x2, y2, SAMPLE_WIDTH, costable);
+      val = bicosine(work.sample, x2, y2, work.sample_width, costable);
       #else
-      val = bilinear(work.sample,x2,y2,SAMPLE_WIDTH);
+      val = bilinear(work.sample,x2,y2,work.sample_width);
       #endif
       setval(work.output,x,y,OUTPUT_WIDTH,val);
     }

@@ -38,14 +38,14 @@ unsigned char *colortable;
 //#define OUT_X 384
 //#define OUT_Y 384
 
-unsigned int OUT_X = 384;
-unsigned int OUT_Y = 384;
+unsigned int OUT_X = 256;
+unsigned int OUT_Y = 256;
 
 // Crop positions
 unsigned int A = 0;
 unsigned int B = 0;
-unsigned int C = 384;
-unsigned int D = 384;
+unsigned int C = 256;
+unsigned int D = 256;
 
 unsigned int SAMPLE_WIDTH = 32;
 unsigned int SAMPLE_HEIGHT = 32;
@@ -55,6 +55,11 @@ bool pipestdout 	= 	false;
 bool pipestdin 		= 	false;
 bool verbose		=	false;
 bool colorize		=	false;
+
+HSInfo *schedules;
+bool *schedules_status;
+HSInfo *outputs;
+unsigned int numsched = 0;
 
 void USleep(int microseconds)	{
 	long nanoseconds = microseconds * 1000L;	//	To nano
@@ -87,6 +92,92 @@ void ShowHelp()	{
 	exit(1);
 }
 
+
+void ProcessDataInput() {
+	unsigned int size, id, c;
+	unsigned char *data;
+	unsigned char *data_aux;
+	freopen (NULL,"rb",stdin);
+
+	// First two ints are ID and Size of packet
+	fread(&id, sizeof(int), 1, stdin);
+	fread(&size, sizeof(int), 1, stdin);
+
+	if(verbose)
+       	fprintf(stderr, "Message ID %X - Size %u\n", id, size);	
+	
+	// So lets allocate a buffer to fit all the packet and read it
+	data = malloc(sizeof(char) * size);
+	c = fread(data, sizeof(char), size, stdin);
+
+	if(verbose)
+    	fprintf(stderr, "Read %d bytes from stdin. \n", c);	
+
+    //	The ID should give us what we should do with the packet
+    switch(id)	{
+    	case 0xAE:	//	Default Input
+    		//	First uint32 is the number of schedules we sent
+    		numsched = *((unsigned int *)(&data[0]));
+    		//	Lets point the actual data to the first byte after numsched int
+    		data_aux = &data[4];
+			if(verbose)
+		    	fprintf(stderr, "%d data schedules. \n", numsched);	
+
+		    //	Lets alocate output vector, schedules vector and status vector
+    		schedules 			= 	malloc(sizeof(HSInfo) * numsched);
+    		outputs   			= 	malloc(sizeof(HSInfo) * numsched);
+    		schedules_status	=	malloc(sizeof(bool) * numsched);
+
+    		//	Fetch the data for the schedules
+    		for(int i=0;i<numsched;i++)	{
+    			//	Basically output and schedules has the same type. It just have the swidth/width and sheight/height swapped and also sample size
+    			memcpy(&schedules[i], data_aux, sizeof(HSInfo));
+    			memcpy(&outputs[i], data_aux, sizeof(HSInfo));
+
+    			//	Sets the output size as crop delta
+    			outputs[i].width 	= 	schedules[i].C - schedules[i].A;
+    			outputs[i].height 	= 	schedules[i].D - schedules[i].B;	
+
+    			//	Lets shift what we read.
+    			data_aux += sizeof(HSInfo);
+
+    			//	Lets alocate spaces for copying and storing. For Schedule is the sample size, for the output is the outputsize.
+
+    			schedules[i].sample 	= 	malloc(sizeof(char) * schedules[i].swidth * schedules[i].sheight   );
+    			if(colorize)
+	    			outputs[i].sample 	=	malloc(sizeof(char) * outputs[i].width  * outputs[i].height * 4);
+	    		else
+	    			outputs[i].sample 	= 	malloc(sizeof(char) * outputs[i].width  * outputs[i].height    );
+
+    			//	Lets copy the sample
+    			memcpy(schedules[i].sample, data_aux, sizeof(char) * schedules[i].swidth * schedules[i].sheight);
+
+    			//	Shift for the end of the work
+    			data_aux += sizeof(char) * schedules[i].swidth * schedules[i].sheight;
+    		}
+    		//	All read
+    		if(verbose)
+    			fprintf(stderr, "%d schedules loaded. \n",numsched);
+    		break;
+		case 0xEA:	//	Default output
+			fprintf(stderr, "Wrong type of input! 0xEA should be the output!\n");
+    	default:
+    		fprintf(stderr, "Invalid ID: %d\n",id);
+    		free(data);
+    		exit(1);
+    }
+	freopen (NULL,"r",stdin);
+}
+
+int PreviousPowerTwo(int x)	{
+    x = x | (x >> 1);
+    x = x | (x >> 2);
+    x = x | (x >> 4);
+    x = x | (x >> 8);
+    x = x | (x >> 16);
+    return x - (x >> 1);
+}
+
 int main(int argc, char *argv[])
 {
 	e_platform_t platform;
@@ -95,15 +186,20 @@ int main(int argc, char *argv[])
 	char emsg[BUF_SIZE];
 	int curx = 0, cury = 0;
 	char flag = 0;
-	int workid = 0;
 	struct timeval start;
 	struct timeval end;
 	long elapsedTime;
+	unsigned int WIDTH;
 
 	int c;
 	extern char *optarg;
 	extern int optind, optopt, opterr;
 	char *filename;
+
+	if(verbose)	{
+		fprintf(stderr, "HyperSignal Tile Generator for Epiphany V" B_PROG_VERSION " - Build: " B_BUILD_VERSION "\n");
+		fprintf(stderr, "Build on " B_HOSTNAME " at " B_DATE "\n");		
+	}
 
 	while ((c = getopt(argc, argv, "A:B:C:D:ckztvw:h:r:u:")) != -1) {
         switch(c) {
@@ -160,33 +256,11 @@ int main(int argc, char *argv[])
         	break;
         }
 	}
-	// (A,B) - (C,D)
-	//unsigned char outdata[OUT_X*OUT_Y];
-	int WIDTH = C-A;
-	int HEIGHT = D-B;
-	unsigned char outdata[WIDTH*HEIGHT];
-	unsigned char Data[SAMPLE_WIDTH*SAMPLE_HEIGHT];
-	unsigned char *outcolor;
 
-	if(!pipestdin)	{
-		// Generate random data
-		srand(time(NULL));
-		for(int i=0;i<SAMPLE_HEIGHT*SAMPLE_WIDTH;i++)
-			Data[i] = (rand() % 64) & 0xFF;
-	}
-	for(int i=0;i<SAMPLE_WIDTH*SAMPLE_HEIGHT;i++)
-		Data[i] = 0xFF;
+	unsigned int SX,SY;
+	float bx,by;
 
-	const unsigned int SX = OUT_X / OUTPUT_WIDTH;
-	const unsigned int SY = OUT_Y / OUTPUT_HEIGHT;
-	const float bx = (SAMPLE_WIDTH ) / (float)SX;	
-	const float by = (SAMPLE_HEIGHT) / (float)SY;
-
-	if(verbose)	{
-		fprintf(stderr, "HyperSignal Tile Generator for Epiphany V" B_PROG_VERSION " - Build: " B_BUILD_VERSION "\n");
-		fprintf(stderr, "Build on " B_HOSTNAME " at " B_DATE "\n");		
-	}
-
+	//	Load color lookup table in RGBA Format
    	if(colorize)	{
    		if(verbose)
 			fprintf(stderr, "Reading color table\n");
@@ -196,167 +270,246 @@ int main(int argc, char *argv[])
    		fclose(f);
    	}
 
-	if(verbose)
-   		fprintf(stderr, "Tile Size(%03d,%03d)\n",WIDTH, HEIGHT);
+   	//	Build Cosine Table
 	if(cosine_mode)	{
 		if(verbose)
    			fprintf(stderr, "Building cosine table\n");
 		BuildCosTable();
 	}
 
-	if(pipestdin)	{
-		freopen (NULL,"rb",stdin);
-		int c = fread(Data, sizeof(char), SAMPLE_WIDTH*SAMPLE_HEIGHT, stdin);	
-		if(verbose)
-           	fprintf(stderr, "Read %d bytes from stdin. \n", c);	
-		freopen (NULL,"r",stdin);
-	}
-
 	gettimeofday(&start, NULL);
-	HSWork works[SX*SY]; 
-	if(verbose)
-   		fprintf(stderr,"Preparing works. (%02d,%02d) \n",SX,SY);
 
-	for(int y=0;y<SY;y++)	{
-		for(int x=0;x<SX;x++)	{
-			int p = y*SX+x;
-			works[p].workid = p;
-			works[p].x0 = x * (bx-(1.0f/SX));
-			works[p].y0 = y * (by-(1.0f/SY));
-			works[p].sx = SX;
-			works[p].sy = SY;
-			works[p].sample_width = SAMPLE_WIDTH;
-			works[p].sample_height = SAMPLE_HEIGHT;
-			works[p].done = 0;
-			works[p].error = 0;
-			memcpy(works[p].sample, Data, sizeof(unsigned char) * SAMPLE_WIDTH * SAMPLE_HEIGHT);
-		}
+	//	Process the Input data
+	if(pipestdin)	
+		ProcessDataInput();
+
+
+	//	Generate the works for cores
+	const unsigned int numworks = numsched * 4;
+	unsigned int 	CoresX = 0,
+					CoresY = 0;
+
+	if(numworks > MAX_CORES)	{
+		fprintf(stderr, "Not Enough Cores!\n");
+		exit(1);
 	}
+
+	CoresX = CoresY = PreviousPowerTwo(numworks-1) / 2;
+
+
+	HSWork works[numworks];		//	TODO: Check for really needed works 
+
+	for(int i=0;i< numsched;i++)	{
+		HSInfo *sched = &schedules[i];
+
+		//	Lets calculate the scale and offset
+		SX = sched->width 				/ 	OUTPUT_WIDTH;
+		SY = sched->height 				/ 	OUTPUT_HEIGHT;
+		bx = (float)(sched->swidth ) 	/ 	(float)SX;	
+		by = (float)(sched->sheight) 	/	(float)SY;
+
+		//	Lets set the status to false
+		schedules_status[i] = false;
+
+		if(verbose)
+	   		fprintf(stderr,"Preparing works for schedule %02d (%02d,%02d) \n",i,SX,SY);
+
+		for(int y=0;y<SY;y++)	{
+			for(int x=0;x<SX;x++)	{
+				int p = i*4 + y * SX + x;	//	TODO: Check for really needed works
+				works[p].scheduleid = i;
+				works[p].x0 = x * (bx-(1.0f/SX));
+				works[p].y0 = y * (by-(1.0f/SY));
+				works[p].sx = SX;
+				works[p].sy = SY;
+				works[p].sample_width = sched->swidth;
+				works[p].sample_height = sched->sheight;
+				works[p].done = 0;
+				works[p].error = 0;
+				memcpy(works[p].sample, sched->sample, sizeof(unsigned char) * sched->swidth * sched->sheight);
+			}
+		}
+
+		//	We can now free the sample to save memory
+		free(sched->sample);
+	}
+
+
 	//	Initializes Epiphany System
 	e_init(NULL);
 	e_reset_system();
 	e_get_platform_info(&platform);
 
 	//	Alocate Works and cosine table Memory at Shared DRAM Space
-	e_alloc(&emem, _BufOffset, sizeof(HSWork)*SX*SY + sizeof(float) * MAX_CIRCLE_ANGLE);
+	e_alloc(&emem, _BufOffset, sizeof(HSWork)*numworks + sizeof(float) * MAX_CIRCLE_ANGLE);
 
 	//	Writes the works to that memory
-	e_write(&emem, 0, 0,  0, (void *)&works, sizeof(HSWork)*SX*SY);
+	e_write(&emem, 0, 0,  0, (void *)&works, sizeof(HSWork)*numworks);
+
 	//	Writes cosines to memory
-	if(argc > 1)
-		e_write(&emem, 0, 0, sizeof(HSWork)*SX*SY, (void *)fast_cossin_table, sizeof(float) * MAX_CIRCLE_ANGLE);
+	if(cosine_mode)
+		e_write(&emem, 0, 0, sizeof(HSWork)*numworks, (void *)fast_cossin_table, sizeof(float) * MAX_CIRCLE_ANGLE);
 
 	//	Open the Workgroup witn SX x SY cores
-	e_open(&dev, 0, 0, SY, SX);
+	if(verbose)
+   		fprintf(stderr, "Initializing (%02d,%02d) Core Matrix\n",CoresX,CoresY);
+
+	e_open(&dev, 0, 0, CoresY, CoresX);
 
 	//	Resets the group.
 	e_reset_group(&dev);
 
 	// Load the device program onto the selected core
-	if(argc > 1)
-		e_load_group("e_test_bicosine.srec", &dev, 0, 0, SY, SX, E_FALSE);
+	if(cosine_mode)
+		e_load_group("e_test_bicosine.srec", &dev, 0, 0, CoresY, CoresX, E_FALSE);
 	else
-		e_load_group("e_test_bilinear.srec", &dev, 0, 0, SY, SX, E_FALSE);
+		e_load_group("e_test_bilinear.srec", &dev, 0, 0, CoresY, CoresX, E_FALSE);
 
-	for(int y=0;y<SY;y++)	{
-		for(int x=0;x<SX;x++)	{
-			e_write(&dev, y, x, CURRENT_POS + sizeof(int) * 2, &SX, sizeof(unsigned));
-			e_write(&dev, y, x, CURRENT_POS + sizeof(int) * 3, &SY, sizeof(unsigned));		
+	//	Write WorkID at cores
+	unsigned workid = 0;
+	for(int y=0;y<CoresY;y++)	{
+		for(int x=0;x<CoresX;x++)	{
+			e_write(&dev, y, x, CURRENT_POS + sizeof(int) * 2, &workid,   sizeof(unsigned));
+			e_write(&dev, y, x, CURRENT_POS + sizeof(int) * 3, &numworks, sizeof(unsigned));
+			workid++;
+			if(workid >= numworks)
+				workid = 255;
 		}
 	}
 
+	//	Starting group
 	if(verbose)
    		fprintf(stderr, "Starting program\n");
+
 	e_start_group(&dev);
+	
 	if(verbose)
    		fprintf(stderr, "Waiting...\n");
 
-	//	Every 1 ms, read the works from Shared DRAM and see if there is any change.
+	//	Every LOOP_SLEEP ms, read the works from Shared DRAM and see if there is any change.
 	while(1)	{
-		flag = 1;
+		for(int i=0;i<numsched;i++)	
+			schedules_status[i] = true;
+
 		e_read(&emem, 0, 0, 0, &works, sizeof(works));
-		for(int y=0;y<SY;y++)	{
-			for(int x=0;x<SX;x++)	{
-				flag &= works[y*SX+x].done;
-				e_read(&dev, y, x, CURRENT_POS, &curx, 4);
-				e_read(&dev, y, x, CURRENT_POS+sizeof(int), &cury, 4);
-				if(verbose)
-           			fprintf(stderr, "Core %02d: (%03d,%03d)(%d)(%d)\n",y*SX+x,curx,cury, works[y*SX+x].done, works[y*SX+x].error);				
+		workid = 0;
+		for(int y=0;y<CoresY;y++)	{
+			for(int x=0;x<CoresX;x++)	{
+				if(workid < numworks)	{
+					schedules_status[works[workid].scheduleid] &= works[workid].done;
+					e_read(&dev, y, x, CURRENT_POS, &curx, 4);
+					e_read(&dev, y, x, CURRENT_POS+sizeof(int), &cury, 4);
+					if(verbose)
+	           			fprintf(stderr, "Core %02d: (%03d,%03d)(%02d)(%02d) Schedule(%02d)\n",workid,curx,cury, works[workid].done, works[workid].error,works[workid].scheduleid);				
+	           		workid++;
+	           	}
 			}
 		}
+		flag = true;
+		for(int i=0;i<numsched;i++)	
+			flag &= schedules_status[i];
+
 		if(flag)	
 			break;
 
 		if(verbose)
-       		for(int i=0;i<SX*SY;i++)
+       		for(int i=0;i<numworks;i++)
 				fprintf(stderr, "\033[F");
-		USleep(1);
-		//sleep(1);
+		USleep(LOOP_SLEEP);
 	}
 	gettimeofday(&end, NULL);
 	elapsedTime = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000;
 	if(verbose)
-   		fprintf(stderr, "Finished work in %ld ms!\n", elapsedTime);
+   		fprintf(stderr, "Finished %02d works in %ld ms!\n", numworks, elapsedTime);
 
 	//	Work is finished, lets get an updated version of the works
 	e_read(&emem, 0, 0, 0, &works, sizeof(works));
+
+
 	if(verbose)
    		fprintf(stderr, "Consolidating data\n");
 
-   	if(colorize)
-   		outcolor = malloc(WIDTH*HEIGHT*4*sizeof(char));
-   	// (A,B) - (C,D)
-   	
-	for(int y=0;y<SY;y++)	{
-		for(int x=0;x<SX;x++)	{
-			int p = y*SX+x;
-			for(int j=0;j<OUTPUT_HEIGHT;j++)	{
-				for(int i=0;i<OUTPUT_WIDTH;i++)	{
-					int tx 	=	i + x * (OUT_X/SX);
-					int ty 	= 	j + y * (OUT_Y/SY);
-					if(tx >= A && tx < C && ty >= B && ty < D)	{
-						int pt 	=	(D-ty-1)*(WIDTH)+(tx-A);
-						unsigned char val = works[p].output[j*OUTPUT_WIDTH+i];
-						if(colorize)	{
-							outcolor[pt*4] 		= 	colortable[val*4];
-							outcolor[pt*4+1] 	= 	colortable[val*4+1];
-							outcolor[pt*4+2] 	= 	colortable[val*4+2];
-							outcolor[pt*4+3] 	= 	colortable[val*4+3];
-						}else
-							outdata[pt] = val;
-					}	
+   	//	For the output stream
+	unsigned int startb[3];
+	startb[0] = 0xEA;
+	startb[1] = 0;
+	startb[2] = numsched;
+
+   	//	Lets consolidate each schedule
+   	for(int i=0;i<numsched;i++)	{
+   		HSInfo *out 	= 	&outputs[i];
+   		HSInfo *sched 	=	&schedules[i];
+   		SX 				= 	works[i*4].sx;
+   		SY 				= 	works[i*4].sy;
+   		WIDTH 			=	sched->C - sched->A;
+   		startb[1]		+=	sizeof(HSInfo) + out->width*out->height*4;
+
+   		//	Iterate over the "local" division SX,SY
+	 	for(int y=0;y<SY;y++)	{
+			for(int x=0;x<SX;x++)	{
+				int p = i*4 + y*SX+x;
+				//	Iterate over the work output block to fill the output info
+				for(int j=0;j<OUTPUT_HEIGHT;j++)	{
+					for(int i=0;i<OUTPUT_WIDTH;i++)	{
+						//	Calculate the position inside output block
+						int tx 	=	i + x * (sched->width/SX);
+						int ty 	= 	j + y * (sched->height/SY);
+						//	Set the Crop Factor
+						if(tx >= sched->A && tx < sched->C && ty >= sched->B && ty < sched->D)	{
+							int pt 				=	(sched->D-ty-1)*(WIDTH)+(tx-sched->A);
+							unsigned char val 	= 	works[p].output[j*OUTPUT_WIDTH+i];
+							//	Write to output
+							if(colorize)	{
+								out->sample[pt*4] 		= 	colortable[val*4];
+								out->sample[pt*4+1] 	= 	colortable[val*4+1];
+								out->sample[pt*4+2] 	= 	colortable[val*4+2];
+								out->sample[pt*4+3] 	= 	colortable[val*4+3];
+							}else
+								out->sample[pt] = val;
+						}	
+					}
 				}
 			}
-		}
-	}
+		}  		
+   	}
+ 	
+
 	gettimeofday(&end, NULL);
 	elapsedTime = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000;
-	if(verbose)
+	if(verbose)	{
    		fprintf(stderr, "Total time %ld ms!\n", elapsedTime);
-
-	//	We are only using work 0, so only that we will write to the output.
-	if(pipestdout)	{
-		freopen (NULL,"wb",stdout);
-		if(colorize)	
-			fwrite(outcolor, sizeof(char),4*WIDTH*HEIGHT,stdout);
-		else
-			fwrite(outdata,sizeof(char),WIDTH*HEIGHT,stdout);
-		fclose(stdout);
-	}else{
-		if(verbose)
-			fprintf(stderr, "Saving output matrix to output.mat\n");
-		FILE *f = fopen("/media/LINUX_DATA/MathStudies/HyperSignal/Parallella/output.mat","wb");
-		if(colorize)	
-			fwrite(outcolor, sizeof(char),4*WIDTH*HEIGHT,f);
-		else
-			fwrite(outdata,sizeof(char),WIDTH*HEIGHT,f);
-		fclose(f);
+   		fprintf(stderr, "Writting to output.\n");
 	}
+	FILE *outf = (pipestdout)?stdout:fopen("/media/LINUX_DATA/MathStudies/HyperSignal/Parallella/output.mat","wb");
+	freopen (NULL,"wb",stdout);
+
+	fwrite(&startb,sizeof(int),3,outf);
+	for(int i=0;i<numsched;i++)	{
+		fwrite(&outputs[i],sizeof(HSInfo),1,outf);
+		if(colorize)
+			fwrite(outputs[i].sample,outputs[i].width*outputs[i].height*4,1,outf);
+		else
+			fwrite(outputs[i].sample,outputs[i].width*outputs[i].height,1,outf);
+	}
+	fclose(outf);
+
 	if(verbose)
 		fprintf(stderr, "Done\n");
 	e_close(&dev);
 
 	e_free(&emem);
 	e_finalize();
+
+	free(colortable);
+
+	// Free Schedules
+	free(schedules);
+
+	//	Free Outputs
+	for(int i=0;i<numsched;i++)
+		free(outputs[i].sample);
+
+	free(outputs);
+	
 	return 0;
 }
