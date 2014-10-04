@@ -1,4 +1,4 @@
-import tool, MySQLdb, Image, math, numpy as np, numpy, os, json, re
+import tool, MySQLdb, Image, math, numpy as np, numpy, os, json, re, struct
 import subprocess
 from time import time
 
@@ -9,10 +9,14 @@ host     = "10.0.5.180"
 
 TWIDTH = 256
 THEIGHT = 256
+MAXTILES = 4
 TA = 0
 TB = 0
 TC = TWIDTH
 TD = THEIGHT
+
+tileblock = []
+dataout = ""
 
 print "Connecting"
 con = MySQLdb.connect(host,username,password)
@@ -57,42 +61,82 @@ def FetchBlock(start,end,operator):
 
 def DoTile(tx,ty,tz,operator):
 	global sumtime
-	print "Doing tile %s,%s,%s for %s" %(tx,ty,tz,operator)
-	start = time()
-	xmin,xmax,ymin,ymax		=	tool.GetGoogleTileHSRange(tz,tx,ty)
-	dx	=	xmax-xmin
-	dy	=	ymax-ymin
+	global dataout
+	global tileblock
+	if len(tileblock) < MAXTILES:
+		#print "Adding tile %s,%s,%s for %s to queue" %(tx,ty,tz,operator)
+		xmin,xmax,ymin,ymax		=	tool.GetGoogleTileHSRange(tz,tx,ty)
+		dx	=	xmax-xmin
+		dy	=	ymax-ymin
 
-	#print "Fetching Block"
-	block = FetchBlock( (xmin,ymin),(xmax,ymax), operator)
+		#print "Fetching Block"
+		block = FetchBlock( (xmin,ymin),(xmax,ymax), operator)
 
-	#print "Block Shape: %s,%s" %block.shape
+		#print "Block Shape: %s,%s" %block.shape
 
-	data = bytearray()
-	#print "Generating buffer"
-	for y in range(0,dy):
-		for x in range(0,dx):
-			data += chr(block[x,y])
+		data = bytearray()
+		#print "Generating buffer"
+		tileblock.append("%s/%s-%s-%s-%s.png" % (operator,tz,tx,ty,operator))
+		#	unsigned int id, width, height, A,B,C,D;
+		#	unsigned char swidth, sheight, *sample;
+		dataout += struct.pack("IIIIIIIBBI",len(tileblock),TWIDTH,THEIGHT,TA,TB,TC,TD,dy,dx,0)
 
+		for y in range(0,dy):
+			for x in range(0,dx):
+				dataout += chr(block[x,y])
 
-	#print "Opening process and writting"
-	proc = subprocess.Popen(['./run.sh', '-tckz', '-r', '%s'%block.shape[0],'-u', '%s'%block.shape[1] , '-w', '%s'%TWIDTH , '-h', '%s'%THEIGHT , '-A', '%s'%TA, '-B', '%s'%TB, '-C', '%s'%TC, '-D', '%s'%TD],stdout=subprocess.PIPE,stdin=subprocess.PIPE)
-	proc.stdin.write(data)
-	proc.stdin.close()
-	result = proc.stdout.read(TWIDTH*THEIGHT*4)
-	proc.wait()
+	else:
+		start = time()
+		print "%s tiles at queue. Starting work" %MAXTILES
+		size = len(dataout)
+		id = 0xAE
+		dataout = struct.pack("III",id,size,MAXTILES) + dataout
+		proc = subprocess.Popen(['./run.sh', '-ktz'],stdout=subprocess.PIPE,stdin=subprocess.PIPE)
+		proc.stdin.write(dataout)
+		proc.stdin.close()
+		data = proc.stdout.read(12)
+		id, size, numworks = struct.unpack("III",data)
+		if id == 0xEA:
+			#print "Got response!\n%s outputs are available at %s bytes size." %(numworks, size)
+			#data = proc.stdout.read(size)
+			SS = struct.calcsize("IIIIIIIBBI")
+			packs = []
+			for i in range(numworks):
+				data = proc.stdout.read(SS)
+				#	unsigned int id, width, height, A,B,C,D;
+				#	unsigned char swidth, sheight, *sample;
+				id, width, height, A,B,C,D,swidth,sheight,sample = struct.unpack("IIIIIIIBBI", data)
+				#print id, width, height, A,B,C,D,swidth,sheight,sample 
+				data = proc.stdout.read(width*height*4)
+				packs.append({
+					"id"		:	id,
+					"width"		:	width,
+					"height"	:	height,
+					"A"			:	A,
+					"B"			:	B,
+					"C"			:	C,
+					"D"			:	D,
+					"swidth"	:	swidth,
+					"sheight"	:	sheight,
+					"sample"	:	data
+				})
 
-	#print "Got %s bytes. Generating image." %(len(result))
+			for i in packs:
+				filename = tileblock[i["id"]-1]
+				#print "Generating image for %s (%s,%s) - %s"%(i["id"],i["width"], i["height"],filename)
+				arr = np.fromstring(i["sample"], dtype=np.uint8)
+				arr = np.reshape(arr, (i["width"], i["height"], 4))
+				image = Image.fromarray(arr)
+				image.save("%s" %filename)
+			delta = time() - start
+			sumtime += delta
+			mstile = delta / MAXTILES
+			tilesec = 1.0 / mstile
+			print "Done {:d} tiles in {:3.4f} seconds ({:3.4f} tiles/sec - {:1.4f} ms per tile)!".format(MAXTILES, delta, tilesec, mstile) 
+			tileblock = []
+			dataout = ""
+			proc.wait()
 
-	arr = np.fromstring(result, dtype=np.uint8)
-	arr = np.reshape(arr, (THEIGHT, TWIDTH, 4))
-
-	image = Image.fromarray(arr)
-	image.save("%s/%s-%s-%s-%s.png" % (operator,tz,tx,ty,operator))
-
-	delta = time() - start
-	sumtime += delta
-	print "Done in %s seconds!" %delta
 
 donetiles = 0
 tileslist, numtiles = FetchTilesToDo("VIVO",True)
