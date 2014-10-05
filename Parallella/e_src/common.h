@@ -14,7 +14,7 @@
 #define SAMPLE_SIZE (_SAMPLE_WIDTH * _SAMPLE_HEIGHT)
 #define OUTPUT_SIZE (OUTPUT_WIDTH * OUTPUT_HEIGHT)
 
-#define CURRENT_POS (0x2000)
+#define CURRENT_POS (0x4000)
 
 #define NUM_WORKS 4
 #define BUF_SIZE 32
@@ -25,7 +25,7 @@
 #define MAX_CORES_X 4
 #define MAX_CORES_Y 4
 
-#define LOOP_SLEEP 4
+#define LOOP_SLEEP 20
 
 typedef struct __attribute__((aligned(ALIGN8))) {
    int scheduleid;						       	//	Work ID

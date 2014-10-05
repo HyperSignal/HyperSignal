@@ -79,7 +79,7 @@ def DoTile(tx,ty,tz,operator):
 		tileblock.append("%s/%s-%s-%s-%s.png" % (operator,tz,tx,ty,operator))
 		#	unsigned int id, width, height, A,B,C,D;
 		#	unsigned char swidth, sheight, *sample;
-		dataout += struct.pack("IIIIIIIBBI",len(tileblock),TWIDTH,THEIGHT,TA,TB,TC,TD,dy,dx,0)
+		dataout += struct.pack("IIIIIIIBBI",len(tileblock),TWIDTH,THEIGHT,TA,TB,TC,TD,dx,dy,0)
 
 		for y in range(0,dy):
 			for x in range(0,dx):
@@ -91,7 +91,7 @@ def DoTile(tx,ty,tz,operator):
 		size = len(dataout)
 		id = 0xAE
 		dataout = struct.pack("III",id,size,MAXTILES) + dataout
-		proc = subprocess.Popen(['./run.sh', '-ktz'],stdout=subprocess.PIPE,stdin=subprocess.PIPE)
+		proc = subprocess.Popen(['./run.sh', '-ctvz'],stdout=subprocess.PIPE,stdin=subprocess.PIPE)
 		proc.stdin.write(dataout)
 		proc.stdin.close()
 		data = proc.stdout.read(12)

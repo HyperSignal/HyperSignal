@@ -35,24 +35,12 @@ unsigned char Data[] = {
 
 unsigned char *colortable;
 
-//#define OUT_X 384
-//#define OUT_Y 384
-
-unsigned int OUT_X = 256;
-unsigned int OUT_Y = 256;
-
-// Crop positions
-unsigned int A = 0;
-unsigned int B = 0;
-unsigned int C = 256;
-unsigned int D = 256;
-
 unsigned int SAMPLE_WIDTH = 32;
 unsigned int SAMPLE_HEIGHT = 32;
 
 bool cosine_mode	= 	false;
 bool pipestdout 	= 	false;
-bool pipestdin 		= 	false;
+bool pipestdin 		= 	true;
 bool verbose		=	false;
 bool colorize		=	false;
 
@@ -73,20 +61,9 @@ void ShowHelp()	{
 	fprintf(stderr, "HyperSignal Tile Generator for Epiphany V" B_PROG_VERSION " - Build: " B_BUILD_VERSION "\n");
 	fprintf(stderr, "Build on " B_HOSTNAME " at " B_DATE "\n");
 	fprintf(stderr, "Options: \n");
-	fprintf(stderr, "\tCROP Parameters\n");
-	fprintf(stderr, "\t\tCrop Points \t\tP0(A,B) P1(C,D)\n");
-	fprintf(stderr, "\t\t-A VALUE\t\t Crop A Position \n");
-	fprintf(stderr, "\t\t-B VALUE\t\t Crop B Position\n");
-	fprintf(stderr, "\t\t-C VALUE\t\t Crop C Position\n");
-	fprintf(stderr, "\t\t-D VALUE\t\t Crop D Position\n");
 	fprintf(stderr, "\tConfiguration Parameters\n");
 	fprintf(stderr, "\t\t-t      \t\t Colorize Output using colortable.mat\n");
 	fprintf(stderr, "\t\t-c      \t\t Cosine Mode Interpolation (DEFAULT: Bilinear)\n");
-	fprintf(stderr, "\t\t-w      \t\t Tile Width  ( Excluding CROP )\n");
-	fprintf(stderr, "\t\t-h      \t\t Tile Height ( Excluding CROP )\n");
-	fprintf(stderr, "\t\t-r      \t\t Sample Width \n");
-	fprintf(stderr, "\t\t-u      \t\t Sample Height \n");
-	fprintf(stderr, "\t\t-k      \t\t Sample Input from STDIN\n");
 	fprintf(stderr, "\t\t-z      \t\t Redirect output to STDOUT (Default save to output.mat)\n");
 	fprintf(stderr, "\n\n");
 	exit(1);
@@ -97,11 +74,11 @@ void ProcessDataInput() {
 	unsigned int size, id, c;
 	unsigned char *data;
 	unsigned char *data_aux;
-	freopen (NULL,"rb",stdin);
+	c = (int)freopen (NULL,"rb",stdin);
 
 	// First two ints are ID and Size of packet
-	fread(&id, sizeof(int), 1, stdin);
-	fread(&size, sizeof(int), 1, stdin);
+	c = fread(&id, sizeof(int), 1, stdin);
+	c = fread(&size, sizeof(int), 1, stdin);
 
 	if(verbose)
        	fprintf(stderr, "Message ID %X - Size %u\n", id, size);	
@@ -163,10 +140,9 @@ void ProcessDataInput() {
 			fprintf(stderr, "Wrong type of input! 0xEA should be the output!\n");
     	default:
     		fprintf(stderr, "Invalid ID: %d\n",id);
-    		free(data);
     		exit(1);
     }
-	freopen (NULL,"r",stdin);
+	free(data);
 }
 
 int PreviousPowerTwo(int x)	{
@@ -201,53 +177,24 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Build on " B_HOSTNAME " at " B_DATE "\n");		
 	}
 
-	while ((c = getopt(argc, argv, "A:B:C:D:ckztvw:h:r:u:")) != -1) {
+	while ((c = getopt(argc, argv, "cztv")) != -1) {
         switch(c) {
         case 'c':
         	if(verbose)
            		fprintf(stderr,"Enabling Cosine Mode\n");
             cosine_mode = true;
             break;
-        case 'k':
-            if(verbose)
-           		fprintf(stderr,"Input from stdin\n");
-            pipestdin = true;
-            break;
         case 'z':
             if(verbose)
            		fprintf(stderr,"Output for stdout\n");
             pipestdout = true;
             break;
-    	case 'r':
-    		SAMPLE_WIDTH = atoi(optarg);
-			break;
-		case 'u':
-    		SAMPLE_HEIGHT = atoi(optarg);
-    		break;
-        case 'w':
-        	OUT_X = atoi(optarg);
-        	break;
-    	case 'h':
-    		OUT_Y = atoi(optarg);
-    		break;
 		case 'v':
 			verbose = true;
 			break;
 		case 't':
 			colorize = true;
 			break;	
-		case 'A':
-			A = atoi(optarg);
-			break;
-		case 'B':
-			B = atoi(optarg);
-			break;
-		case 'C':
-			C = atoi(optarg);
-			break;
-		case 'D':
-			D = atoi(optarg);
-			break;
         case ':': 
         	fprintf(stderr,"Option -%c requires an operand\n", optopt);
             break;
@@ -266,7 +213,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Reading color table\n");
    		FILE *f = fopen("colortable.mat","rb");
    		colortable = malloc(sizeof(char)*256*4);
-   		fread(colortable, sizeof(char), 256*4, f);
+   		c = fread(colortable, sizeof(char), 256*4, f);
    		fclose(f);
    	}
 
@@ -391,16 +338,22 @@ int main(int argc, char *argv[])
 		for(int i=0;i<numsched;i++)	
 			schedules_status[i] = true;
 
+		if(verbose)
+			fprintf(stderr, "\e[1;1H");
+       		//for(int i=0;i<numworks;i++)
+			//	fprintf(stderr, "\033[F");
+
 		e_read(&emem, 0, 0, 0, &works, sizeof(works));
 		workid = 0;
 		for(int y=0;y<CoresY;y++)	{
 			for(int x=0;x<CoresX;x++)	{
 				if(workid < numworks)	{
 					schedules_status[works[workid].scheduleid] &= works[workid].done;
-					e_read(&dev, y, x, CURRENT_POS, &curx, 4);
-					e_read(&dev, y, x, CURRENT_POS+sizeof(int), &cury, 4);
-					if(verbose)
-	           			fprintf(stderr, "Core %02d: (%03d,%03d)(%02d)(%02d) Schedule(%02d)\n",workid,curx,cury, works[workid].done, works[workid].error,works[workid].scheduleid);				
+					if(verbose)	{
+						e_read(&dev, y, x, CURRENT_POS, &curx, 4);
+						e_read(&dev, y, x, CURRENT_POS+sizeof(int), &cury, 4);
+						fprintf(stderr, "\e[KCore %02d: (%03d,%03d)(%02d)(%02d) Schedule(%02d)\n",workid,curx,cury, works[workid].done, works[workid].error,works[workid].scheduleid);				
+	           		}
 	           		workid++;
 	           	}
 			}
@@ -412,9 +365,6 @@ int main(int argc, char *argv[])
 		if(flag)	
 			break;
 
-		if(verbose)
-       		for(int i=0;i<numworks;i++)
-				fprintf(stderr, "\033[F");
 		USleep(LOOP_SLEEP);
 	}
 	gettimeofday(&end, NULL);
@@ -481,7 +431,7 @@ int main(int argc, char *argv[])
    		fprintf(stderr, "Writting to output.\n");
 	}
 	FILE *outf = (pipestdout)?stdout:fopen("/media/LINUX_DATA/MathStudies/HyperSignal/Parallella/output.mat","wb");
-	freopen (NULL,"wb",stdout);
+	c = (int) freopen (NULL,"wb",stdout);
 
 	fwrite(&startb,sizeof(int),3,outf);
 	for(int i=0;i<numsched;i++)	{
