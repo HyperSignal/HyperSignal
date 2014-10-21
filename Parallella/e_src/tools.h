@@ -1,6 +1,8 @@
 #ifndef TOOLS_H
 #define TOOLS_H
 
+#include "common.h"
+
 //unsigned char bilinear(unsigned char *data, float x, float y, int mw);
 
 
@@ -36,16 +38,18 @@ static inline float min(float v1, float v2)	{
 	return v1 > v2 ? v2 : v1;
 }
 
-static inline unsigned char val(const unsigned char *data, int x, int y, int mw)	{
-	return data[y * mw + x];
+static inline unsigned char val(const unsigned char *data, int x, int y, int mw, int size)	{
+	if(x > mw)	x = mw;
+	return (y * mw + x) > size ? 0 : data[y * mw + x];
 }
 
 
-static inline void setval(unsigned char *data, int x, int y, int mw, unsigned char value)	{
-	data[y * mw + x] = value;
+static inline void setval(unsigned char *data, int x, int y, int mw, unsigned char value, int size)	{
+	if((y * mw + x ) < size)
+		data[y * mw + x] = value;
 }
 
-static inline unsigned char bilinear(const unsigned char *data, float x, float y, int mw)	{	
+static inline unsigned char bilinear(const unsigned char *data, float x, float y, int mw, int size)	{	
 	int rx = (int)(x);
 	int ry = (int)(y);
 	float fracX = x - rx;
@@ -53,10 +57,10 @@ static inline unsigned char bilinear(const unsigned char *data, float x, float y
 	float invfracX = 1.f - fracX;
 	float invfracY = 1.f - fracY;
 	
-	unsigned char a = val(data,rx,ry,mw);
-	unsigned char b = val(data,rx+1,ry,mw);
-	unsigned char c = val(data,rx,ry+1,mw);
-	unsigned char d = val(data,rx+1,ry+1,mw);
+	unsigned char a = val(data,rx,ry,mw,size);
+	unsigned char b = val(data,rx+1,ry,mw,size);
+	unsigned char c = val(data,rx,ry+1,mw,size);
+	unsigned char d = val(data,rx+1,ry+1,mw,size);
 	
 	return ( a * invfracX + b * fracX) * invfracY + ( c * invfracX + d * fracX) * fracY;
 }
@@ -67,7 +71,7 @@ static inline float cosineInterpolate(float y0, float y1, float mu, float *table
 	return (y0*(1.f-mu2)+y1*mu2);
 }
 
-static unsigned char bicosine(const unsigned char *data, float x, float y, int mw, float *table)	{
+static unsigned char bicosine(const unsigned char *data, float x, float y, int mw, float *table, int size)	{
 
 	int rx	=	(int)(x);		//	Parte Inteira do X	
 	int ry	=	(int)(y);		//	Parte Inteira do Y
@@ -75,11 +79,11 @@ static unsigned char bicosine(const unsigned char *data, float x, float y, int m
 	float fracY	=	y - ry;		//	Parte Fracionaria do Y
 
 	//	Achar valor c0 = f(x0,y0)  e c1 = f(x1,y0)
-	unsigned char c0 = val(data, rx  , ry, mw);
-	unsigned char c1 = val(data, rx+1, ry, mw);
+	unsigned char c0 = val(data, rx  , ry, mw,size);
+	unsigned char c1 = val(data, rx+1, ry, mw,size);
 
-	unsigned char c2 = val(data, rx,   ry+1, mw);
-	unsigned char c3 = val(data, rx+1, ry+1, mw);
+	unsigned char c2 = val(data, rx,   ry+1, mw,size);
+	unsigned char c3 = val(data, rx+1, ry+1, mw,size);
 
 	//	Interpolar de c0 a c1 pra achar top = f(fracX,y0)
 	float top		=	cosineInterpolate((float)c0,(float)c1,fracX, table);

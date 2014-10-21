@@ -13,8 +13,8 @@ BASEPATH		=	"/var/www/hsbase/"				#	Caminho para a base do site
 PROGVERSION		=	"1.7"							#	Versão do programa
 
 MYHOST			=	"localhost"						#	Host para conexão com banco de dados
-MYUSER			=	"root"							#	Usuário para conexão
-MYPASS			=	"***REMOVED***"							#	Senha para conexão
+MYUSER			=	"hypersignal"							#	Usuário para conexão
+MYPASS			=	"hs1234"							#	Senha para conexão
 MYDB			=	"hypersignal"					#	Banco de Dados
 
 HYPER_ZOOM_RANGE=	(10,16)							#	Range de Zoom para o Banco de Dados

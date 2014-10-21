@@ -35,7 +35,7 @@ DATE=`date`
 HOSTNAME=`hostname`
 
 rm -fr Build/epiphany/*
-
+rm -fr ../New/epiphany/*
 
 #echo "Compiling python module"
 
@@ -65,5 +65,6 @@ e-objcopy --srec-forceS3 --output-target srec Build/epiphany/e_test_bicosine.elf
 
 echo "Copying colortable.mat"
 cp colortable.mat Build/epiphany/
+cp Build/epiphany/* ../New/epiphany
 
 echo $BUILD_VERSION | sed 's/0*//' > buildnumber

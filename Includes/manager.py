@@ -6,7 +6,7 @@ from scipy import weave
 
 HYPER_STEP		=	0.0005					#	Step usado no banco de dados - 0.0005 dá uma precisão de ~100 metros
 HYPER_BRUSH		=	2						#	Tamanho do Brush de interpolação local 
-HYPER_GAP			=	5 						#	Gap para interpolação entre tiles
+HYPER_GAP		=	5 						#	Gap para interpolação entre tiles
 HYPER_BLUR		=	5						#	Blur para suavização de bordas
 
 HYPER_BRUSH_INT	=	[	
@@ -123,7 +123,7 @@ class	HyperSignalManager:
 		tiledata	=	tool.WeaveBilinear(tileraw.astype('uint8'), newTileSize, newTileSize, w, h)
 		#tiledata	=	Image.fromarray(np.array(tileraw, dtype=numpy.uint8), "RGBA").resize((newTileSize,newTileSize), HYPER_FILTER)
 		#tiledata	=	np.array(tiledata.getdata(), numpy.uint8).reshape(newTileSize, newTileSize, 4)
-		tiledata	=	scipy.ndimage.gaussian_filter(tiledata, (HYPER_BLUR*(z/10.0),HYPER_BLUR*(z/10.0),0))
+		#tiledata	=	scipy.ndimage.gaussian_filter(tiledata, (HYPER_BLUR*(z/10.0),HYPER_BLUR*(z/10.0),0))
 		return Image.fromarray(np.array(tiledata, dtype=np.uint8), "RGBA").transpose(Image.ROTATE_90).crop((dts,dts,tool.tileSize+dts,tool.tileSize+dts))
 
 	def InsertToDB(self,x,y,value,operator,weight=1.0):
