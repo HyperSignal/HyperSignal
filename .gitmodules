@@ -1,3 +1,6 @@
 [submodule "Android"]
 	path = Android
 	url = https://github.com/HyperSignal/Android
+[submodule "Parallella"]
+	path = Parallella
+	url = https://github.com/HyperSignal/Parallella
