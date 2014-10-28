@@ -45,7 +45,7 @@ class TileMaker:
 			img = self.hsman.GenerateGoogleTile(tile[0],tile[1],tile[2], tile[3])
 			if not os.path.isdir(tile[3]):
 				os.mkdir(tile[3])
-			img.save("%s/%d-%d-%d.png" % (tile[3],tile[0],tile[1],tile[2]), "PNG")
+			img.save("tiles/%s/%d-%d-%d.png" % (tile[3],tile[0],tile[1],tile[2]), "PNG")
 			self.hsman.RemoveTileToDo(tile[0],tile[1],tile[2], tile[3])
 			self.hsman.CommitToDB()
 			self.tilesdone.value = self.tilesdone.value + 1
@@ -107,6 +107,7 @@ if __name__ == '__main__':
 	hsman.ConnectDB()
 	print "Lendo Lista de Operadoras"
 	oplist	=	hsman.FetchOperators()
+	print oplist
 	for operator in oplist:
 		donetiles		=	Value('d', 0.0)
 		print "Lendo lista de tiles para %s" %operator
@@ -143,7 +144,7 @@ if __name__ == '__main__':
 			tilesetdones += tilesToDo
 	lasttime	=	datetime.now()
 	print "Tempo decorrido total: "+(lasttime-firsttime).__str__()	
-	auth = tweepy.OAuthHandler(config.TW_CONSUMER_KEY, config.TW_CONSUMER_SECRET)
-	auth.set_access_token(config.TW_ACCESS_KEY, config.TW_ACCESS_SECRET)
-	api = tweepy.API(auth)
-	api.update_status("Tiles Updated! Tiles made: %s - Time elapsed: %s #signaltracker #cellphones" %(tilesetdones,(lasttime-firsttime).__str__()))
+	#auth = tweepy.OAuthHandler(config.TW_CONSUMER_KEY, config.TW_CONSUMER_SECRET)
+	#auth.set_access_token(config.TW_ACCESS_KEY, config.TW_ACCESS_SECRET)
+	#api = tweepy.API(auth)
+	#api.update_status("Tiles Updated! Tiles made: %s - Time elapsed: %s #signaltracker #cellphones" %(tilesetdones,(lasttime-firsttime).__str__()))
