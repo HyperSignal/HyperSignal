@@ -43,8 +43,8 @@ class TileMaker:
 		for tile in self.tilelist:
 			self.__CheckSignal()
 			img = self.hsman.GenerateGoogleTile(tile[0],tile[1],tile[2], tile[3])
-			if not os.path.isdir(tile[3]):
-				os.mkdir(tile[3])
+			if not os.path.isdir("tiles/%s"%tile[3]):
+				os.mkdir("tiles/%s"%tile[3])
 			img.save("tiles/%s/%d-%d-%d.png" % (tile[3],tile[0],tile[1],tile[2]), "PNG")
 			self.hsman.RemoveTileToDo(tile[0],tile[1],tile[2], tile[3])
 			self.hsman.CommitToDB()

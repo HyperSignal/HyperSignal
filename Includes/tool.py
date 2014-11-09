@@ -95,6 +95,80 @@ def	WeaveBilinear(indata, target_width, target_height, in_width, in_height):
 	
 	return outimg
 
+def	WeaveBicosine(indata, target_width, target_height, in_width, in_height):
+	'''
+		Faz a escala de in(w,h) para target(w,h) usando interpolação bilinear
+		indata uma matriz numpy com tipo uint8
+	'''
+	mx		=	in_width
+	my		=	in_height
+	mapdx	=	target_width
+	mapdy	=	target_height
+	outimg = np.zeros( (mapdy,mapdx,4), dtype=np.uint8)
+	baseimg	=	indata
+
+	bicosine = """
+	    #define M_PI 3.14159265358979323846
+		int val(PyArrayObject* data_array, int x, int y, int z)	{
+			npy_intp* Ndata = data_array->dimensions;
+			npy_intp* Sdata = data_array->strides;
+			npy_ubyte* datap = (npy_ubyte*) (data_array->data + x*Sdata[0] + y*Sdata[1] + z*Sdata[2]);
+			return *datap;
+		}
+        double cosineInterpolate(double y0, double y1, double mu)	{
+	        double mu2 = (1-cos(mu*M_PI))/2;
+	        return (y0*(1-mu2)+y1*mu2);
+        }
+        int bicosine(PyArrayObject* data, double x, double y, int mw)	{
+
+	        double baseX	=	floor(x);		//	Parte Inteira do X	
+	        double baseY	=	floor(y);		//	Parte Inteira do Y
+	        double fracX	=	x - baseX;		//	Parte Fracionaria do X, X=1.63, fracX = 0.63
+	        double fracY	=	y - baseY;		//	Parte Fracionaria do Y
+
+	        double y0		=	baseY;			//	Valor anterior do Y
+	        double y1		=	baseY+1;		//	Valor sucessivo do Y
+	        double x0		=	baseX;			//	Valor anterior do X
+	        double x1		=	baseX+1;		//	Valor sucessivo do X
+
+	        //	Achar valor c0 = f(x0,y0)  e c1 = f(x1,y0)
+	        unsigned char c0 = val(data, y0, x0, mw);
+	        unsigned char c1 = val(data, y0, x1, mw);
+
+	        unsigned char c2 = val(data, y1, x0, mw);
+	        unsigned char c3 = val(data, y1, x1, mw);
+
+	        //	Interpolar de c0 a c1 pra achar top = f(fracX,y0)
+	        double top		=	cosineInterpolate((double)c0,(double)c1,fracX);
+	
+	        //	Interpolar de c2 a c3 pra achar bottom = f(fracX,y1)
+	        double bottom	=	cosineInterpolate((double)c2,(double)c3,fracX);
+
+	        //	Interpolar de top pra bottom pra achar c = f(fracX,fracY)
+	        return cosineInterpolate(top,bottom,fracY);
+
+        }
+	"""
+
+	bilexpr = '''
+	double px = mapdx;
+	double py = mapdy;
+	for(int y=0;y<mapdy;y++)	{
+		for(int x=0;x<mapdx;x++)	{
+
+			double x2 = ( x / px) * (mx-1);
+			double y2 = ( y / py) * (my-1);
+			OUTIMG3(x,y,0) = bicosine(baseimg_array,x2,y2,0);
+			OUTIMG3(x,y,1) = bicosine(baseimg_array,x2,y2,1);
+			OUTIMG3(x,y,2) = bicosine(baseimg_array,x2,y2,2);
+			OUTIMG3(x,y,3) = bicosine(baseimg_array,x2,y2,3);
+		}
+	}
+	'''
+	weave.inline(bilexpr, ["baseimg", "outimg", "mapdx", "mapdy", "mx", "my"], support_code = bicosine)
+	
+	return outimg
+
 '''
 	Coordinate Tools
 '''

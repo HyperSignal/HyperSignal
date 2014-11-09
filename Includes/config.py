@@ -2,8 +2,8 @@
 #-*- coding: UTF-8 -*-
 
 WSDIR			=	"/var/www/hypersignal/"			#	Diretório de trabalho do WebService
-STKEY			=	"***REMOVED***"				#	Chave do Signal Tracker
-STIV			=	"***REMOVED***"				#	IV do Signal Tracker
+STKEY			=	"TESTETESTETESKEY"				#	Chave do Signal Tracker
+STIV			=	"TESTETESTETESTIV"				#	IV do Signal Tracker
 TILEPATH		=	"/var/www/hstiles/"				#	Caminho para os tiles
 OPSPATH			=	"/var/www/hsops/"				#	Caminho para as imagens de operadora
 JSPATH			=	"/var/www/hsjs/"				#	Caminho para os javascripts

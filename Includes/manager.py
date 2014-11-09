@@ -10,11 +10,11 @@ HYPER_GAP		=	5 						#	Gap para interpolação entre tiles
 HYPER_BLUR		=	5						#	Blur para suavização de bordas
 
 HYPER_BRUSH_INT	=	[	
-						[0	,0	,0	,0	,0],		#	|
-						[0	,0.5,0.5,0.5,0],		#	|
-						[0	,0.5,1	,0.5,0],		#	|---- Brush de Interpolação
-						[0	,0.5,0.5,0.5,0],		#	|
-						[0	,0	,0	,0	,0]			#	|
+						[0.4	,0.1 	,0.4	,0.1	,0.4],		#	|
+						[0.1	,0.8	,0.8	,0.8	,0.1],		#	|
+						[0.4	,0.8	,1		,0.8	,0.4],		#	|---- Brush de Interpolação
+						[0.1	,0.8	,0.8	,0.8	,0.1],		#	|
+						[0.4	,0.1	,0.4	,0.1	,0.4]		#	|
 					]						
 
 '''
@@ -120,7 +120,8 @@ class	HyperSignalManager:
 					tileraw[x,y,1] = colorrgb[1]
 					tileraw[x,y,2] = colorrgb[2]
 					tileraw[x,y,3] = 192
-		tiledata	=	tool.WeaveBilinear(tileraw.astype('uint8'), newTileSize, newTileSize, w, h)
+		tiledata	=	tool.WeaveBicosine(tileraw.astype('uint8'), newTileSize, newTileSize, w, h)
+		#tiledata	=	tool.WeaveBilinear(tileraw.astype('uint8'), newTileSize, newTileSize, w, h)
 		#tiledata	=	Image.fromarray(np.array(tileraw, dtype=numpy.uint8), "RGBA").resize((newTileSize,newTileSize), HYPER_FILTER)
 		#tiledata	=	np.array(tiledata.getdata(), numpy.uint8).reshape(newTileSize, newTileSize, 4)
 		#tiledata	=	scipy.ndimage.gaussian_filter(tiledata, (HYPER_BLUR*(z/10.0),HYPER_BLUR*(z/10.0),0))
